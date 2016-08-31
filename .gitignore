@@ -1,0 +1,10 @@
+*.log
+*.lock
+*.jar
+*.zip
+*.class
+*.project
+*.classpath
+*/.settings/*
+.recommenders/*
+.metadata/*
