@@ -6,6 +6,7 @@
 *.project
 *.classpath
 */.settings/*
+*/.bin/*
 .recommenders/*
 .metadata/*
 git.sh
