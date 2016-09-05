@@ -14,4 +14,10 @@ public class AttributeBootstrapMethods extends Attribute {
 		super(name, AttributeType.BOOTSTRAP_METHODS);
 		this.methods = methods;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

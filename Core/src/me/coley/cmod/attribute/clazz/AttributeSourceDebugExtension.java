@@ -17,4 +17,10 @@ public class AttributeSourceDebugExtension extends Attribute {
 		super(name, AttributeType.SIGNATURE);
 		this.data = data;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

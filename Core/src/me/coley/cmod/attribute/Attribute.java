@@ -6,7 +6,7 @@ package me.coley.cmod.attribute;
  * @author Matt
  *
  */
-public class Attribute {
+public abstract class Attribute {
 	/**
 	 * An attribute's {@link me.coley.cmod.attribute.AttributeType type}.
 	 */
@@ -20,4 +20,6 @@ public class Attribute {
 		this.type = type;
 		this.name = name;
 	}
+
+	public abstract int getLength();
 }

@@ -22,4 +22,10 @@ public class AttributeLocalVariableTable extends Attribute {
 		this.variableTable = variableTable;
 	}
 
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
+
 }

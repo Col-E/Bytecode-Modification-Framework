@@ -16,6 +16,7 @@ import me.coley.cmod.attribute.annotation.AttributeAnnotations;
 import me.coley.cmod.attribute.annotation.AttributeParameterAnnotations;
 import me.coley.cmod.attribute.clazz.AttributeBootstrapMethods;
 import me.coley.cmod.attribute.clazz.AttributeEnclosingMethod;
+import me.coley.cmod.attribute.clazz.AttributeInnerClasses;
 import me.coley.cmod.attribute.clazz.AttributeSourceDebugExtension;
 import me.coley.cmod.attribute.clazz.AttributeSourceFile;
 import me.coley.cmod.attribute.clazz.BootstrapMethod;
@@ -38,7 +39,6 @@ import me.coley.cmod.io.StreamUtil;
 
 @SuppressWarnings("rawtypes")
 class ClassInterpreter {
-
 	public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
 		DataInputStream is = StreamUtil.fromBytes(data);
 		if (is.readInt() != 0xCAFEBABE) {
@@ -68,11 +68,9 @@ class ClassInterpreter {
 		node.classIndex = is.readUnsignedShort();
 		node.superIndex = is.readUnsignedShort();
 		// Read interfaces
-		int interfaceIndex = 0;
 		int interfaceLength = is.readUnsignedShort();
-		while (interfaceIndex < interfaceLength) {
+		for (int i = 0; i < interfaceLength; i++) {
 			node.addInterfaceIndex(is.readUnsignedShort());
-			interfaceIndex++;
 		}
 		// Read fields
 		int fieldLength = is.readUnsignedShort();

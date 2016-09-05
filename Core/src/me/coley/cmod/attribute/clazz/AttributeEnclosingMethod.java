@@ -12,4 +12,10 @@ public class AttributeEnclosingMethod extends Attribute {
 		this.classIndex = classIndex;
 		this.methodIndex = methodIndex;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

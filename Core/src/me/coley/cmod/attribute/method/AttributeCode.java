@@ -81,4 +81,10 @@ public class AttributeCode extends Attribute {
 		}
 	}
 
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
+
 }

@@ -8,4 +8,10 @@ public class AttributeSynthetic extends Attribute {
 	public AttributeSynthetic(int name) {
 		super(name, AttributeType.SYNTHETIC);
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

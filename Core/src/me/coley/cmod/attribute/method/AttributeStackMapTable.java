@@ -9,4 +9,9 @@ public class AttributeStackMapTable extends Attribute {
 		super(name, AttributeType.STACK_MAP_TABLE);
 		this.data = data;
 	}
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

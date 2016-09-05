@@ -10,4 +10,10 @@ public class AttributeAnnotationDefault extends Attribute {
 		super(name, AttributeType.ANNOTATION_DEFAULT);
 		this.data = data;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

@@ -11,4 +11,10 @@ public class AttributeParameterAnnotations extends Attribute {
 				: AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS);
 		this.data = data;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

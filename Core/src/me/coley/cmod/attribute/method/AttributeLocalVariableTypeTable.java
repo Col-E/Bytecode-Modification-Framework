@@ -13,4 +13,10 @@ public class AttributeLocalVariableTypeTable extends Attribute {
 		this.variableTypes = variableTypes;
 	}
 
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
+
 }

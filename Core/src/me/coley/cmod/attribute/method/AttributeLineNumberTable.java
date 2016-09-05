@@ -20,4 +20,10 @@ public class AttributeLineNumberTable extends Attribute {
 		this.lines = lines;
 	}
 
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
+
 }

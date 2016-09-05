@@ -13,6 +13,7 @@ import me.coley.cmod.attribute.annotation.AttributeAnnotations;
 import me.coley.cmod.attribute.annotation.AttributeParameterAnnotations;
 import me.coley.cmod.attribute.clazz.AttributeBootstrapMethods;
 import me.coley.cmod.attribute.clazz.AttributeEnclosingMethod;
+import me.coley.cmod.attribute.clazz.AttributeInnerClasses;
 import me.coley.cmod.attribute.clazz.AttributeSourceDebugExtension;
 import me.coley.cmod.attribute.clazz.AttributeSourceFile;
 import me.coley.cmod.consts.Constant;

@@ -12,4 +12,10 @@ public class AttributeExceptions extends  Attribute{
 		super(name, AttributeType.EXCEPTIONS);
 		this.exceptionIndicies = exceptionIndicies;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

@@ -10,4 +10,10 @@ public class AttributeSourceFile extends Attribute {
 		super(name, AttributeType.SIGNATURE);
 		this.sourceFile = sourceFile;
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }

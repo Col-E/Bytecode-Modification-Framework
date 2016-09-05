@@ -8,4 +8,10 @@ public class AttributeDeprecated extends Attribute {
 	public AttributeDeprecated(int name) {
 		super(name, AttributeType.DEPRECATED);
 	}
+
+	@Override
+	public int getLength() {
+		// TODO Fill out length method
+		return 0;
+	}
 }
