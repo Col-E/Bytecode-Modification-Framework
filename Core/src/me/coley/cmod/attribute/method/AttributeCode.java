@@ -4,7 +4,6 @@ import java.util.List;
 
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;
-import me.coley.cmod.attribute.method.*;
 
 /**
  * The Code of a method. Contains sub-attributes:
@@ -54,8 +53,6 @@ public class AttributeCode extends Attribute {
 	 * List of attributes that aren't {@link #lines}, {@link #variables},
 	 * {@link #variableTypes}, or {@link #stackMap}. Most likely empty in 99% of
 	 * all cases.<br>
-	 * TODO: Determine if this should be made into AttributeExceptions <i>(Since
-	 * the attribute exists, but does not have an implementation here)
 	 */
 	public List<Attribute> attributes;
 

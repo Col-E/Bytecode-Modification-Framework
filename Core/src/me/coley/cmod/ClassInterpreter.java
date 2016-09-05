@@ -7,17 +7,26 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import me.coley.cmod.attribute.Attribute;
+import me.coley.cmod.attribute.AttributeDeprecated;
+import me.coley.cmod.attribute.AttributeSignature;
+import me.coley.cmod.attribute.AttributeSynthetic;
 import me.coley.cmod.attribute.AttributeType;
 import me.coley.cmod.attribute.annotation.AttributeAnnotationDefault;
 import me.coley.cmod.attribute.annotation.AttributeAnnotations;
 import me.coley.cmod.attribute.annotation.AttributeParameterAnnotations;
 import me.coley.cmod.attribute.clazz.AttributeBootstrapMethods;
+import me.coley.cmod.attribute.clazz.AttributeEnclosingMethod;
+import me.coley.cmod.attribute.clazz.AttributeSourceDebugExtension;
+import me.coley.cmod.attribute.clazz.AttributeSourceFile;
 import me.coley.cmod.attribute.clazz.BootstrapMethod;
+import me.coley.cmod.attribute.clazz.InnerClass;
 import me.coley.cmod.attribute.field.AttributeConstantValue;
 import me.coley.cmod.attribute.method.AttributeCode;
+import me.coley.cmod.attribute.method.AttributeExceptions;
 import me.coley.cmod.attribute.method.AttributeLineNumberTable;
 import me.coley.cmod.attribute.method.AttributeLocalVariableTable;
 import me.coley.cmod.attribute.method.AttributeLocalVariableTypeTable;
+import me.coley.cmod.attribute.method.AttributeStackMapTable;
 import me.coley.cmod.attribute.method.LineNumberTable;
 import me.coley.cmod.attribute.method.LocalVariableTable;
 import me.coley.cmod.attribute.method.LocalVariableType;
@@ -112,8 +121,10 @@ class ClassInterpreter {
 		return method;
 	}
 
+	/**
+	 * https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7
+	 */
 	private static Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException {
-		// https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7
 		int nameIndex = is.readUnsignedShort();
 		int length = is.readInt();
 		String name = owner.getConst(nameIndex).value.toString();
@@ -172,16 +183,32 @@ class ClassInterpreter {
 			return new AttributeConstantValue(nameIndex, value);
 		}
 		case DEPRECATED: {
-			break;
+			return new AttributeDeprecated(nameIndex);
 		}
 		case ENCLOSING_METHOD: {
-			break;
+			int classIndex = is.readUnsignedShort();
+			int methodIndex = is.readUnsignedShort();
+			return new AttributeEnclosingMethod(nameIndex, classIndex, methodIndex);
 		}
 		case EXCEPTIONS: {
-			break;
+			int exceptionCount = is.readUnsignedShort();
+			List<Integer> exceptionIndices = Lists.newArrayList();
+			for (int i = 0; i < exceptionCount; i++) {
+				exceptionIndices.add(is.readUnsignedShort());
+			}
+			return new AttributeExceptions(nameIndex, exceptionIndices);
 		}
 		case INNER_CLASSES: {
-			break;
+			int classCount = is.readUnsignedShort();
+			List<InnerClass> classes = Lists.newArrayList();
+			for (int i = 0; i < classCount; i++) {
+				int innerIndex = is.readUnsignedShort();
+				int outerIndex = is.readUnsignedShort();
+				int cInnerName = is.readUnsignedShort();
+				int innerAccess = is.readUnsignedShort();
+				classes.add(new InnerClass(innerIndex, outerIndex, cInnerName, innerAccess));
+			}
+			return new AttributeInnerClasses(nameIndex, classes);
 		}
 		case LINE_NUMBER_TABLE: {
 			LineNumberTable table = new LineNumberTable();
@@ -230,25 +257,33 @@ class ClassInterpreter {
 		}
 		case RUNTIME_VISIBLE_ANNOTATIONS:
 		case RUNTIME_INVISIBLE_ANNOTATIONS: {
-			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
+			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS;
 			byte[] annotationData = new byte[length];
 			is.read(annotationData);
 			return new AttributeAnnotations(nameIndex, invis, annotationData);
 		}
 		case SIGNATURE: {
-			break;
+			int sig = is.readUnsignedShort();
+			return new AttributeSignature(nameIndex, sig);
 		}
 		case SOURCE_DEBUG_EXTENSION: {
-			break;
+			List<Integer> data = Lists.newArrayList();
+			for (int i = 0; i < length; i++) {
+				data.add(is.readUnsignedByte());
+			}
+			return new AttributeSourceDebugExtension(nameIndex, data);
 		}
 		case SOURCE_FILE: {
-			break;
+			int source = is.readUnsignedShort();
+			return new AttributeSourceFile(nameIndex, source);
 		}
 		case STACK_MAP_TABLE: {
-			break;
+			byte[] data = new byte[length];
+			is.read(data);
+			return new AttributeStackMapTable(nameIndex, data);
 		}
 		case SYNTHETIC: {
-			break;
+			return new AttributeSynthetic(nameIndex);
 		}
 		default:
 			break;
