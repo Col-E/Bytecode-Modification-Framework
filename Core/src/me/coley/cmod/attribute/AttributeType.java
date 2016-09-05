@@ -30,7 +30,7 @@ public enum AttributeType {
 	RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS("RuntimeVisibleParameterAnnotations"),
 	RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS("RuntimeInvisibleParameterAnnotations"),
 	ANNOTATION_DEFAULT("AnnotationDefault"),
-	BOOTSTRAP_METHOS("BootstrapMethods");
+	BOOTSTRAP_METHODS("BootstrapMethods");
 	//@formatter:ON
 	private static Map<String, AttributeType> nameMap;
 	private final String name;

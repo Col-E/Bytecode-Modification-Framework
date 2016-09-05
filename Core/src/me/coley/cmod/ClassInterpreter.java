@@ -17,8 +17,10 @@ import me.coley.cmod.attribute.field.AttributeConstantValue;
 import me.coley.cmod.attribute.method.AttributeCode;
 import me.coley.cmod.attribute.method.AttributeLineNumberTable;
 import me.coley.cmod.attribute.method.AttributeLocalVariableTable;
+import me.coley.cmod.attribute.method.AttributeLocalVariableTypeTable;
 import me.coley.cmod.attribute.method.LineNumberTable;
 import me.coley.cmod.attribute.method.LocalVariableTable;
+import me.coley.cmod.attribute.method.LocalVariableType;
 import me.coley.cmod.attribute.method.MethodException;
 import me.coley.cmod.attribute.method.OpcodeListData_TEMP;
 import me.coley.cmod.consts.*;
@@ -64,28 +66,22 @@ class ClassInterpreter {
 			interfaceIndex++;
 		}
 		// Read fields
-		int fieldIndex = 0;
 		int fieldLength = is.readUnsignedShort();
-		while (fieldIndex < fieldLength) {
+		for (int i = 0; i < fieldLength; i++) {
 			FieldNode field = readField(node, is);
 			node.addField(field);
-			fieldIndex++;
 		}
 		// Read methods
-		int methodIndex = 0;
 		int methodLength = is.readUnsignedShort();
-		while (methodIndex < methodLength) {
+		for (int i = 0; i < methodLength; i++) {
 			MethodNode method = readMethod(node, is);
 			node.addMethod(method);
-			methodIndex++;
 		}
 		// Read class attributes
-		int attribsIndex = 0;
 		int attribsLength = is.readUnsignedShort();
-		while (attribsIndex < attribsLength) {
+		for (int i = 0; i < attribsLength; i++) {
 			Attribute attribute = readAttribute(node, is);
 			node.addAttribute(attribute);
-			attribsIndex++;
 		}
 		return node;
 	}
@@ -95,12 +91,10 @@ class ClassInterpreter {
 		field.access = is.readUnsignedShort();
 		field.name = is.readUnsignedShort();
 		field.desc = is.readUnsignedShort();
-		int attribsIndex = 0;
 		int attribsLength = is.readUnsignedShort();
-		while (attribsIndex < attribsLength) {
+		for (int i = 0; i < attribsLength; i++) {
 			Attribute attribute = readAttribute(owner, is);
 			field.addAttribute(attribute);
-			attribsIndex++;
 		}
 		return field;
 	}
@@ -110,12 +104,10 @@ class ClassInterpreter {
 		method.access = is.readUnsignedShort();
 		method.name = is.readUnsignedShort();
 		method.desc = is.readUnsignedShort();
-		int attribsIndex = 0;
 		int attribsLength = is.readUnsignedShort();
-		while (attribsIndex < attribsLength) {
+		for (int i = 0; i < attribsLength; i++) {
 			Attribute attribute = readAttribute(owner, is);
 			method.addAttribute(attribute);
-			attribsIndex++;
 		}
 		return method;
 	}
@@ -132,7 +124,7 @@ class ClassInterpreter {
 		case ANNOTATION_DEFAULT: {
 			break;
 		}
-		case BOOTSTRAP_METHOS: {
+		case BOOTSTRAP_METHODS: {
 			break;
 		}
 		case CODE: {
@@ -143,9 +135,8 @@ class ClassInterpreter {
 			is.read(code);
 			OpcodeListData_TEMP codeData = new OpcodeListData_TEMP();
 			codeData.data = code;
-			int exceptionIndex = 0;
-			int exceptionLength = is.readShort();
-			while (exceptionIndex < exceptionLength) {
+			int exceptionLength = is.readUnsignedShort();
+			for (int i = 0; i < exceptionLength; i++) {
 				MethodException mexeption = new MethodException();
 				int rangeStart = is.readUnsignedShort();
 				int rangeEnd = is.readUnsignedShort();
@@ -156,15 +147,12 @@ class ClassInterpreter {
 				mexeption.handler = rangeHandler;
 				mexeption.type = catchType;
 				codeData.addException(mexeption);
-				exceptionIndex++;
 			}
 			List<Attribute> attributes = Lists.newArrayList();
-			int attributeIndex = 0;
-			int attributeLength = is.readShort();
-			while (attributeIndex < attributeLength) {
+			int attributeLength = is.readUnsignedShort();
+			for (int i = 0; i < attributeLength; i++) {
 				Attribute attribute = readAttribute(owner, is);
 				attributes.add(attribute);
-				attributeIndex++;
 			}
 			return new AttributeCode(nameIndex, maxStack, maxLocals, codeData, attributes);
 		}
@@ -186,36 +174,37 @@ class ClassInterpreter {
 		}
 		case LINE_NUMBER_TABLE: {
 			LineNumberTable table = new LineNumberTable();
-			int tableIndex = 0;
 			int tableLength = is.readUnsignedShort();
-			while (tableIndex < tableLength) {
+			for (int i = 0; i < tableLength; i++) {
 				int startPC = is.readUnsignedShort();
 				int lineNumber = is.readUnsignedShort();
 				table.add(startPC, lineNumber);
-				tableIndex++;
 			}
 			return new AttributeLineNumberTable(nameIndex, table);
 		}
 		case LOCAL_VARIABLE_TYPE_TABLE: {
-			int tableIndex = 0;
 			int tableLength = is.readUnsignedShort();
-			while (tableIndex < tableLength) {
-				tableIndex++;
+			List<LocalVariableType> variableTypes = Lists.newArrayList();
+			for (int i = 0; i < tableLength; i++) {
+				int varStart = is.readUnsignedShort();
+				int varLen = is.readUnsignedShort();
+				int varName = is.readUnsignedShort();
+				int varSignature = is.readUnsignedShort();
+				int varIndex = is.readUnsignedShort();
+				variableTypes.add(new LocalVariableType(varStart, varLen, varName, varSignature, varIndex));
 			}
-			break;
+			return new AttributeLocalVariableTypeTable(nameIndex, variableTypes);
 		}
 		case LOCAL_VARIABLE_TABLE: {
 			LocalVariableTable locals = new LocalVariableTable();
-			int tableIndex = 0;
 			int tableLength = is.readUnsignedShort();
-			while (tableIndex < tableLength) {
+			for (int i = 0; i < tableLength; i++) {
 				int lstartPC = is.readUnsignedShort();
 				int llength = is.readUnsignedShort();
 				int lname = is.readUnsignedShort();
 				int ldesc = is.readUnsignedShort();
 				int lindex = is.readUnsignedShort();
 				locals.add(lstartPC, llength, lname, ldesc, lindex);
-				tableIndex++;
 			}
 			return new AttributeLocalVariableTable(nameIndex, locals);
 		}
