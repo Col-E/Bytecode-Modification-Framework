@@ -10,7 +10,7 @@ import me.coley.cmod.attribute.AttributeType;
 public class AttributeBootstrapMethods extends Attribute {
 	public List<BootstrapMethod> methods = Lists.newArrayList();
 
-	public AttributeBootstrapMethods(int name, boolean invisible, List<BootstrapMethod> methods) {
+	public AttributeBootstrapMethods(int name, List<BootstrapMethod> methods) {
 		super(name, AttributeType.BOOTSTRAP_METHODS);
 		this.methods = methods;
 	}

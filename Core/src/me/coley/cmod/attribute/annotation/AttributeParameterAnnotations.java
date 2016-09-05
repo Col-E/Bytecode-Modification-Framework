@@ -1,18 +1,14 @@
 package me.coley.cmod.attribute.annotation;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;
 
 public class AttributeParameterAnnotations extends Attribute {
-	public List<ParameterAnnotations> annotations = Lists.newArrayList();
+	public byte[] data;
 
-	public AttributeParameterAnnotations(int name, boolean invisible, List<ParameterAnnotations> annotations) {
+	public AttributeParameterAnnotations(int name, boolean invisible, byte[] data) {
 		super(name, invisible ? AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS
 				: AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS);
-		this.annotations = annotations;
+		this.data = data;
 	}
 }

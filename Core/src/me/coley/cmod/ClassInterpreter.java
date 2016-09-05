@@ -8,11 +8,11 @@ import com.google.common.collect.Lists;
 
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;
-import me.coley.cmod.attribute.annotation.Annotation;
+import me.coley.cmod.attribute.annotation.AttributeAnnotationDefault;
 import me.coley.cmod.attribute.annotation.AttributeAnnotations;
 import me.coley.cmod.attribute.annotation.AttributeParameterAnnotations;
-import me.coley.cmod.attribute.annotation.ElementPair;
-import me.coley.cmod.attribute.annotation.ParameterAnnotations;
+import me.coley.cmod.attribute.clazz.AttributeBootstrapMethods;
+import me.coley.cmod.attribute.clazz.BootstrapMethod;
 import me.coley.cmod.attribute.field.AttributeConstantValue;
 import me.coley.cmod.attribute.method.AttributeCode;
 import me.coley.cmod.attribute.method.AttributeLineNumberTable;
@@ -117,15 +117,26 @@ class ClassInterpreter {
 		int nameIndex = is.readUnsignedShort();
 		int length = is.readInt();
 		String name = owner.getConst(nameIndex).value.toString();
-
-		System.out.println("Name & len remaining: " + nameIndex + ":" + name + ":" + length);
 		AttributeType attributeType = AttributeType.fromName(name);
 		switch (attributeType) {
 		case ANNOTATION_DEFAULT: {
-			break;
+			byte[] annotationData = new byte[length];
+			is.read(annotationData);
+			return new AttributeAnnotationDefault(nameIndex, annotationData);
 		}
 		case BOOTSTRAP_METHODS: {
-			break;
+			int methods = is.readUnsignedShort();
+			List<BootstrapMethod> bsMethods = Lists.newArrayList();
+			for (int i = 0; i < methods; i++) {
+				int methodRef = is.readUnsignedShort();
+				int args = is.readUnsignedShort();
+				BootstrapMethod bsm = new BootstrapMethod(methodRef);
+				for (int a = 0; a < args; a++) {
+					bsm.addArgument(is.readUnsignedShort());
+				}
+				bsMethods.add(bsm);
+			}
+			return new AttributeBootstrapMethods(nameIndex, bsMethods);
 		}
 		case CODE: {
 			int maxStack = is.readUnsignedShort();
@@ -208,37 +219,21 @@ class ClassInterpreter {
 			}
 			return new AttributeLocalVariableTable(nameIndex, locals);
 		}
-			// TODO: Check if any of this annotation parsing is right.
-			// The structure in the documentation is kinda complex.
-			// Not to mention it totally ignored what ElementPairs are.
-			//
-			// https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16
+			// TODO: Actually figure out the structure then work on these.
+			// Until then, slapping the data in a byte array should be OK.
 		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
 		case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS: {
 			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
-			int paramAnnos = is.readUnsignedByte();
-			List<ParameterAnnotations> listParamAnnos = Lists.newArrayList();
-			for (int i = 0; i < paramAnnos; i++) {
-				ParameterAnnotations pa = new ParameterAnnotations();
-				int annos = is.readUnsignedShort();
-				for (int p = 0; p < annos; p++) {
-					pa.addAnnotation(readAnnotation(is));
-				}
-				listParamAnnos.add(pa);
-			}
-			System.out.println("<> Tried parsing annotation: " + attributeType.name() + " Did it work?");
-			return new AttributeParameterAnnotations(nameIndex, invis, listParamAnnos);
+			byte[] annotationData = new byte[length];
+			is.read(annotationData);
+			return new AttributeParameterAnnotations(nameIndex, invis, annotationData);
 		}
 		case RUNTIME_VISIBLE_ANNOTATIONS:
 		case RUNTIME_INVISIBLE_ANNOTATIONS: {
-			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS;
-			int annos = is.readUnsignedShort();
-			List<Annotation> annotations = Lists.newArrayList();
-			for (int i = 0; i < annos; i++) {
-				annotations.add(readAnnotation(is));
-			}
-			System.out.println("<> Tried parsing annotation: " + attributeType.name() + " Did it work?");
-			return new AttributeAnnotations(nameIndex, invis, annotations);
+			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
+			byte[] annotationData = new byte[length];
+			is.read(annotationData);
+			return new AttributeAnnotations(nameIndex, invis, annotationData);
 		}
 		case SIGNATURE: {
 			break;
@@ -259,18 +254,6 @@ class ClassInterpreter {
 			break;
 		}
 		throw new RuntimeException("Unhandled attribute! " + attributeType);
-	}
-
-	private static Annotation readAnnotation(DataInputStream is) throws IOException {
-		int type = is.readUnsignedShort();
-		int numPairs = is.readUnsignedShort();
-		Annotation anno = new Annotation(type);
-		for (int p = 0; p < numPairs; p++) {
-			int pairElementName = is.readUnsignedShort();
-			int value = is.readUnsignedShort();
-			anno.addPair(new ElementPair(pairElementName, value));
-		}
-		return anno;
 	}
 
 	private static Constant readConst(ConstantType constType, DataInputStream is) throws IOException {
