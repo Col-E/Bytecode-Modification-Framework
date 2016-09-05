@@ -1,4 +1,4 @@
-package me.coley.cmod.attribute.code;
+package me.coley.cmod.attribute.method;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 
 /**
  * Local variable table attribute belonging to a {@link me.coley.cmod.MethodNode
- * method's} "{@link me.coley.cmod.attribute.AttributeCode Code}" attribute.
+ * method's} "{@link me.coley.cmod.attribute.method.AttributeCode Code}" attribute.
  * 
  * @author Matt
  */
@@ -15,7 +15,7 @@ public class LocalVariableTable {
 
 	/**
 	 * Creates and adds a local variable to the table. See the documentation of
-	 * {@link me.coley.cmod.attribute.code.Local Local} for more information.
+	 * {@link me.coley.cmod.attribute.method.Local Local} for more information.
 	 * 
 	 * @param start
 	 *            Start index in the opcodes

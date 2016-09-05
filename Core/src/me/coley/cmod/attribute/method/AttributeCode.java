@@ -1,8 +1,10 @@
-package me.coley.cmod.attribute;
+package me.coley.cmod.attribute.method;
 
 import java.util.List;
 
-import me.coley.cmod.attribute.code.*;
+import me.coley.cmod.attribute.Attribute;
+import me.coley.cmod.attribute.AttributeType;
+import me.coley.cmod.attribute.method.*;
 
 /**
  * The Code of a method. Contains sub-attributes:
@@ -26,32 +28,34 @@ public class AttributeCode extends Attribute {
 	 */
 	public int locals;
 	/**
-	 * A {@link me.coley.cmod.attribute.code.AttributeLineNumberTable table}
+	 * A {@link me.coley.cmod.attribute.method.AttributeLineNumberTable table}
 	 * that correlates opcode indices and line numbers <i>(Debugging). <br>
 	 * May be null.</i>
 	 */
 	public AttributeLineNumberTable lines;
 	/**
-	 * A {@link me.coley.cmod.attribute.code.AttributeLocalVariableTable table}
-	 * containing local variables.
+	 * A {@link me.coley.cmod.attribute.method.AttributeLocalVariableTable
+	 * table} containing local variables.
 	 */
 	public AttributeLocalVariableTable variables;
 	/**
-	 * A {@link me.coley.cmod.attribute.code.AttributeLocalVariableTypeTable
+	 * A {@link me.coley.cmod.attribute.method.AttributeLocalVariableTypeTable
 	 * table} containing types of local variables. <br>
 	 * <i>May be null</i>
 	 */
 	public AttributeLocalVariableTypeTable variableTypes;
 	/**
-	 * A {@link me.coley.cmod.attribute.code.AttributeStackMapTable table} that
-	 * supplies information about the stack and stored locals at given bytecode
-	 * offsets.
+	 * A {@link me.coley.cmod.attribute.method.AttributeStackMapTable table}
+	 * that supplies information about the stack and stored locals at given
+	 * bytecode offsets.
 	 */
 	public AttributeStackMapTable stackMap;
 	/**
 	 * List of attributes that aren't {@link #lines}, {@link #variables},
 	 * {@link #variableTypes}, or {@link #stackMap}. Most likely empty in 99% of
-	 * all cases.
+	 * all cases.<br>
+	 * TODO: Determine if this should be made into AttributeExceptions <i>(Since
+	 * the attribute exists, but does not have an implementation here)
 	 */
 	public List<Attribute> attributes;
 

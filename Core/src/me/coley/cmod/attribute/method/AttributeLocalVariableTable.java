@@ -1,11 +1,11 @@
-package me.coley.cmod.attribute.code;
+package me.coley.cmod.attribute.method;
 
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;
 
 /**
  * An attribute belonging to the
- * "{@link me.coley.cmod.attribute.AttributeCode Code}" attribute of a method.
+ * "{@link me.coley.cmod.attribute.method.AttributeCode Code}" attribute of a method.
  * Contains information about local variables.
  * 
  * @author Matt
@@ -13,7 +13,7 @@ import me.coley.cmod.attribute.AttributeType;
  */
 public class AttributeLocalVariableTable extends Attribute {
 	/**
-	 * The {@link me.coley.cmod.attribute.code.LocalVariableTable table}.
+	 * The {@link me.coley.cmod.attribute.method.LocalVariableTable table}.
 	 */
 	public LocalVariableTable variableTable;
 

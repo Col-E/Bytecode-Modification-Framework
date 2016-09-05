@@ -1,10 +1,7 @@
 package me.coley.cmod;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
 import me.coley.cmod.attribute.Attribute;
+import me.coley.cmod.attribute.IAttributeOwner;
 
 /**
  * A member. Implementation is either a field or method.
@@ -12,7 +9,7 @@ import me.coley.cmod.attribute.Attribute;
  * @author Matt
  *
  */
-public abstract class MemberNode {
+public abstract class MemberNode implements IAttributeOwner {
 	/**
 	 * The class the member belongs to.
 	 */
@@ -29,12 +26,6 @@ public abstract class MemberNode {
 	 * Index in the constant pool pointing to the member's desc.
 	 */
 	public int desc;
-	/**
-	 * A list of attributes the member has.<br>
-	 * TODO: Do what was done to Attribute code here. Give field / method
-	 * specific fields for attributes, then add general attributes here.
-	 */
-	public List<Attribute> attributes = Lists.newArrayList();
 
 	/**
 	 * Creates the node and sets its owner.
@@ -45,18 +36,30 @@ public abstract class MemberNode {
 		this.owner = owner;
 	}
 
-	/**
-	 * Adds an attribute to the node.
-	 * 
-	 * @param attribute
-	 */
+	@Override
 	public void addAttribute(Attribute attribute) {
-		attributes.add(attribute);
+		switch (attribute.type) {
+		case SYNTHETIC:
+			break;
+		case SIGNATURE:
+			break;
+		case DEPRECATED:
+			break;
+		case RUNTIME_INVISIBLE_ANNOTATIONS:
+			break;
+		case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+			break;
+		case RUNTIME_VISIBLE_ANNOTATIONS:
+			break;
+		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName().replace("Node", "") + ": " + access + " , " + name + " , " + desc + " , "
-				+ "Attributes[" + attributes.size() + "]";
+		return this.getClass().getSimpleName().replace("Node", "") + ": " + access + " , " + name + " , " + desc;
 	}
 }

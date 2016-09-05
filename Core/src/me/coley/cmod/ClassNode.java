@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import me.coley.cmod.attribute.Attribute;
+import me.coley.cmod.attribute.IAttributeOwner;
 import me.coley.cmod.consts.Constant;
 
 /**
@@ -13,7 +14,7 @@ import me.coley.cmod.consts.Constant;
  * @author Matt
  */
 @SuppressWarnings("rawtypes")
-class ClassNode {
+class ClassNode implements IAttributeOwner{
 	/**
 	 * Version info.
 	 */
@@ -43,12 +44,6 @@ class ClassNode {
 	 * Methods.
 	 */
 	public List<MethodNode> methods = Lists.newArrayList();
-	/**
-	 * Attributes.<br>
-	 * TODO: Do what was done to AttributeCode and make specific attributes
-	 * fields.
-	 */
-	public List<Attribute> attributes = Lists.newArrayList();
 
 	/**
 	 * Adds a constant to the constant pool.
@@ -96,14 +91,16 @@ class ClassNode {
 		methods.add(method);
 	}
 
-	/**
-	 * Adds an attribute to the class.
-	 * 
-	 * @param attribute
-	 */
+	@Override
 	public void addAttribute(Attribute attribute) {
-		attributes.add(attribute);
+		
 	}
+	
+	@Override
+	public List<Attribute> getAttributes() {
+		return null;// Lists.asList(first, rest);
+	}
+
 
 	@Override
 	public String toString() {
@@ -111,7 +108,7 @@ class ClassNode {
 		out += "  Access: " + access + "\n";
 		out += "  Class Index: " + classIndex + "\n";
 		out += "  Super Index: " + superIndex + "\n";
-		out += "  Attributes[" + attributes.size() + "]\n";
+		//out += "  Attributes[" + attributes.size() + "]\n";
 		out += "  Interfaces { ";
 		for (int index : interfaceIndices) {
 			out += index + ", ";
@@ -135,5 +132,4 @@ class ClassNode {
 		out += "  }\n";
 		return out;
 	}
-
 }

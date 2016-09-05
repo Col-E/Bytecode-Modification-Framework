@@ -1,4 +1,4 @@
-package me.coley.cmod.attribute.code;
+package me.coley.cmod.attribute.method;
 
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;

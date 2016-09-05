@@ -7,15 +7,20 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import me.coley.cmod.attribute.Attribute;
-import me.coley.cmod.attribute.AttributeCode;
-import me.coley.cmod.attribute.AttributeConstantValue;
 import me.coley.cmod.attribute.AttributeType;
-import me.coley.cmod.attribute.code.AttributeLineNumberTable;
-import me.coley.cmod.attribute.code.AttributeLocalVariableTable;
-import me.coley.cmod.attribute.code.OpcodeListData_TEMP;
-import me.coley.cmod.attribute.code.LineNumberTable;
-import me.coley.cmod.attribute.code.LocalVariableTable;
-import me.coley.cmod.attribute.code.MethodException;
+import me.coley.cmod.attribute.annotation.Annotation;
+import me.coley.cmod.attribute.annotation.AttributeAnnotations;
+import me.coley.cmod.attribute.annotation.AttributeParameterAnnotations;
+import me.coley.cmod.attribute.annotation.ElementPair;
+import me.coley.cmod.attribute.annotation.ParameterAnnotations;
+import me.coley.cmod.attribute.field.AttributeConstantValue;
+import me.coley.cmod.attribute.method.AttributeCode;
+import me.coley.cmod.attribute.method.AttributeLineNumberTable;
+import me.coley.cmod.attribute.method.AttributeLocalVariableTable;
+import me.coley.cmod.attribute.method.LineNumberTable;
+import me.coley.cmod.attribute.method.LocalVariableTable;
+import me.coley.cmod.attribute.method.MethodException;
+import me.coley.cmod.attribute.method.OpcodeListData_TEMP;
 import me.coley.cmod.consts.*;
 import me.coley.cmod.exception.InvalidClassException;
 import me.coley.cmod.io.StreamUtil;
@@ -214,17 +219,37 @@ class ClassInterpreter {
 			}
 			return new AttributeLocalVariableTable(nameIndex, locals);
 		}
-		case RUNTIME_INVISIBLE_ANNOTATIONS: {
-			break;
-		}
+			// TODO: Check if any of this annotation parsing is right.
+			// The structure in the documentation is kinda complex.
+			// Not to mention it totally ignored what ElementPairs are.
+			//
+			// https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16
+		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
 		case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS: {
-			break;
+			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
+			int paramAnnos = is.readUnsignedByte();
+			List<ParameterAnnotations> listParamAnnos = Lists.newArrayList();
+			for (int i = 0; i < paramAnnos; i++) {
+				ParameterAnnotations pa = new ParameterAnnotations();
+				int annos = is.readUnsignedShort();
+				for (int p = 0; p < annos; p++) {
+					pa.addAnnotation(readAnnotation(is));
+				}
+				listParamAnnos.add(pa);
+			}
+			System.out.println("<> Tried parsing annotation: " + attributeType.name() + " Did it work?");
+			return new AttributeParameterAnnotations(nameIndex, invis, listParamAnnos);
 		}
-		case RUNTIME_VISIBLE_ANNOTATIONS: {
-			break;
-		}
-		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS: {
-			break;
+		case RUNTIME_VISIBLE_ANNOTATIONS:
+		case RUNTIME_INVISIBLE_ANNOTATIONS: {
+			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS;
+			int annos = is.readUnsignedShort();
+			List<Annotation> annotations = Lists.newArrayList();
+			for (int i = 0; i < annos; i++) {
+				annotations.add(readAnnotation(is));
+			}
+			System.out.println("<> Tried parsing annotation: " + attributeType.name() + " Did it work?");
+			return new AttributeAnnotations(nameIndex, invis, annotations);
 		}
 		case SIGNATURE: {
 			break;
@@ -245,6 +270,18 @@ class ClassInterpreter {
 			break;
 		}
 		throw new RuntimeException("Unhandled attribute! " + attributeType);
+	}
+
+	private static Annotation readAnnotation(DataInputStream is) throws IOException {
+		int type = is.readUnsignedShort();
+		int numPairs = is.readUnsignedShort();
+		Annotation anno = new Annotation(type);
+		for (int p = 0; p < numPairs; p++) {
+			int pairElementName = is.readUnsignedShort();
+			int value = is.readUnsignedShort();
+			anno.addPair(new ElementPair(pairElementName, value));
+		}
+		return anno;
 	}
 
 	private static Constant readConst(ConstantType constType, DataInputStream is) throws IOException {

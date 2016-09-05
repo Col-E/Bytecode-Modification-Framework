@@ -1,4 +1,4 @@
-package me.coley.cmod.attribute.code;
+package me.coley.cmod.attribute.method;
 
 public class MethodException {
 	/**

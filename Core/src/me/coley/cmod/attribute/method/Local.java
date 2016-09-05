@@ -1,8 +1,8 @@
-package me.coley.cmod.attribute.code;
+package me.coley.cmod.attribute.method;
 
 /**
  * Local variable entry for the
- * {@link me.coley.cmod.attribute.code.LocalVariableTable}.
+ * {@link me.coley.cmod.attribute.method.LocalVariableTable}.
  * <ul>
  * <li>{@link #start}
  * <li>{@link #length}
