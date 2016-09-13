@@ -14,7 +14,7 @@ public class AttributeParameterAnnotations extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// TODO Change attrib length method later
+		return BASE_LEN + data.length;
 	}
 }

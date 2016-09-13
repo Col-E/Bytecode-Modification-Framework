@@ -22,8 +22,8 @@ public class AttributeLineNumberTable extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// ??: linetable
+		return BASE_LEN + lines.getLength();
 	}
 
 }

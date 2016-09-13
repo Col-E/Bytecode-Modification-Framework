@@ -1,5 +1,6 @@
 package me.coley.cmod;
 
+
 import java.io.File;
 import java.util.Map;
 
@@ -9,8 +10,7 @@ import me.coley.cmod.io.JarUtil;
 public class Main {
 	public static void main(String[] args) {
 		one("Jar.jar", "me/coley/cmod/exception/InvalidClassException");
-		//one("Skidfuscator.jar", "me/lpk/util/JarUtils");
-		//all("Skidfuscator.jar");
+		//all("Jar.jar");
 	}
 
 	private static void all(String file) {

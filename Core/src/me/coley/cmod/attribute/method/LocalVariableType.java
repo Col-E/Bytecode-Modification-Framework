@@ -1,6 +1,8 @@
 package me.coley.cmod.attribute.method;
 
-public class LocalVariableType {
+import me.coley.cmod.util.IMeasurable;
+
+public class LocalVariableType implements IMeasurable {
 	public int start;
 	public int len;
 	public int name;
@@ -15,4 +17,13 @@ public class LocalVariableType {
 		this.index = index;
 	}
 
+	@Override
+	public int getLength() {
+		// u2: start_pc
+		// u2: length
+		// u2: name_index
+		// u2: signature_index
+		// u2: index
+		return 10;
+	}
 }

@@ -1,5 +1,7 @@
 package me.coley.cmod.attribute.method;
 
+import me.coley.cmod.util.IMeasurable;
+
 /**
  * Local variable entry for the
  * {@link me.coley.cmod.attribute.method.LocalVariableTable}.
@@ -13,7 +15,7 @@ package me.coley.cmod.attribute.method;
  * 
  * @author Matt
  */
-public class Local {
+public class Local implements IMeasurable{
 
 	/** Start index in the opcodes */
 	public int start;
@@ -47,5 +49,15 @@ public class Local {
 		this.name = name;
 		this.desc = desc;
 		this.index = index;
+	}
+
+	@Override
+	public int getLength() {
+		//u2: start_pc
+		//u2: length
+		//u2: name_index
+		//u2: descriptor_index
+		//u2: index
+		return 10;
 	}
 }

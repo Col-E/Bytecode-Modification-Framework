@@ -13,7 +13,7 @@ public class AttributeConstantValue extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// u2: constantIndex
+		return BASE_LEN + 2;
 	}
 }

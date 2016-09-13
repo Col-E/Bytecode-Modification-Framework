@@ -11,7 +11,6 @@ public class AttributeSynthetic extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		return BASE_LEN;
 	}
 }

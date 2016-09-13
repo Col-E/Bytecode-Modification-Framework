@@ -15,7 +15,8 @@ public class AttributeEnclosingMethod extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// u2: class_index
+		// u2: method_index
+		return BASE_LEN + 4;
 	}
 }

@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;
+import me.coley.cmod.util.MeasurableUtils;
 
 public class AttributeBootstrapMethods extends Attribute {
 	public List<BootstrapMethod> methods = Lists.newArrayList();
@@ -17,7 +18,6 @@ public class AttributeBootstrapMethods extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		return BASE_LEN + MeasurableUtils.getLength(methods);
 	}
 }

@@ -20,7 +20,8 @@ public class AttributeSourceDebugExtension extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// u1[]: debug_extension[attribute_length]
+		// TODO Verify that this is correct
+		return BASE_LEN + data.size();
 	}
 }

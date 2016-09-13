@@ -1,12 +1,15 @@
 package me.coley.cmod.attribute;
 
+import me.coley.cmod.util.IMeasurable;
+
 /**
  * Generic Attribute.
  * 
  * @author Matt
  *
  */
-public abstract class Attribute {
+public abstract class Attribute implements IMeasurable{
+	protected final static int BASE_LEN = 6;
 	/**
 	 * An attribute's {@link me.coley.cmod.attribute.AttributeType type}.
 	 */
@@ -20,6 +23,4 @@ public abstract class Attribute {
 		this.type = type;
 		this.name = name;
 	}
-
-	public abstract int getLength();
 }

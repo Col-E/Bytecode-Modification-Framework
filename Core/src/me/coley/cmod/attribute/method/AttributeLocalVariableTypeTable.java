@@ -4,6 +4,7 @@ import java.util.List;
 
 import me.coley.cmod.attribute.Attribute;
 import me.coley.cmod.attribute.AttributeType;
+import me.coley.cmod.util.MeasurableUtils;
 
 public class AttributeLocalVariableTypeTable extends Attribute {
 	public List<LocalVariableType> variableTypes;
@@ -15,8 +16,9 @@ public class AttributeLocalVariableTypeTable extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// u2: num_variables
+		// ??: variable_table
+		return BASE_LEN + 2 + MeasurableUtils.getLength(variableTypes);
 	}
 
 }

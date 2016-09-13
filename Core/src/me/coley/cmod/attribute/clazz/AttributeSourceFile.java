@@ -13,7 +13,7 @@ public class AttributeSourceFile extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// u2: source_index
+		return BASE_LEN + 2;
 	}
 }

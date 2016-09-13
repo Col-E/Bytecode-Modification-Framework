@@ -1,6 +1,8 @@
 package me.coley.cmod.attribute.clazz;
 
-public class InnerClass {
+import me.coley.cmod.util.IMeasurable;
+
+public class InnerClass implements IMeasurable {
 	public int innerClassIndex;
 	public int outerClassIndex;
 	public int innerName;
@@ -11,5 +13,14 @@ public class InnerClass {
 		this.outerClassIndex = oci;
 		this.innerName = in;
 		this.innerAccess = ia;
+	}
+
+	@Override
+	public int getLength() {
+		// u2: inner_class_index
+		// u2: outer_class_index
+		// u2: inner_name
+		// u2: inner_access
+		return 8;
 	}
 }
