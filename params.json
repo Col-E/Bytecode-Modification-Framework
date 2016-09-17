@@ -1,0 +1,6 @@
+{
+  "name": "Bytecode-modification-framework",
+  "tagline": "A bytecode modification library",
+  "body": "### Welcome to Bytecode Modification Framework _(BMF)_.\r\nThe Bytecode Modification Framework is a project maintained by [Matthew Coley](https://github.com/Col-E) and [Matthew Dupraz](https://github.com/MatthewDupraz) and is designed to be a light-weight Java bytecode modification library designed to accurately portray and edit class files as they are without hiding any of the inner workings.\r\n\r\n### Goals\r\n* Fast and easy to use\r\n* Name refactoring\r\n* Method opcode editing\r\n\r\n### Contact\r\nAll contact information is provided on our GitHub profiles.\r\n* [Matthew Coley](https://github.com/Col-E)\r\n* [Matthew Dupraz](https://github.com/MatthewDupraz)\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
