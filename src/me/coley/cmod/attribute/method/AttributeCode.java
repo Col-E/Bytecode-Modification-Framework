@@ -49,17 +49,17 @@ public class AttributeCode extends Attribute {
 	 * bytecode offsets.
 	 */
 	public AttributeStackMapTable stackMap;
-	/**
-	 * List of attributes that aren't {@link #lines}, {@link #variables},
-	 * {@link #variableTypes}, or {@link #stackMap}. Most likely empty in 99% of
-	 * all cases.<br>
-	 */
-	public List<Attribute> attributes;
 
-	public AttributeCode(int name, int stack, int locals, OpcodeListData_TEMP data, List<Attribute> attributes) {
+	/**
+	 * TEMPORARY??
+	 */
+	public OpcodeListData_TEMP opcodes;
+
+	public AttributeCode(int name, int stack, int locals, OpcodeListData_TEMP opcodes, List<Attribute> attributes) {
 		super(name, AttributeType.CONSTANT_VALUE);
 		this.stack = stack;
 		this.locals = locals;
+		this.opcodes = opcodes;
 		for (Attribute attribute : attributes) {
 			switch (attribute.type) {
 			case LINE_NUMBER_TABLE:
@@ -75,7 +75,7 @@ public class AttributeCode extends Attribute {
 				stackMap = (AttributeStackMapTable) attribute;
 				break;
 			default:
-				attributes.add(attribute);
+				System.err.println("UNHANDLED CODE ATTRIB: " + attribute.type.name());
 				break;
 			}
 		}
@@ -83,8 +83,24 @@ public class AttributeCode extends Attribute {
 
 	@Override
 	public int getLength() {
-		// TODO Fill out length method
-		return 0;
+		// u2: max_stack
+		// u2: max_locals
+		// u4: code_length
+		// ??: CODE
+		// u2: attributes_count
+		// ??: ATTRIBS
+		// TODO: Verify this is correct
+		int len = BASE_LEN + 8;
+		if (opcodes != null)
+			len += opcodes.getLength();
+		len += 2;
+		if (variables != null)
+			len += variables.getLength();
+		if (variableTypes != null)
+			len += variableTypes.getLength();
+		if (stackMap != null)
+			len += stackMap.getLength();
+		return len;
 	}
 
 }
