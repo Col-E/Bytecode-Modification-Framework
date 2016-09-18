@@ -9,8 +9,7 @@ import io.github.bmf.io.JarUtil;
 @SuppressWarnings("unused")
 public class Main {
 	public static void main(String[] args) {
-		//one("Jar.jar", "me/coley/cmod/exception/InvalidClassException");
-		all("Jar.jar");
+		all("tests/Jar.jar");
 	}
 
 	private static void all(String file) {

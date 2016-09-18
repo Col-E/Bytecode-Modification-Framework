@@ -1,6 +1,5 @@
 *.log
 *.lock
-*.jar
 *.zip
 *.class
 *.prefs
@@ -10,8 +9,7 @@
 *.bin/*
 *.project
 *.classpath
-*/.settings/*
-*/.bin/*
+*tests/*.jar
 .recommenders/*
 .metadata/*
 git.sh
