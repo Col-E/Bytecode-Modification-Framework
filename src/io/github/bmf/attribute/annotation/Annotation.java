@@ -1,9 +1,10 @@
 package io.github.bmf.attribute.annotation;
 
-import java.util.List;
-
 import io.github.bmf.attribute.annotation.element.ElementValuePair;
 import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.MeasurableUtils;
+
+import java.util.List;
 
 public class Annotation implements IMeasurable {
 	/**
@@ -26,6 +27,6 @@ public class Annotation implements IMeasurable {
 		// u2: type_index
 		// u2: num_element_value_pairs
 		// ??: element_value_pairs[num_element_value_pairs]
-		return 4;
+		return 4 + MeasurableUtils.getLength(elementValuePairs);
 	}
 }

@@ -12,7 +12,7 @@ public class ElementValueEnumConstValue extends ElementValue {
 	public int name;
 
 	public ElementValueEnumConstValue(int type, int name) {
-		super(ElementValueType.EnumConstValue);
+		super(ElementValueType.ELEMENT_VALUE_TYPE);
 		this.type = type;
 		this.name = name;
 	}

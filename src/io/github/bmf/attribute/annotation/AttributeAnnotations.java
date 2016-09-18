@@ -1,10 +1,10 @@
 package io.github.bmf.attribute.annotation;
 
-import java.util.List;
-
 import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.AttributeType;
 import io.github.bmf.util.MeasurableUtils;
+
+import java.util.List;
 
 public class AttributeAnnotations extends Attribute {
 	public List<Annotation> annotations;
@@ -19,6 +19,6 @@ public class AttributeAnnotations extends Attribute {
 	public int getLength() {
 		// u2: num_annotations
 		// ??: annotations
-		return BASE_LEN + 2+ MeasurableUtils.getLength(annotations);
+		return BASE_LEN + 2 + MeasurableUtils.getLength(annotations);
 	}
 }

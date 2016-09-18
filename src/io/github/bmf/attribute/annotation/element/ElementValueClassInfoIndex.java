@@ -13,7 +13,7 @@ public class ElementValueClassInfoIndex extends ElementValue {
 	public int classInfoIndex;
 
 	public ElementValueClassInfoIndex(int classInfoIndex) {
-		super(ElementValueType.ClassInfoIndex);
+		super(ElementValueType.CLASS_INFO_INDEX);
 		this.classInfoIndex = classInfoIndex;
 	}
 

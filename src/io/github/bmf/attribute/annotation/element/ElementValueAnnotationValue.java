@@ -9,7 +9,7 @@ public class ElementValueAnnotationValue extends ElementValue {
 	public Annotation annotation;
 
 	public ElementValueAnnotationValue(Annotation annotation) {
-		super(ElementValueType.AnnotationValue);
+		super(ElementValueType.ANNOTATION_VALUE);
 		this.annotation = annotation;
 	}
 

@@ -11,7 +11,7 @@ public class ElementValueArrayValue extends ElementValue {
 	public List<ElementValue> values;
 
 	public ElementValueArrayValue(List<ElementValue> values) {
-		super(ElementValueType.ArrayValue);
+		super(ElementValueType.ARRAY_VALUE);
 		this.values = values;
 	}
 

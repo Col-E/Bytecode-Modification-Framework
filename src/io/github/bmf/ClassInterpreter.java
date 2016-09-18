@@ -1,45 +1,20 @@
 package io.github.bmf;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
-import io.github.bmf.attribute.Attribute;
-import io.github.bmf.attribute.AttributeDeprecated;
-import io.github.bmf.attribute.AttributeSignature;
-import io.github.bmf.attribute.AttributeSynthetic;
-import io.github.bmf.attribute.AttributeType;
-import io.github.bmf.attribute.annotation.Annotation;
-import io.github.bmf.attribute.annotation.AttributeAnnotationDefault;
-import io.github.bmf.attribute.annotation.AttributeAnnotations;
-import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
-import io.github.bmf.attribute.annotation.ParameterAnnotations;
-import io.github.bmf.attribute.annotation.element.ElementValue;
-import io.github.bmf.attribute.annotation.element.ElementValuePair;
-import io.github.bmf.attribute.clazz.AttributeBootstrapMethods;
-import io.github.bmf.attribute.clazz.AttributeEnclosingMethod;
-import io.github.bmf.attribute.clazz.AttributeInnerClasses;
-import io.github.bmf.attribute.clazz.AttributeSourceDebugExtension;
-import io.github.bmf.attribute.clazz.AttributeSourceFile;
-import io.github.bmf.attribute.clazz.BootstrapMethod;
-import io.github.bmf.attribute.clazz.InnerClass;
+import io.github.bmf.attribute.*;
+import io.github.bmf.attribute.annotation.*;
+import io.github.bmf.attribute.annotation.element.*;
+import io.github.bmf.attribute.clazz.*;
 import io.github.bmf.attribute.field.AttributeConstantValue;
-import io.github.bmf.attribute.method.AttributeCode;
-import io.github.bmf.attribute.method.AttributeExceptions;
-import io.github.bmf.attribute.method.AttributeLineNumberTable;
-import io.github.bmf.attribute.method.AttributeLocalVariableTable;
-import io.github.bmf.attribute.method.AttributeLocalVariableTypeTable;
-import io.github.bmf.attribute.method.AttributeStackMapTable;
-import io.github.bmf.attribute.method.LineNumberTable;
-import io.github.bmf.attribute.method.LocalVariableTable;
-import io.github.bmf.attribute.method.LocalVariableType;
-import io.github.bmf.attribute.method.MethodException;
-import io.github.bmf.attribute.method.OpcodeListData_TEMP;
+import io.github.bmf.attribute.method.*;
 import io.github.bmf.consts.*;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.io.StreamUtil;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("rawtypes")
 class ClassInterpreter {
@@ -325,12 +300,41 @@ class ClassInterpreter {
 	}
 
 	private static ElementValue readElementValue(ClassNode owner, DataInputStream is) throws IOException {
-		int tag = is.readUnsignedByte();
-		// TODO: If tag isn't an index in the constant pool (At least it never
-		// says anything on the jvm specs page) then how the hell is it used to
-		// get a char value if char is 2 bytes but tag is 1???
-		System.err.println("TAG: " + (char) tag);
-		throw new RuntimeException("Found a parameter annotation. Gotta implement that next.");
+		char tag = (char) is.readUnsignedByte();
+		ElementValueType type = ElementValueType.fromType(tag);
+		if (type == null) {
+			throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TAG: " + tag);
+		}
+		switch(type) {
+			case CONST_VALUE_INDEX: {
+				int constIndex = is.readUnsignedShort();
+				return new ElementValueConstValueIndex(constIndex);
+			}
+			case ENUM_CONST_VALUE: {
+				int typeIndex = is.readUnsignedShort();
+				int constNameIndex = is.readUnsignedShort();
+				return new ElementValueEnumConstValue(typeIndex, constNameIndex);
+			}
+			case CLASS_INFO_INDEX: {
+				int infoIndex = is.readUnsignedShort();
+				return new ElementValueClassInfoIndex(infoIndex);
+			}
+			case ANNOTATION_VALUE: {
+				Annotation annotation = readAnnotation(owner, is);
+				return new ElementValueAnnotationValue(annotation);
+			}
+			case ARRAY_VALUE: {
+				int num = is.readUnsignedShort();
+				List<ElementValue> values = new ArrayList<>();
+				for (int i = 0; i < num; i++) {
+					values.add(readElementValue(owner, is));
+				}
+				return new ElementValueArrayValue(values);
+			}
+			default: {
+				throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TYPE: " + type.name());
+			}
+		}
 	}
 
 	private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is)
