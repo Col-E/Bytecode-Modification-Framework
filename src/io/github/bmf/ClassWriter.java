@@ -1,12 +1,12 @@
 package io.github.bmf;
 
+import io.github.bmf.attribute.Attribute;
+import io.github.bmf.consts.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
-
-import io.github.bmf.attribute.Attribute;
-import io.github.bmf.consts.*;
 
 @SuppressWarnings("rawtypes")
 public class ClassWriter {
@@ -34,12 +34,12 @@ public class ClassWriter {
 		// Write fields
 		ds.writeShort(node.fields.size());
 		for (FieldNode field : node.fields) {
-			writeField(ds, field);
+			writeMember(ds, field);
 		}
 		// Write methods
 		ds.writeShort(node.methods.size());
 		for (MethodNode method : node.methods) {
-			writeMethod(ds, method);
+			writeMember(ds, method);
 		}
 		// Write attributes
 		List<Attribute> attribs = node.getAttributes();
@@ -50,22 +50,11 @@ public class ClassWriter {
 		return baos.toByteArray();
 	}
 
-	private static void writeField(DataOutputStream ds, FieldNode field) throws IOException {
-		ds.writeShort(field.access);
-		ds.writeShort(field.name);
-		ds.writeShort(field.desc);
-		List<Attribute> attribs = field.getAttributes();
-		ds.writeShort(attribs.size());
-		for (Attribute attrib : attribs) {
-			writeAttribute(ds, attrib);
-		}
-	}
-
-	private static void writeMethod(DataOutputStream ds, MethodNode method) throws IOException {
-		ds.writeShort(method.access);
-		ds.writeShort(method.name);
-		ds.writeShort(method.desc);
-		List<Attribute> attribs = method.getAttributes();
+	private static void writeMember(DataOutputStream ds, MemberNode member) throws IOException {
+		ds.writeShort(member.access);
+		ds.writeShort(member.name);
+		ds.writeShort(member.desc);
+		List<Attribute> attribs = member.getAttributes();
 		ds.writeShort(attribs.size());
 		for (Attribute attrib : attribs) {
 			writeAttribute(ds, attrib);

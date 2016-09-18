@@ -1,22 +1,13 @@
 package io.github.bmf;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
-import io.github.bmf.attribute.Attribute;
-import io.github.bmf.attribute.AttributeDeprecated;
-import io.github.bmf.attribute.AttributeSignature;
-import io.github.bmf.attribute.AttributeSynthetic;
-import io.github.bmf.attribute.IAttributeOwner;
+import io.github.bmf.attribute.*;
 import io.github.bmf.attribute.annotation.AttributeAnnotations;
 import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
-import io.github.bmf.attribute.clazz.AttributeBootstrapMethods;
-import io.github.bmf.attribute.clazz.AttributeEnclosingMethod;
-import io.github.bmf.attribute.clazz.AttributeInnerClasses;
-import io.github.bmf.attribute.clazz.AttributeSourceDebugExtension;
-import io.github.bmf.attribute.clazz.AttributeSourceFile;
+import io.github.bmf.attribute.clazz.*;
 import io.github.bmf.consts.Constant;
+
+import java.util.List;
 
 /**
  * A class.
@@ -249,8 +240,8 @@ class ClassNode implements IAttributeOwner {
 		}
 		out += "  }\n";
 		out += "  Methods { \n";
-		for (MethodNode methods : methods) {
-			out += "    " + methods.toString() + "\n";
+		for (MethodNode method : methods) {
+			out += "    " + method.toString() + "\n";
 		}
 		out += "  }\n";
 		return out;
