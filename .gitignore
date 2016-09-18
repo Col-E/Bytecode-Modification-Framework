@@ -3,6 +3,11 @@
 *.jar
 *.zip
 *.class
+*.prefs
+*.project
+*.classpath
+*.settings/*
+*.bin/*
 *.project
 *.classpath
 */.settings/*
