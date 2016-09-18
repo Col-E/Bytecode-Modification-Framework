@@ -3,18 +3,15 @@
 *.jar
 *.zip
 *.class
-<<<<<<< HEAD
 *.prefs
 *.project
 *.classpath
 *.settings/*
 *.bin/*
-=======
 *.project
 *.classpath
 */.settings/*
 */.bin/*
->>>>>>> 3890f81fb05a7f8cb6c16f19bfd3178e504292e5
 .recommenders/*
 .metadata/*
 git.sh
