@@ -7,7 +7,7 @@ public class AttributeSourceFile extends Attribute {
 	public int sourceFile;
 
 	public AttributeSourceFile(int name, int sourceFile) {
-		super(name, AttributeType.SIGNATURE);
+		super(name, AttributeType.SOURCE_FILE);
 		this.sourceFile = sourceFile;
 	}
 

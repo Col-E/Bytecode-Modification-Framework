@@ -8,7 +8,7 @@ public class AttributeEnclosingMethod extends Attribute {
 	public int methodIndex;
 
 	public AttributeEnclosingMethod(int name, int classIndex, int methodIndex) {
-		super(name, AttributeType.SIGNATURE);
+		super(name, AttributeType.ENCLOSING_METHOD);
 		this.classIndex = classIndex;
 		this.methodIndex = methodIndex;
 	}

@@ -11,9 +11,13 @@ import io.github.bmf.attribute.AttributeDeprecated;
 import io.github.bmf.attribute.AttributeSignature;
 import io.github.bmf.attribute.AttributeSynthetic;
 import io.github.bmf.attribute.AttributeType;
+import io.github.bmf.attribute.annotation.Annotation;
 import io.github.bmf.attribute.annotation.AttributeAnnotationDefault;
 import io.github.bmf.attribute.annotation.AttributeAnnotations;
 import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
+import io.github.bmf.attribute.annotation.ParameterAnnotations;
+import io.github.bmf.attribute.annotation.element.ElementValue;
+import io.github.bmf.attribute.annotation.element.ElementValuePair;
 import io.github.bmf.attribute.clazz.AttributeBootstrapMethods;
 import io.github.bmf.attribute.clazz.AttributeEnclosingMethod;
 import io.github.bmf.attribute.clazz.AttributeInnerClasses;
@@ -119,9 +123,6 @@ class ClassInterpreter {
 		return method;
 	}
 
-	/**
-	 * https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7
-	 */
 	private static Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException {
 		int nameIndex = is.readUnsignedShort();
 		int length = is.readInt();
@@ -244,21 +245,11 @@ class ClassInterpreter {
 			}
 			return new AttributeLocalVariableTable(nameIndex, locals);
 		}
-			// TODO: Actually figure out the structure then work on these.
-			// Until then, slapping the data in a byte array should be OK.
 		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-		case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS: {
-			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
-			byte[] annotationData = new byte[length];
-			is.read(annotationData);
-			return new AttributeParameterAnnotations(nameIndex, invis, annotationData);
-		}
+		case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 		case RUNTIME_VISIBLE_ANNOTATIONS:
 		case RUNTIME_INVISIBLE_ANNOTATIONS: {
-			boolean invis = attributeType == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS;
-			byte[] annotationData = new byte[length];
-			is.read(annotationData);
-			return new AttributeAnnotations(nameIndex, invis, annotationData);
+			return readAnnotatons(owner, attributeType, is, nameIndex, length);
 		}
 		case SIGNATURE: {
 			int sig = is.readUnsignedShort();
@@ -287,6 +278,69 @@ class ClassInterpreter {
 			break;
 		}
 		throw new RuntimeException("Unhandled attribute! " + attributeType);
+	}
+
+	private static Attribute readAnnotatons(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
+			int length) throws IOException {
+		boolean param = type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS
+				|| type == AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS;
+		boolean invisible = type == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS
+				|| type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
+		int num = param ? is.readUnsignedByte() : is.readUnsignedShort();
+		switch (type) {
+		case RUNTIME_INVISIBLE_ANNOTATIONS:
+		case RUNTIME_VISIBLE_ANNOTATIONS:
+			List<Annotation> annotations = Lists.newArrayList();
+			for (int i = 0; i < num; i++) {
+				annotations.add(readAnnotation(owner, is));
+			}
+			return new AttributeAnnotations(nameIndex, invisible, annotations);
+		case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+			List<ParameterAnnotations> paramAnnotations = Lists.newArrayList();
+			for (int i = 0; i < num; i++) {
+				paramAnnotations.add(readParameterAnnotations(owner, is));
+			}
+			return new AttributeParameterAnnotations(nameIndex, invisible, paramAnnotations);
+
+		default:
+			throw new RuntimeException("UNKNOWN ANNOTATION: " + type.name());
+		}
+	}
+
+	private static Annotation readAnnotation(ClassNode owner, DataInputStream is) throws IOException {
+		int typeIndex = is.readUnsignedShort();
+		int num = is.readUnsignedShort();
+		List<ElementValuePair> valuePairs = Lists.newArrayList();
+		for (int i = 0; i < num; i++) {
+			valuePairs.add(readElementValuePair(owner, is));
+		}
+		return new Annotation(typeIndex, valuePairs);
+	}
+
+	private static ElementValuePair readElementValuePair(ClassNode owner, DataInputStream is) throws IOException {
+		int nameIndex = is.readUnsignedShort();
+		ElementValue value = readElementValue(owner, is);
+		return new ElementValuePair(nameIndex, value);
+	}
+
+	private static ElementValue readElementValue(ClassNode owner, DataInputStream is) throws IOException {
+		int tag = is.readUnsignedByte();
+		// TODO: If tag isn't an index in the constant pool (At least it never
+		// says anything on the jvm specs page) then how the hell is it used to
+		// get a char value if char is 2 bytes but tag is 1???
+		System.err.println("TAG: " + (char) tag);
+		throw new RuntimeException("Found a parameter annotation. Gotta implement that next.");
+	}
+
+	private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is)
+			throws IOException {
+		int num = is.readUnsignedShort();
+		List<Annotation> annotations = Lists.newArrayList();
+		for (int i = 0; i < num; i++) {
+			annotations.add(readAnnotation(owner, is));
+		}
+		return new ParameterAnnotations(annotations);
 	}
 
 	private static Constant readConst(ConstantType constType, DataInputStream is) throws IOException {
