@@ -3,7 +3,7 @@ package io.github.bmf.consts;
 public class ConstField extends Constant<Integer> {
 
 	public ConstField(int clazz, int nameType) {
-		super(ConstantType.METHOD, (clazz << 16) | nameType);
+		super(ConstantType.FIELD, (clazz << 16) | nameType);
 	}
 
 	public int getClassIndex() {

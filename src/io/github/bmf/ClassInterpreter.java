@@ -41,6 +41,11 @@ import io.github.bmf.consts.*;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.io.StreamUtil;
 
+/**
+ * 
+ * @author Matt
+ *
+ */
 @SuppressWarnings("rawtypes")
 class ClassInterpreter {
 	public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {

@@ -3,7 +3,7 @@ package io.github.bmf.consts;
 public class ConstInterfaceMethod extends Constant<Integer> {
 
 	public ConstInterfaceMethod(int clazz, int nameType) {
-		super(ConstantType.METHOD, (clazz << 16) | nameType);
+		super(ConstantType.INTERFACE_METHOD, (clazz << 16) | nameType);
 	}
 
 	public int getClassIndex() {
