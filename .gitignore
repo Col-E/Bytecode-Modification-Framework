@@ -1,0 +1,13 @@
+*.log
+*.lock
+*.jar
+*.zip
+*.class
+*.prefs
+*.project
+*.classpath
+*.settings/*
+*.bin/*
+.recommenders/*
+.metadata/*
+git.sh
