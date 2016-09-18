@@ -4,16 +4,16 @@ import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.AttributeType;
 
 public class AttributeConstantValue extends Attribute {
-	public int constantIndex;
+    public int constantIndex;
 
-	public AttributeConstantValue(int name, int constantIndex) {
-		super(name, AttributeType.CONSTANT_VALUE);
-		this.constantIndex = constantIndex;
-	}
+    public AttributeConstantValue(int name, int constantIndex) {
+        super(name, AttributeType.CONSTANT_VALUE);
+        this.constantIndex = constantIndex;
+    }
 
-	@Override
-	public int getLength() {
-		// u2: constantIndex
-		return BASE_LEN + 2;
-	}
+    @Override
+    public int getLength() {
+        // u2: constantIndex
+        return BASE_LEN + 2;
+    }
 }
