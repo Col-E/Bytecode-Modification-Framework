@@ -3,15 +3,15 @@ package io.github.bmf.attribute;
 import java.util.List;
 
 public interface IAttributeOwner {
-	/**
-	 * Adds an attribute to the owner.
-	 * 
-	 * @param attribute
-	 */
-	void addAttribute(Attribute attribute);
+    /**
+     * Adds an attribute to the owner.
+     *
+     * @param attribute
+     */
+    void addAttribute(Attribute attribute);
 
-	/**
-	 * Collects and returns the attributes into a list.
-	 */
-	List<Attribute> getAttributes();
+    /**
+     * Collects and returns the attributes into a list.
+     */
+    List<Attribute> getAttributes();
 }

@@ -10,20 +10,20 @@ import io.github.bmf.attribute.AttributeType;
  * debugging).</i>
  */
 public class AttributeLineNumberTable extends Attribute {
-	/**
-	 * The {@link io.github.bmf.attribute.method.LineNumberTable table}.
-	 */
-	public LineNumberTable lines;
+    /**
+     * The {@link io.github.bmf.attribute.method.LineNumberTable table}.
+     */
+    public LineNumberTable lines;
 
-	public AttributeLineNumberTable(int name, LineNumberTable lines) {
-		super(name, AttributeType.LINE_NUMBER_TABLE);
-		this.lines = lines;
-	}
+    public AttributeLineNumberTable(int name, LineNumberTable lines) {
+        super(name, AttributeType.LINE_NUMBER_TABLE);
+        this.lines = lines;
+    }
 
-	@Override
-	public int getLength() {
-		// ??: linetable
-		return BASE_LEN + lines.getLength();
-	}
+    @Override
+    public int getLength() {
+        // ??: linetable
+        return BASE_LEN + lines.getLength();
+    }
 
 }

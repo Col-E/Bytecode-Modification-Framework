@@ -1,22 +1,22 @@
 package io.github.bmf.attribute.method;
 
-import java.util.List;
-
 import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.AttributeType;
 
-public class AttributeExceptions extends  Attribute{
-	public List<Integer> exceptionIndicies;
+import java.util.List;
 
-	public AttributeExceptions(int name, List<Integer> exceptionIndicies) {
-		super(name, AttributeType.EXCEPTIONS);
-		this.exceptionIndicies = exceptionIndicies;
-	}
+public class AttributeExceptions extends Attribute {
+    public List<Integer> exceptionIndicies;
 
-	@Override
-	public int getLength() {
-		// u2: num_exceptions
-		// u2[]: exceptions
-		return BASE_LEN + 2 + 2 * exceptionIndicies.size();
-	}
+    public AttributeExceptions(int name, List<Integer> exceptionIndicies) {
+        super(name, AttributeType.EXCEPTIONS);
+        this.exceptionIndicies = exceptionIndicies;
+    }
+
+    @Override
+    public int getLength() {
+        // u2: num_exceptions
+        // u2[]: exceptions
+        return BASE_LEN + 2 + 2 * exceptionIndicies.size();
+    }
 }

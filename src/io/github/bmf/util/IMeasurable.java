@@ -1,5 +1,5 @@
 package io.github.bmf.util;
 
 public interface IMeasurable {
-	public int getLength();
+    public int getLength();
 }
