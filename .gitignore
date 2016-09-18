@@ -13,3 +13,5 @@
 .recommenders/*
 .metadata/*
 git.sh
+.idea/*
+*.iml
