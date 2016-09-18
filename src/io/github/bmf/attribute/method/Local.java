@@ -38,11 +38,16 @@ public class Local implements IMeasurable {
     /**
      * Creates and assigned values to the local variable entry.
      *
-     * @param start  {@link #start}
-     * @param length {@link #length}
-     * @param name   {@link #name}
-     * @param desc   {@link #desc}
-     * @param index  {@link #index}
+     * @param start
+     *            {@link #start}
+     * @param length
+     *            {@link #length}
+     * @param name
+     *            {@link #name}
+     * @param desc
+     *            {@link #desc}
+     * @param index
+     *            {@link #index}
      */
     public Local(int start, int length, int name, int desc, int index) {
         this.start = start;
@@ -54,11 +59,11 @@ public class Local implements IMeasurable {
 
     @Override
     public int getLength() {
-        //u2: start_pc
-        //u2: length
-        //u2: name_index
-        //u2: descriptor_index
-        //u2: index
+        // u2: start_pc
+        // u2: length
+        // u2: name_index
+        // u2: descriptor_index
+        // u2: index
         return 10;
     }
 }

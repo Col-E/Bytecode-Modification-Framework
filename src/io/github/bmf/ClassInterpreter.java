@@ -11,19 +11,16 @@ import io.github.bmf.consts.*;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.io.StreamUtil;
 
-<<<<<<< HEAD
 /**
  * 
  * @author Matt
  *
  */
-=======
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
->>>>>>> 6def9cbeb723d41ff92add2ee84ed035501ee963
 @SuppressWarnings("rawtypes")
 class ClassInterpreter {
     public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
@@ -112,182 +109,182 @@ class ClassInterpreter {
         String name = owner.getConst(nameIndex).value.toString();
         AttributeType attributeType = AttributeType.fromName(name);
         switch (attributeType) {
-            case ANNOTATION_DEFAULT: {
-                byte[] annotationData = new byte[length];
-                is.read(annotationData);
-                return new AttributeAnnotationDefault(nameIndex, annotationData);
-            }
-            case BOOTSTRAP_METHODS: {
-                int methods = is.readUnsignedShort();
-                List<BootstrapMethod> bsMethods = Lists.newArrayList();
-                for (int i = 0; i < methods; i++) {
-                    int methodRef = is.readUnsignedShort();
-                    int args = is.readUnsignedShort();
-                    BootstrapMethod bsm = new BootstrapMethod(methodRef);
-                    for (int a = 0; a < args; a++) {
-                        bsm.addArgument(is.readUnsignedShort());
-                    }
-                    bsMethods.add(bsm);
+        case ANNOTATION_DEFAULT: {
+            byte[] annotationData = new byte[length];
+            is.read(annotationData);
+            return new AttributeAnnotationDefault(nameIndex, annotationData);
+        }
+        case BOOTSTRAP_METHODS: {
+            int methods = is.readUnsignedShort();
+            List<BootstrapMethod> bsMethods = Lists.newArrayList();
+            for (int i = 0; i < methods; i++) {
+                int methodRef = is.readUnsignedShort();
+                int args = is.readUnsignedShort();
+                BootstrapMethod bsm = new BootstrapMethod(methodRef);
+                for (int a = 0; a < args; a++) {
+                    bsm.addArgument(is.readUnsignedShort());
                 }
-                return new AttributeBootstrapMethods(nameIndex, bsMethods);
+                bsMethods.add(bsm);
             }
-            case CODE: {
-                int maxStack = is.readUnsignedShort();
-                int maxLocals = is.readUnsignedShort();
-                int codeLength = is.readInt();
-                byte[] code = new byte[codeLength];
-                is.read(code);
-                OpcodeListData_TEMP codeData = new OpcodeListData_TEMP();
-                codeData.data = code;
-                int exceptionLength = is.readUnsignedShort();
-                for (int i = 0; i < exceptionLength; i++) {
-                    MethodException mexeption = new MethodException();
-                    int rangeStart = is.readUnsignedShort();
-                    int rangeEnd = is.readUnsignedShort();
-                    int rangeHandler = is.readUnsignedShort();
-                    int catchType = is.readUnsignedShort();
-                    mexeption.start = rangeStart;
-                    mexeption.end = rangeEnd;
-                    mexeption.handler = rangeHandler;
-                    mexeption.type = catchType;
-                    codeData.addException(mexeption);
-                }
-                List<Attribute> attributes = Lists.newArrayList();
-                int attributeLength = is.readUnsignedShort();
-                for (int i = 0; i < attributeLength; i++) {
-                    Attribute attribute = readAttribute(owner, is);
-                    attributes.add(attribute);
-                }
-                return new AttributeCode(nameIndex, maxStack, maxLocals, codeData, attributes);
+            return new AttributeBootstrapMethods(nameIndex, bsMethods);
+        }
+        case CODE: {
+            int maxStack = is.readUnsignedShort();
+            int maxLocals = is.readUnsignedShort();
+            int codeLength = is.readInt();
+            byte[] code = new byte[codeLength];
+            is.read(code);
+            OpcodeListData_TEMP codeData = new OpcodeListData_TEMP();
+            codeData.data = code;
+            int exceptionLength = is.readUnsignedShort();
+            for (int i = 0; i < exceptionLength; i++) {
+                MethodException mexeption = new MethodException();
+                int rangeStart = is.readUnsignedShort();
+                int rangeEnd = is.readUnsignedShort();
+                int rangeHandler = is.readUnsignedShort();
+                int catchType = is.readUnsignedShort();
+                mexeption.start = rangeStart;
+                mexeption.end = rangeEnd;
+                mexeption.handler = rangeHandler;
+                mexeption.type = catchType;
+                codeData.addException(mexeption);
             }
-            case CONSTANT_VALUE: {
-                int value = is.readUnsignedShort();
-                return new AttributeConstantValue(nameIndex, value);
+            List<Attribute> attributes = Lists.newArrayList();
+            int attributeLength = is.readUnsignedShort();
+            for (int i = 0; i < attributeLength; i++) {
+                Attribute attribute = readAttribute(owner, is);
+                attributes.add(attribute);
             }
-            case DEPRECATED: {
-                return new AttributeDeprecated(nameIndex);
+            return new AttributeCode(nameIndex, maxStack, maxLocals, codeData, attributes);
+        }
+        case CONSTANT_VALUE: {
+            int value = is.readUnsignedShort();
+            return new AttributeConstantValue(nameIndex, value);
+        }
+        case DEPRECATED: {
+            return new AttributeDeprecated(nameIndex);
+        }
+        case ENCLOSING_METHOD: {
+            int classIndex = is.readUnsignedShort();
+            int methodIndex = is.readUnsignedShort();
+            return new AttributeEnclosingMethod(nameIndex, classIndex, methodIndex);
+        }
+        case EXCEPTIONS: {
+            int exceptionCount = is.readUnsignedShort();
+            List<Integer> exceptionIndices = Lists.newArrayList();
+            for (int i = 0; i < exceptionCount; i++) {
+                exceptionIndices.add(is.readUnsignedShort());
             }
-            case ENCLOSING_METHOD: {
-                int classIndex = is.readUnsignedShort();
-                int methodIndex = is.readUnsignedShort();
-                return new AttributeEnclosingMethod(nameIndex, classIndex, methodIndex);
+            return new AttributeExceptions(nameIndex, exceptionIndices);
+        }
+        case INNER_CLASSES: {
+            int classCount = is.readUnsignedShort();
+            List<InnerClass> classes = Lists.newArrayList();
+            for (int i = 0; i < classCount; i++) {
+                int innerIndex = is.readUnsignedShort();
+                int outerIndex = is.readUnsignedShort();
+                int cInnerName = is.readUnsignedShort();
+                int innerAccess = is.readUnsignedShort();
+                classes.add(new InnerClass(innerIndex, outerIndex, cInnerName, innerAccess));
             }
-            case EXCEPTIONS: {
-                int exceptionCount = is.readUnsignedShort();
-                List<Integer> exceptionIndices = Lists.newArrayList();
-                for (int i = 0; i < exceptionCount; i++) {
-                    exceptionIndices.add(is.readUnsignedShort());
-                }
-                return new AttributeExceptions(nameIndex, exceptionIndices);
+            return new AttributeInnerClasses(nameIndex, classes);
+        }
+        case LINE_NUMBER_TABLE: {
+            LineNumberTable table = new LineNumberTable();
+            int tableLength = is.readUnsignedShort();
+            for (int i = 0; i < tableLength; i++) {
+                int startPC = is.readUnsignedShort();
+                int lineNumber = is.readUnsignedShort();
+                table.add(startPC, lineNumber);
             }
-            case INNER_CLASSES: {
-                int classCount = is.readUnsignedShort();
-                List<InnerClass> classes = Lists.newArrayList();
-                for (int i = 0; i < classCount; i++) {
-                    int innerIndex = is.readUnsignedShort();
-                    int outerIndex = is.readUnsignedShort();
-                    int cInnerName = is.readUnsignedShort();
-                    int innerAccess = is.readUnsignedShort();
-                    classes.add(new InnerClass(innerIndex, outerIndex, cInnerName, innerAccess));
-                }
-                return new AttributeInnerClasses(nameIndex, classes);
+            return new AttributeLineNumberTable(nameIndex, table);
+        }
+        case LOCAL_VARIABLE_TYPE_TABLE: {
+            int tableLength = is.readUnsignedShort();
+            List<LocalVariableType> variableTypes = Lists.newArrayList();
+            for (int i = 0; i < tableLength; i++) {
+                int varStart = is.readUnsignedShort();
+                int varLen = is.readUnsignedShort();
+                int varName = is.readUnsignedShort();
+                int varSignature = is.readUnsignedShort();
+                int varIndex = is.readUnsignedShort();
+                variableTypes.add(new LocalVariableType(varStart, varLen, varName, varSignature, varIndex));
             }
-            case LINE_NUMBER_TABLE: {
-                LineNumberTable table = new LineNumberTable();
-                int tableLength = is.readUnsignedShort();
-                for (int i = 0; i < tableLength; i++) {
-                    int startPC = is.readUnsignedShort();
-                    int lineNumber = is.readUnsignedShort();
-                    table.add(startPC, lineNumber);
-                }
-                return new AttributeLineNumberTable(nameIndex, table);
+            return new AttributeLocalVariableTypeTable(nameIndex, variableTypes);
+        }
+        case LOCAL_VARIABLE_TABLE: {
+            LocalVariableTable locals = new LocalVariableTable();
+            int tableLength = is.readUnsignedShort();
+            for (int i = 0; i < tableLength; i++) {
+                int lstartPC = is.readUnsignedShort();
+                int llength = is.readUnsignedShort();
+                int lname = is.readUnsignedShort();
+                int ldesc = is.readUnsignedShort();
+                int lindex = is.readUnsignedShort();
+                locals.add(lstartPC, llength, lname, ldesc, lindex);
             }
-            case LOCAL_VARIABLE_TYPE_TABLE: {
-                int tableLength = is.readUnsignedShort();
-                List<LocalVariableType> variableTypes = Lists.newArrayList();
-                for (int i = 0; i < tableLength; i++) {
-                    int varStart = is.readUnsignedShort();
-                    int varLen = is.readUnsignedShort();
-                    int varName = is.readUnsignedShort();
-                    int varSignature = is.readUnsignedShort();
-                    int varIndex = is.readUnsignedShort();
-                    variableTypes.add(new LocalVariableType(varStart, varLen, varName, varSignature, varIndex));
-                }
-                return new AttributeLocalVariableTypeTable(nameIndex, variableTypes);
+            return new AttributeLocalVariableTable(nameIndex, locals);
+        }
+        case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+        case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+        case RUNTIME_VISIBLE_ANNOTATIONS:
+        case RUNTIME_INVISIBLE_ANNOTATIONS: {
+            return readAnnotations(owner, attributeType, is, nameIndex, length);
+        }
+        case SIGNATURE: {
+            int sig = is.readUnsignedShort();
+            return new AttributeSignature(nameIndex, sig);
+        }
+        case SOURCE_DEBUG_EXTENSION: {
+            List<Integer> data = Lists.newArrayList();
+            for (int i = 0; i < length; i++) {
+                data.add(is.readUnsignedByte());
             }
-            case LOCAL_VARIABLE_TABLE: {
-                LocalVariableTable locals = new LocalVariableTable();
-                int tableLength = is.readUnsignedShort();
-                for (int i = 0; i < tableLength; i++) {
-                    int lstartPC = is.readUnsignedShort();
-                    int llength = is.readUnsignedShort();
-                    int lname = is.readUnsignedShort();
-                    int ldesc = is.readUnsignedShort();
-                    int lindex = is.readUnsignedShort();
-                    locals.add(lstartPC, llength, lname, ldesc, lindex);
-                }
-                return new AttributeLocalVariableTable(nameIndex, locals);
-            }
-            case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-            case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-            case RUNTIME_VISIBLE_ANNOTATIONS:
-            case RUNTIME_INVISIBLE_ANNOTATIONS: {
-                return readAnnotations(owner, attributeType, is, nameIndex, length);
-            }
-            case SIGNATURE: {
-                int sig = is.readUnsignedShort();
-                return new AttributeSignature(nameIndex, sig);
-            }
-            case SOURCE_DEBUG_EXTENSION: {
-                List<Integer> data = Lists.newArrayList();
-                for (int i = 0; i < length; i++) {
-                    data.add(is.readUnsignedByte());
-                }
-                return new AttributeSourceDebugExtension(nameIndex, data);
-            }
-            case SOURCE_FILE: {
-                int source = is.readUnsignedShort();
-                return new AttributeSourceFile(nameIndex, source);
-            }
-            case STACK_MAP_TABLE: {
-                byte[] data = new byte[length];
-                is.read(data);
-                return new AttributeStackMapTable(nameIndex, data);
-            }
-            case SYNTHETIC: {
-                return new AttributeSynthetic(nameIndex);
-            }
-            default:
-                break;
+            return new AttributeSourceDebugExtension(nameIndex, data);
+        }
+        case SOURCE_FILE: {
+            int source = is.readUnsignedShort();
+            return new AttributeSourceFile(nameIndex, source);
+        }
+        case STACK_MAP_TABLE: {
+            byte[] data = new byte[length];
+            is.read(data);
+            return new AttributeStackMapTable(nameIndex, data);
+        }
+        case SYNTHETIC: {
+            return new AttributeSynthetic(nameIndex);
+        }
+        default:
+            break;
         }
         throw new RuntimeException("Unhandled attribute! " + attributeType);
     }
 
     private static Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
-                                             int length) throws IOException {
+            int length) throws IOException {
         boolean param = type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS
                 || type == AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS;
         boolean invisible = type == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS
                 || type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
         int num = param ? is.readUnsignedByte() : is.readUnsignedShort();
         switch (type) {
-            case RUNTIME_INVISIBLE_ANNOTATIONS:
-            case RUNTIME_VISIBLE_ANNOTATIONS:
-                List<Annotation> annotations = Lists.newArrayList();
-                for (int i = 0; i < num; i++) {
-                    annotations.add(readAnnotation(owner, is));
-                }
-                return new AttributeAnnotations(nameIndex, invisible, annotations);
-            case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-            case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-                List<ParameterAnnotations> paramAnnotations = Lists.newArrayList();
-                for (int i = 0; i < num; i++) {
-                    paramAnnotations.add(readParameterAnnotations(owner, is));
-                }
-                return new AttributeParameterAnnotations(nameIndex, invisible, paramAnnotations);
+        case RUNTIME_INVISIBLE_ANNOTATIONS:
+        case RUNTIME_VISIBLE_ANNOTATIONS:
+            List<Annotation> annotations = Lists.newArrayList();
+            for (int i = 0; i < num; i++) {
+                annotations.add(readAnnotation(owner, is));
+            }
+            return new AttributeAnnotations(nameIndex, invisible, annotations);
+        case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+        case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+            List<ParameterAnnotations> paramAnnotations = Lists.newArrayList();
+            for (int i = 0; i < num; i++) {
+                paramAnnotations.add(readParameterAnnotations(owner, is));
+            }
+            return new AttributeParameterAnnotations(nameIndex, invisible, paramAnnotations);
 
-            default:
-                throw new RuntimeException("UNKNOWN ANNOTATION: " + type.name());
+        default:
+            throw new RuntimeException("UNKNOWN ANNOTATION: " + type.name());
         }
     }
 
@@ -314,34 +311,34 @@ class ClassInterpreter {
             throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TAG: " + tag);
         }
         switch (type) {
-            case CONST_VALUE_INDEX: {
-                int constIndex = is.readUnsignedShort();
-                return new ElementValueConstValueIndex(constIndex);
+        case CONST_VALUE_INDEX: {
+            int constIndex = is.readUnsignedShort();
+            return new ElementValueConstValueIndex(constIndex);
+        }
+        case ENUM_CONST_VALUE: {
+            int typeIndex = is.readUnsignedShort();
+            int constNameIndex = is.readUnsignedShort();
+            return new ElementValueEnumConstValue(typeIndex, constNameIndex);
+        }
+        case CLASS_INFO_INDEX: {
+            int infoIndex = is.readUnsignedShort();
+            return new ElementValueClassInfoIndex(infoIndex);
+        }
+        case ANNOTATION_VALUE: {
+            Annotation annotation = readAnnotation(owner, is);
+            return new ElementValueAnnotationValue(annotation);
+        }
+        case ARRAY_VALUE: {
+            int num = is.readUnsignedShort();
+            List<ElementValue> values = new ArrayList<>();
+            for (int i = 0; i < num; i++) {
+                values.add(readElementValue(owner, is));
             }
-            case ENUM_CONST_VALUE: {
-                int typeIndex = is.readUnsignedShort();
-                int constNameIndex = is.readUnsignedShort();
-                return new ElementValueEnumConstValue(typeIndex, constNameIndex);
-            }
-            case CLASS_INFO_INDEX: {
-                int infoIndex = is.readUnsignedShort();
-                return new ElementValueClassInfoIndex(infoIndex);
-            }
-            case ANNOTATION_VALUE: {
-                Annotation annotation = readAnnotation(owner, is);
-                return new ElementValueAnnotationValue(annotation);
-            }
-            case ARRAY_VALUE: {
-                int num = is.readUnsignedShort();
-                List<ElementValue> values = new ArrayList<>();
-                for (int i = 0; i < num; i++) {
-                    values.add(readElementValue(owner, is));
-                }
-                return new ElementValueArrayValue(values);
-            }
-            default: {
-                throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TYPE: " + type.name());
-            }
+            return new ElementValueArrayValue(values);
+        }
+        default: {
+            throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TYPE: " + type.name());
+        }
         }
     }
 
@@ -359,72 +356,72 @@ class ClassInterpreter {
         // Braces in switches are ugly, but having variable name pass-through
         // sucks.
         switch (constType) {
-            case DOUBLE: {
-                double value = is.readDouble();
-                return new ConstDouble(value);
-            }
-            case LONG: {
-                long value = is.readLong();
-                return new ConstLong(value);
-            }
-            case FLOAT: {
-                float value = is.readFloat();
-                return new ConstFloat(value);
-            }
-            case INT: {
-                int value = is.readInt();
-                return new ConstInt(value);
-            }
-            case STRING: {
-                int index = is.readUnsignedShort();
-                return new ConstString(index);
-            }
-            case UTF8: {
-                int length = is.readUnsignedShort();
-                byte[] data = new byte[length];
-                is.read(data);
-                return new ConstUTF8(new String(data));
-            }
-            case CLASS: {
-                int name = is.readUnsignedShort();
-                return new ConstClass(name);
-            }
-            case FIELD: {
-                int clazz = is.readUnsignedShort();
-                int nameType = is.readUnsignedShort();
-                return new ConstField(clazz, nameType);
-            }
-            case METHOD: {
-                int clazz = is.readUnsignedShort();
-                int nameType = is.readUnsignedShort();
-                return new ConstMethod(clazz, nameType);
-            }
-            case INTERFACE_METHOD: {
-                int clazz = is.readUnsignedShort();
-                int nameType = is.readUnsignedShort();
-                return new ConstInterfaceMethod(clazz, nameType);
-            }
-            case INVOKEDYNAMIC: {
-                int attribute = is.readUnsignedShort();
-                int nameType = is.readUnsignedShort();
-                return new ConstInvokeDynamic(attribute, nameType);
-            }
-            case METHOD_HANDLE: {
-                int kind = is.readUnsignedByte();
-                int index = is.readUnsignedShort();
-                return new ConstMethodHandle(kind, index);
-            }
-            case METHOD_TYPE: {
-                int type = is.readUnsignedShort();
-                return new ConstMethodType(type);
-            }
-            case NAME_TYPE: {
-                int name = is.readUnsignedShort();
-                int desc = is.readUnsignedShort();
-                return new ConstNameType(name, desc);
-            }
-            default:
-                break;
+        case DOUBLE: {
+            double value = is.readDouble();
+            return new ConstDouble(value);
+        }
+        case LONG: {
+            long value = is.readLong();
+            return new ConstLong(value);
+        }
+        case FLOAT: {
+            float value = is.readFloat();
+            return new ConstFloat(value);
+        }
+        case INT: {
+            int value = is.readInt();
+            return new ConstInt(value);
+        }
+        case STRING: {
+            int index = is.readUnsignedShort();
+            return new ConstString(index);
+        }
+        case UTF8: {
+            int length = is.readUnsignedShort();
+            byte[] data = new byte[length];
+            is.read(data);
+            return new ConstUTF8(new String(data));
+        }
+        case CLASS: {
+            int name = is.readUnsignedShort();
+            return new ConstClass(name);
+        }
+        case FIELD: {
+            int clazz = is.readUnsignedShort();
+            int nameType = is.readUnsignedShort();
+            return new ConstField(clazz, nameType);
+        }
+        case METHOD: {
+            int clazz = is.readUnsignedShort();
+            int nameType = is.readUnsignedShort();
+            return new ConstMethod(clazz, nameType);
+        }
+        case INTERFACE_METHOD: {
+            int clazz = is.readUnsignedShort();
+            int nameType = is.readUnsignedShort();
+            return new ConstInterfaceMethod(clazz, nameType);
+        }
+        case INVOKEDYNAMIC: {
+            int attribute = is.readUnsignedShort();
+            int nameType = is.readUnsignedShort();
+            return new ConstInvokeDynamic(attribute, nameType);
+        }
+        case METHOD_HANDLE: {
+            int kind = is.readUnsignedByte();
+            int index = is.readUnsignedShort();
+            return new ConstMethodHandle(kind, index);
+        }
+        case METHOD_TYPE: {
+            int type = is.readUnsignedShort();
+            return new ConstMethodType(type);
+        }
+        case NAME_TYPE: {
+            int name = is.readUnsignedShort();
+            int desc = is.readUnsignedShort();
+            return new ConstNameType(name, desc);
+        }
+        default:
+            break;
         }
         return null;
     }

@@ -1,6 +1,5 @@
 package io.github.bmf;
 
-
 import io.github.bmf.io.JarUtil;
 
 import java.io.File;
@@ -16,14 +15,13 @@ public class Main {
         try {
             Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
             for (String s : entries.keySet()) {
-                //System.out.println(">>>>>>>>>>" + s);
+                // System.out.println(">>>>>>>>>>" + s);
                 ClassNode cn = ClassInterpreter.getNode(entries.get(s));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     private static void one(String file, String entry) {
         try {

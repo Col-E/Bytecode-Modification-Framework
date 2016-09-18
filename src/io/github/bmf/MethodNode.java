@@ -29,14 +29,14 @@ public class MethodNode extends MemberNode {
     @Override
     public void addAttribute(Attribute attribute) {
         switch (attribute.type) {
-            case CODE:
-                code = (AttributeCode) attribute;
-                break;
-            case ANNOTATION_DEFAULT:
-                annotationDefault = (AttributeAnnotationDefault) attribute;
-                break;
-            default:
-                super.addAttribute(attribute);
+        case CODE:
+            code = (AttributeCode) attribute;
+            break;
+        case ANNOTATION_DEFAULT:
+            annotationDefault = (AttributeAnnotationDefault) attribute;
+            break;
+        default:
+            super.addAttribute(attribute);
         }
     }
 

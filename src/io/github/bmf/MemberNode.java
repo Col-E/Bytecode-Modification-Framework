@@ -67,29 +67,29 @@ public abstract class MemberNode implements IAttributeOwner {
     @Override
     public void addAttribute(Attribute attribute) {
         switch (attribute.type) {
-            case SYNTHETIC:
-                synthetic = (AttributeSynthetic) attribute;
-                break;
-            case SIGNATURE:
-                signature = (AttributeSignature) attribute;
-                break;
-            case DEPRECATED:
-                deprecated = (AttributeDeprecated) attribute;
-                break;
-            case RUNTIME_VISIBLE_ANNOTATIONS:
-                runtimeVisibleAnnotations = (AttributeAnnotations) attribute;
-                break;
-            case RUNTIME_INVISIBLE_ANNOTATIONS:
-                runtimeInvisibleAnnotations = (AttributeAnnotations) attribute;
-                break;
-            case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-                runtimeVisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
-                break;
-            case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-                runtimeInvisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
-                break;
-            default:
-                break;
+        case SYNTHETIC:
+            synthetic = (AttributeSynthetic) attribute;
+            break;
+        case SIGNATURE:
+            signature = (AttributeSignature) attribute;
+            break;
+        case DEPRECATED:
+            deprecated = (AttributeDeprecated) attribute;
+            break;
+        case RUNTIME_VISIBLE_ANNOTATIONS:
+            runtimeVisibleAnnotations = (AttributeAnnotations) attribute;
+            break;
+        case RUNTIME_INVISIBLE_ANNOTATIONS:
+            runtimeInvisibleAnnotations = (AttributeAnnotations) attribute;
+            break;
+        case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+            runtimeVisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
+            break;
+        case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+            runtimeInvisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
+            break;
+        default:
+            break;
         }
     }
 

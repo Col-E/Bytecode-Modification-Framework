@@ -48,7 +48,6 @@ public enum ConstantType {
         return typeMap.get(tag);
     }
 
-
     /**
      * Checks if given tag matches a const type.
      *

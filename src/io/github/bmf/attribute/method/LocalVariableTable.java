@@ -8,7 +8,8 @@ import java.util.List;
 
 /**
  * Local variable table attribute belonging to a {@link io.github.bmf.MethodNode
- * method's} "{@link io.github.bmf.attribute.method.AttributeCode Code}" attribute.
+ * method's} "{@link io.github.bmf.attribute.method.AttributeCode Code}"
+ * attribute.
  *
  * @author Matt
  */
@@ -19,11 +20,16 @@ public class LocalVariableTable implements IMeasurable {
      * Creates and adds a local variable to the table. See the documentation of
      * {@link io.github.bmf.attribute.method.Local Local} for more information.
      *
-     * @param start Start index in the opcodes
-     * @param len   Length from start local lasts in the opcodes
-     * @param name  Constant pool pointers
-     * @param desc  Constant pool pointers
-     * @param index Stack frame index.
+     * @param start
+     *            Start index in the opcodes
+     * @param len
+     *            Length from start local lasts in the opcodes
+     * @param name
+     *            Constant pool pointers
+     * @param desc
+     *            Constant pool pointers
+     * @param index
+     *            Stack frame index.
      */
     public void add(int start, int len, int name, int desc, int index) {
         Local local = new Local(start, len, name, desc, index);

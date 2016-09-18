@@ -5,8 +5,8 @@ import io.github.bmf.attribute.AttributeType;
 
 /**
  * An attribute belonging to the
- * "{@link io.github.bmf.attribute.method.AttributeCode Code}" attribute of a method.
- * The table correlates opcode indices with java line numbers <i>(For
+ * "{@link io.github.bmf.attribute.method.AttributeCode Code}" attribute of a
+ * method. The table correlates opcode indices with java line numbers <i>(For
  * debugging).</i>
  */
 public class AttributeLineNumberTable extends Attribute {

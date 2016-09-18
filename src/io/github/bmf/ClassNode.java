@@ -143,44 +143,44 @@ class ClassNode implements IAttributeOwner {
     @Override
     public void addAttribute(Attribute attribute) {
         switch (attribute.type) {
-            case SOURCE_FILE:
-                sourceFile = (AttributeSourceFile) attribute;
-                break;
-            case SOURCE_DEBUG_EXTENSION:
-                sourceDebug = (AttributeSourceDebugExtension) attribute;
-                break;
-            case ENCLOSING_METHOD:
-                enclosingMethod = (AttributeEnclosingMethod) attribute;
-                break;
-            case INNER_CLASSES:
-                innerClasses = (AttributeInnerClasses) attribute;
-                break;
-            case BOOTSTRAP_METHODS:
-                bootstrapMethods = (AttributeBootstrapMethods) attribute;
-                break;
-            case SYNTHETIC:
-                synthetic = (AttributeSynthetic) attribute;
-                break;
-            case SIGNATURE:
-                signature = (AttributeSignature) attribute;
-                break;
-            case DEPRECATED:
-                deprecated = (AttributeDeprecated) attribute;
-                break;
-            case RUNTIME_VISIBLE_ANNOTATIONS:
-                runtimeVisibleAnnotations = (AttributeAnnotations) attribute;
-                break;
-            case RUNTIME_INVISIBLE_ANNOTATIONS:
-                runtimeInvisibleAnnotations = (AttributeAnnotations) attribute;
-                break;
-            case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-                runtimeVisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
-                break;
-            case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-                runtimeInvisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
-                break;
-            default:
-                break;
+        case SOURCE_FILE:
+            sourceFile = (AttributeSourceFile) attribute;
+            break;
+        case SOURCE_DEBUG_EXTENSION:
+            sourceDebug = (AttributeSourceDebugExtension) attribute;
+            break;
+        case ENCLOSING_METHOD:
+            enclosingMethod = (AttributeEnclosingMethod) attribute;
+            break;
+        case INNER_CLASSES:
+            innerClasses = (AttributeInnerClasses) attribute;
+            break;
+        case BOOTSTRAP_METHODS:
+            bootstrapMethods = (AttributeBootstrapMethods) attribute;
+            break;
+        case SYNTHETIC:
+            synthetic = (AttributeSynthetic) attribute;
+            break;
+        case SIGNATURE:
+            signature = (AttributeSignature) attribute;
+            break;
+        case DEPRECATED:
+            deprecated = (AttributeDeprecated) attribute;
+            break;
+        case RUNTIME_VISIBLE_ANNOTATIONS:
+            runtimeVisibleAnnotations = (AttributeAnnotations) attribute;
+            break;
+        case RUNTIME_INVISIBLE_ANNOTATIONS:
+            runtimeInvisibleAnnotations = (AttributeAnnotations) attribute;
+            break;
+        case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+            runtimeVisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
+            break;
+        case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+            runtimeInvisibleParamAnnotations = (AttributeParameterAnnotations) attribute;
+            break;
+        default:
+            break;
         }
     }
 

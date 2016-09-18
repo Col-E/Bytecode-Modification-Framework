@@ -25,11 +25,11 @@ public class FieldNode extends MemberNode {
     @Override
     public void addAttribute(Attribute attribute) {
         switch (attribute.type) {
-            case CONSTANT_VALUE:
-                value = (AttributeConstantValue) attribute;
-                break;
-            default:
-                super.addAttribute(attribute);
+        case CONSTANT_VALUE:
+            value = (AttributeConstantValue) attribute;
+            break;
+        default:
+            super.addAttribute(attribute);
         }
     }
 

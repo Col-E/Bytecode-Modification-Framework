@@ -62,21 +62,21 @@ public class AttributeCode extends Attribute {
         this.opcodes = opcodes;
         for (Attribute attribute : attributes) {
             switch (attribute.type) {
-                case LINE_NUMBER_TABLE:
-                    lines = (AttributeLineNumberTable) attribute;
-                    break;
-                case LOCAL_VARIABLE_TABLE:
-                    variables = (AttributeLocalVariableTable) attribute;
-                    break;
-                case LOCAL_VARIABLE_TYPE_TABLE:
-                    variableTypes = (AttributeLocalVariableTypeTable) attribute;
-                    break;
-                case STACK_MAP_TABLE:
-                    stackMap = (AttributeStackMapTable) attribute;
-                    break;
-                default:
-                    System.err.println("UNHANDLED CODE ATTRIB: " + attribute.type.name());
-                    break;
+            case LINE_NUMBER_TABLE:
+                lines = (AttributeLineNumberTable) attribute;
+                break;
+            case LOCAL_VARIABLE_TABLE:
+                variables = (AttributeLocalVariableTable) attribute;
+                break;
+            case LOCAL_VARIABLE_TYPE_TABLE:
+                variableTypes = (AttributeLocalVariableTypeTable) attribute;
+                break;
+            case STACK_MAP_TABLE:
+                stackMap = (AttributeStackMapTable) attribute;
+                break;
+            default:
+                System.err.println("UNHANDLED CODE ATTRIB: " + attribute.type.name());
+                break;
             }
         }
     }

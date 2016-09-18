@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 
 import java.util.Map;
 
-
 public enum ElementValueType {
     //@formatter:off
     CONST_VALUE_INDEX(new char[]{'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z', 's'}),

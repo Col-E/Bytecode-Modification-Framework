@@ -5,8 +5,8 @@ import io.github.bmf.attribute.AttributeType;
 
 /**
  * An attribute belonging to the
- * "{@link io.github.bmf.attribute.method.AttributeCode Code}" attribute of a method.
- * Contains information about local variables.
+ * "{@link io.github.bmf.attribute.method.AttributeCode Code}" attribute of a
+ * method. Contains information about local variables.
  *
  * @author Matt
  */
