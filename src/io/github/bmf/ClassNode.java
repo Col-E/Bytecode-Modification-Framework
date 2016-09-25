@@ -15,7 +15,7 @@ import java.util.List;
  * @author Matt
  */
 @SuppressWarnings("rawtypes")
-class ClassNode implements IAttributeOwner {
+public class ClassNode implements IAttributeOwner {
     /**
      * Version info.
      */

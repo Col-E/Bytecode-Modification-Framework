@@ -23,7 +23,12 @@ public class ClassWriter {
 		ds.writeShort(node.minor);
 		ds.writeShort(node.major);
 		// Write the constant pool
+		ds.writeShort(node.constants.size());
 		for (Constant constant : node.constants) {
+			if (constant == null) {
+				// Doubles and longs take up two spaces, leaving one space null
+				continue;
+			}
 			ds.writeByte(constant.type.getTag());
 			writeConstant(ds, constant);
 		}
@@ -194,9 +199,8 @@ public class ClassWriter {
 		case SYNTHETIC:
 			break;
 		default:
-			break;
+			throw new RuntimeException("Unhandled attribute! " + attribute.type);
 		}
-		throw new RuntimeException("Unhandled attribute! " + attribute.type);
 
 	}
 
@@ -206,7 +210,7 @@ public class ClassWriter {
 		case RUNTIME_VISIBLE_ANNOTATIONS:
 			AttributeAnnotations annos = (AttributeAnnotations) attribute;
 			ds.writeShort(annos.annotations.size());
-			for (Annotation anno : annos.annotations){
+			for (Annotation anno : annos.annotations) {
 				writeAnnotation(anno, ds);
 			}
 			break;
@@ -214,19 +218,19 @@ public class ClassWriter {
 		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
 			AttributeParameterAnnotations pannos = (AttributeParameterAnnotations) attribute;
 			ds.writeByte(pannos.parametersAnnotations.size());
-			for (ParameterAnnotations anno : pannos.parametersAnnotations){
+			for (ParameterAnnotations anno : pannos.parametersAnnotations) {
 				writeParameterAnnotations(anno, ds);
 			}
 			break;
 		default:
 			throw new RuntimeException("UNKNOWN ANNOTATION: " + attribute.type.name());
 		}
-			
+
 	}
 
 	private static void writeParameterAnnotations(ParameterAnnotations annos, DataOutputStream ds) throws IOException {
 		ds.writeShort(annos.annotations.size());
-		for (Annotation anno : annos.annotations){
+		for (Annotation anno : annos.annotations) {
 			writeAnnotation(anno, ds);
 		}
 	}
@@ -302,8 +306,9 @@ public class ClassWriter {
 			break;
 		case UTF8:
 			ConstUTF8 constUTF = (ConstUTF8) constant;
-			ds.writeShort(constUTF.value.getBytes().length);
-			ds.write(constUTF.value.getBytes());
+			//ds.writeShort(constUTF.value.getBytes().length);
+			//ds.write(constUTF.value.getBytes());
+			ds.writeUTF(constUTF.value);
 			break;
 		case CLASS:
 			ConstClass constClass = (ConstClass) constant;

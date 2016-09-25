@@ -5,6 +5,8 @@ import io.github.bmf.io.JarUtil;
 import java.io.File;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+
 @SuppressWarnings("unused")
 public class Main {
     public static void main(String[] args) {
@@ -14,10 +16,12 @@ public class Main {
     private static void all(String file) {
         try {
             Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
+            Map<String, ClassNode> nodes = Maps.newHashMap();
             for (String s : entries.keySet()) {
-                // System.out.println(">>>>>>>>>>" + s);
                 ClassNode cn = ClassReader.getNode(entries.get(s));
+                nodes.put(s, cn);
             }
+           JarUtil.writeJar(new File("tests/Out.jar"), nodes);
         } catch (Exception e) {
             e.printStackTrace();
         }

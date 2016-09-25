@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("rawtypes")
-class ClassReader {
+public class ClassReader {
 	public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
 		DataInputStream is = StreamUtil.fromBytes(data);
 		if (is.readInt() != 0xCAFEBABE) { throw new InvalidClassException(); }
