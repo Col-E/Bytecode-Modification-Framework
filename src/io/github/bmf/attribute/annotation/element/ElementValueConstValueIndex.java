@@ -6,8 +6,8 @@ public class ElementValueConstValueIndex extends ElementValue {
      */
     public int constValueIndex;
 
-    public ElementValueConstValueIndex(int constValueIndex) {
-        super(ElementValueType.CONST_VALUE_INDEX);
+    public ElementValueConstValueIndex(ElementValueType type, int constValueIndex) {
+        super(type);
         this.constValueIndex = constValueIndex;
     }
 

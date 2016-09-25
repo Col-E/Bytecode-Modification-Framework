@@ -7,18 +7,18 @@ import io.github.bmf.util.MeasurableUtils;
 import java.util.List;
 
 public class AttributeLocalVariableTypeTable extends Attribute {
-    public List<LocalVariableType> variableTypes;
+    public List<LocalVariableType> localTypes;
 
-    public AttributeLocalVariableTypeTable(int name, List<LocalVariableType> variableTypes) {
+    public AttributeLocalVariableTypeTable(int name, List<LocalVariableType> localTypes) {
         super(name, AttributeType.LOCAL_VARIABLE_TYPE_TABLE);
-        this.variableTypes = variableTypes;
+        this.localTypes = localTypes;
     }
 
     @Override
     public int getLength() {
         // u2: num_variables
         // ??: variable_table
-        return BASE_LEN + 2 + MeasurableUtils.getLength(variableTypes);
+        return BASE_LEN + 2 + MeasurableUtils.getLength(localTypes);
     }
 
 }

@@ -22,11 +22,11 @@ public class AttributeCode extends Attribute {
     /**
      * Max number of values allowed on the stack.
      */
-    public int stack;
+    public int maxStack;
     /**
      * Max number of variables allowed in the method.
      */
-    public int locals;
+    public int maxLocals;
 
     /**
      * A list of {@link io.github.bmf.attribute.method.MethodException
@@ -67,8 +67,8 @@ public class AttributeCode extends Attribute {
     public AttributeCode(int name, int stack, int locals, List<MethodException> exceptions, MethodCode opcodes,
             List<Attribute> attributes) {
         super(name, AttributeType.CONSTANT_VALUE);
-        this.stack = stack;
-        this.locals = locals;
+        this.maxStack = stack;
+        this.maxLocals = locals;
         this.exceptions = exceptions;
         this.opcodes = opcodes;
         for (Attribute attribute : attributes) {
@@ -115,12 +115,15 @@ public class AttributeCode extends Attribute {
         len += 2;
         if (variables != null) {
             len += variables.getLength();
-            if (variableTypes != null) {
-                len += variableTypes.getLength();
-            }
-            if (stackMap != null) {
-                len += stackMap.getLength();
-            }
+        }
+        if (variableTypes != null) {
+            len += variableTypes.getLength();
+        }
+        if (stackMap != null) {
+            len += stackMap.getLength();
+        }
+        if (lines != null) {
+            len += lines.getLength();
         }
         return len;
     }

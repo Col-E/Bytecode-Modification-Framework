@@ -15,7 +15,7 @@ public abstract class ElementValue implements IMeasurable {
      * </pre>
      */
     protected final static int BASE_LEN = 1;
-    public final ElementValueType type;
+    public ElementValueType type;
 
     public ElementValue(ElementValueType type) {
         this.type = type;

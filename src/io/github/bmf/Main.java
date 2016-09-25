@@ -16,7 +16,7 @@ public class Main {
             Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
             for (String s : entries.keySet()) {
                 // System.out.println(">>>>>>>>>>" + s);
-                ClassNode cn = ClassInterpreter.getNode(entries.get(s));
+                ClassNode cn = ClassReader.getNode(entries.get(s));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -27,7 +27,7 @@ public class Main {
         try {
             Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
             // String test = "me/lpk/util/Reference";
-            ClassNode cn = ClassInterpreter.getNode(entries.get(entry));
+            ClassNode cn = ClassReader.getNode(entries.get(entry));
             // System.out.println(cn.toString());
         } catch (Exception e) {
             e.printStackTrace();

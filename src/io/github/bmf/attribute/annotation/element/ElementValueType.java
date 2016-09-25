@@ -6,18 +6,26 @@ import java.util.Map;
 
 public enum ElementValueType {
     //@formatter:off
-    CONST_VALUE_INDEX(new char[]{'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z', 's'}),
-    ENUM_CONST_VALUE(new char[]{'e'}),
-    CLASS_INFO_INDEX(new char[]{'c'}),
-    ANNOTATION_VALUE(new char[]{'@'}),
-    ARRAY_VALUE(new char[]{'['});
+    CONST_VALUE_INDEX_BYTE('B'),
+    CONST_VALUE_INDEX_C('C'),
+    CONST_VALUE_INDEX_DOUBLE('D'),
+    CONST_VALUE_INDEX_FLOAT('F'),
+    CONST_VALUE_INDEX_INT('I'),
+    CONST_VALUE_INDEX_LONG('J'),
+    CONST_VALUE_INDEX_SHORT('S'),
+    CONST_VALUE_INDEX_BOOLEAN('Z'),
+    CONST_VALUE_INDEX_s('s'),
+    ENUM_CONST_VALUE('e'),
+    CLASS_INFO_INDEX('c'),
+    ANNOTATION_VALUE('@'),
+    ARRAY_VALUE('[');
     //@formatter:on
 
     private static Map<Character, ElementValueType> typeMap;
-    private final char[] keys;
+    public final char key;
 
-    ElementValueType(char[] keys) {
-        this.keys = keys;
+    ElementValueType(char key) {
+        this.key = key;
         register(this);
     }
 
@@ -40,8 +48,6 @@ public enum ElementValueType {
         if (typeMap == null) {
             typeMap = Maps.newHashMap();
         }
-        for (char type : keys) {
-            typeMap.put(type, this);
-        }
+        typeMap.put(key, this);
     }
 }

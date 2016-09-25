@@ -4,14 +4,14 @@ import io.github.bmf.util.IMeasurable;
 
 public class LocalVariableType implements IMeasurable {
     public int start;
-    public int len;
+    public int length;
     public int name;
     public int signature;
     public int index;
 
     public LocalVariableType(int start, int len, int name, int signature, int index) {
         this.start = start;
-        this.len = len;
+        this.length = len;
         this.name = name;
         this.signature = signature;
         this.index = index;
