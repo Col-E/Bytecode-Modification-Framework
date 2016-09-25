@@ -12,6 +12,7 @@
 *tests/*.jar
 .recommenders/*
 .metadata/*
-git.sh
+pull.sh
+push.sh
 .idea/*
 *.iml

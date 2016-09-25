@@ -2,18 +2,19 @@ package io.github.bmf.attribute.annotation;
 
 import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.AttributeType;
+import io.github.bmf.attribute.annotation.element.ElementValue;
 
 public class AttributeAnnotationDefault extends Attribute {
-    public byte[] data;
+    public ElementValue value;
 
-    public AttributeAnnotationDefault(int name, byte[] data) {
+    public AttributeAnnotationDefault(int name, ElementValue value) {
         super(name, AttributeType.ANNOTATION_DEFAULT);
-        this.data = data;
+        this.value = value;
     }
 
     @Override
     public int getLength() {
-        // TODO Change attrib length method later
-        return data.length;
+        // element_value: value
+        return BASE_LEN + value.getLength();
     }
 }

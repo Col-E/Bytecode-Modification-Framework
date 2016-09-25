@@ -63,7 +63,7 @@ public class ClassWriter {
 
     private static void writeAttribute(DataOutputStream ds, Attribute attribute) throws IOException {
         ds.writeShort(attribute.name);
-        ds.writeShort(attribute.getLength());
+        ds.writeInt(attribute.getLength());
         switch (attribute.type) {
         case ANNOTATION_DEFAULT:
             break;

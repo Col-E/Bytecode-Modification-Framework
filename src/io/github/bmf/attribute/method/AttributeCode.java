@@ -2,6 +2,7 @@ package io.github.bmf.attribute.method;
 
 import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.AttributeType;
+import io.github.bmf.util.MeasurableUtils;
 
 import java.util.List;
 
@@ -26,6 +27,13 @@ public class AttributeCode extends Attribute {
      * Max number of variables allowed in the method.
      */
     public int locals;
+
+    /**
+     * A list of {@link io.github.bmf.attribute.method.MethodException
+     * exceptions}.
+     */
+    public List<MethodException> exceptions;
+
     /**
      * A {@link io.github.bmf.attribute.method.AttributeLineNumberTable table}
      * that correlates opcode indices and line numbers <i>(Debugging). <br>
@@ -51,14 +59,17 @@ public class AttributeCode extends Attribute {
     public AttributeStackMapTable stackMap;
 
     /**
-     * TEMPORARY??
+     * A {@link io.github.bmf.attribute.method.MethodException structure}
+     * containing the opcodes.
      */
-    public OpcodeListData_TEMP opcodes;
+    public MethodCode opcodes;
 
-    public AttributeCode(int name, int stack, int locals, OpcodeListData_TEMP opcodes, List<Attribute> attributes) {
+    public AttributeCode(int name, int stack, int locals, List<MethodException> exceptions, MethodCode opcodes,
+            List<Attribute> attributes) {
         super(name, AttributeType.CONSTANT_VALUE);
         this.stack = stack;
         this.locals = locals;
+        this.exceptions = exceptions;
         this.opcodes = opcodes;
         for (Attribute attribute : attributes) {
             switch (attribute.type) {
@@ -83,23 +94,34 @@ public class AttributeCode extends Attribute {
 
     @Override
     public int getLength() {
+        // TODO: Verify this is correct
         // u2: max_stack
         // u2: max_locals
+        int len = BASE_LEN + 8;
         // u4: code_length
         // ??: CODE
+        len += 2;
+        if (opcodes != null) {
+            len += opcodes.getLength();
+        }
+        // u2: exception_table_length
+        // ??: EXCEPTIONS
+        len += 2;
+        if (exceptions.size() > 0) {
+            len += MeasurableUtils.getLength(exceptions);
+        }
         // u2: attributes_count
         // ??: ATTRIBS
-        // TODO: Verify this is correct
-        int len = BASE_LEN + 8;
-        if (opcodes != null)
-            len += opcodes.getLength();
         len += 2;
-        if (variables != null)
+        if (variables != null) {
             len += variables.getLength();
-        if (variableTypes != null)
-            len += variableTypes.getLength();
-        if (stackMap != null)
-            len += stackMap.getLength();
+            if (variableTypes != null) {
+                len += variableTypes.getLength();
+            }
+            if (stackMap != null) {
+                len += stackMap.getLength();
+            }
+        }
         return len;
     }
 

@@ -110,9 +110,7 @@ class ClassInterpreter {
         AttributeType attributeType = AttributeType.fromName(name);
         switch (attributeType) {
         case ANNOTATION_DEFAULT: {
-            byte[] annotationData = new byte[length];
-            is.read(annotationData);
-            return new AttributeAnnotationDefault(nameIndex, annotationData);
+            return new AttributeAnnotationDefault(nameIndex, readElementValue(owner, is));
         }
         case BOOTSTRAP_METHODS: {
             int methods = is.readUnsignedShort();
@@ -131,11 +129,8 @@ class ClassInterpreter {
         case CODE: {
             int maxStack = is.readUnsignedShort();
             int maxLocals = is.readUnsignedShort();
-            int codeLength = is.readInt();
-            byte[] code = new byte[codeLength];
-            is.read(code);
-            OpcodeListData_TEMP codeData = new OpcodeListData_TEMP();
-            codeData.data = code;
+            MethodCode codeData = readCode(owner, is);
+            List<MethodException> exceptions = Lists.newArrayList();
             int exceptionLength = is.readUnsignedShort();
             for (int i = 0; i < exceptionLength; i++) {
                 MethodException mexeption = new MethodException();
@@ -147,7 +142,7 @@ class ClassInterpreter {
                 mexeption.end = rangeEnd;
                 mexeption.handler = rangeHandler;
                 mexeption.type = catchType;
-                codeData.addException(mexeption);
+                exceptions.add(mexeption);
             }
             List<Attribute> attributes = Lists.newArrayList();
             int attributeLength = is.readUnsignedShort();
@@ -155,7 +150,7 @@ class ClassInterpreter {
                 Attribute attribute = readAttribute(owner, is);
                 attributes.add(attribute);
             }
-            return new AttributeCode(nameIndex, maxStack, maxLocals, codeData, attributes);
+            return new AttributeCode(nameIndex, maxStack, maxLocals, exceptions, codeData, attributes);
         }
         case CONSTANT_VALUE: {
             int value = is.readUnsignedShort();
@@ -258,6 +253,16 @@ class ClassInterpreter {
             break;
         }
         throw new RuntimeException("Unhandled attribute! " + attributeType);
+    }
+
+    private static MethodCode readCode(ClassNode owner, DataInputStream is) throws IOException {
+        // TODO: Actually read opcodes
+        int codeLength = is.readInt();
+        byte[] code = new byte[codeLength];
+        is.read(code);
+        MethodCode codeData = new MethodCode();
+        codeData.data = code;
+        return codeData;
     }
 
     private static Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
