@@ -18,7 +18,7 @@ public enum AccessType {
     FINAL(0x0010),
     INTERFACE(0x0200),
     NATIVE(0x0100),
-    PRIVATE(0x0010),
+    PRIVATE(0x0002),
     PROTECTED(0x0004),
     PUBLIC(0x0001),
     STATIC(0x0008),
