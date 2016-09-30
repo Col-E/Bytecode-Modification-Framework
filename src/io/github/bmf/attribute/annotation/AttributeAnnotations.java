@@ -19,6 +19,6 @@ public class AttributeAnnotations extends Attribute {
     public int getLength() {
         // u2: num_annotations
         // ??: annotations
-        return BASE_LEN + 2 + MeasurableUtils.getLength(annotations);
+        return 2 + MeasurableUtils.getLength(annotations);
     }
 }

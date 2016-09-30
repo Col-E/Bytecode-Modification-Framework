@@ -8,6 +8,6 @@ public class AttributeDeprecated extends Attribute {
 
     @Override
     public int getLength() {
-        return BASE_LEN;
+        return 0;
     }
 }

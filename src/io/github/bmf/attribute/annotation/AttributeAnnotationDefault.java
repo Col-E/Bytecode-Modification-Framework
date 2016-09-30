@@ -15,6 +15,6 @@ public class AttributeAnnotationDefault extends Attribute {
     @Override
     public int getLength() {
         // element_value: value
-        return BASE_LEN + value.getLength();
+        return value.getLength();
     }
 }

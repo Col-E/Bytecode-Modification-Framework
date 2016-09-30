@@ -17,6 +17,6 @@ public class AttributeEnclosingMethod extends Attribute {
     public int getLength() {
         // u2: class_index
         // u2: method_index
-        return BASE_LEN + 4;
+        return 4;
     }
 }

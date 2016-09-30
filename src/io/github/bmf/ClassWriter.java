@@ -23,7 +23,7 @@ public class ClassWriter {
 		ds.writeShort(node.minor);
 		ds.writeShort(node.major);
 		// Write the constant pool
-		ds.writeShort(node.constants.size());
+		ds.writeShort(node.constants.size() + 1);
 		for (Constant constant : node.constants) {
 			if (constant == null) {
 				// Doubles and longs take up two spaces, leaving one space null
@@ -306,8 +306,8 @@ public class ClassWriter {
 			break;
 		case UTF8:
 			ConstUTF8 constUTF = (ConstUTF8) constant;
-			//ds.writeShort(constUTF.value.getBytes().length);
-			//ds.write(constUTF.value.getBytes());
+			// ds.writeShort(constUTF.value.getBytes().length);
+			// ds.write(constUTF.value.getBytes());
 			ds.writeUTF(constUTF.value);
 			break;
 		case CLASS:

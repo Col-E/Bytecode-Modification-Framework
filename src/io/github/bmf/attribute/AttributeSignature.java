@@ -11,6 +11,6 @@ public class AttributeSignature extends Attribute {
     @Override
     public int getLength() {
         // u2: signature_index
-        return BASE_LEN + 2;
+        return 2;
     }
 }

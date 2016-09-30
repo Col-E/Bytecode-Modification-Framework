@@ -22,6 +22,6 @@ public class AttributeSourceDebugExtension extends Attribute {
     public int getLength() {
         // u1[]: debug_extension[attribute_length]
         // TODO Verify that this is correct
-        return BASE_LEN + data.size();
+        return data.size();
     }
 }

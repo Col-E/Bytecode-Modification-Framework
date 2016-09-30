@@ -18,7 +18,7 @@ public class AttributeInnerClasses extends Attribute {
     public int getLength() {
         // u2: num_classes
         // ?: classes
-        return BASE_LEN + 2 + MeasurableUtils.getLength(classes);
+        return 2 + MeasurableUtils.getLength(classes);
     }
 
 }

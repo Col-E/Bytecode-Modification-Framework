@@ -17,6 +17,6 @@ public class AttributeBootstrapMethods extends Attribute {
 
     @Override
     public int getLength() {
-        return BASE_LEN + MeasurableUtils.getLength(methods);
+        return MeasurableUtils.getLength(methods);
     }
 }

@@ -23,7 +23,7 @@ public class AttributeLocalVariableTable extends Attribute {
 
     @Override
     public int getLength() {
-        return BASE_LEN + variableTable.getLength();
+        return variableTable.getLength();
     }
 
 }

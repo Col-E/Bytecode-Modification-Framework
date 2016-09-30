@@ -9,12 +9,6 @@ import io.github.bmf.util.IMeasurable;
  */
 public abstract class Attribute implements IMeasurable {
 	/**
-	 * TODO: So when I made this, I thought it would include nameIndex and
-	 * length... but now that doesn't seem to make sense. Should this just be
-	 * removed?
-	 */
-	protected final static int BASE_LEN = 6;
-	/**
 	 * An attribute's {@link io.github.bmf.attribute.AttributeType type}.
 	 */
 	public final AttributeType type;

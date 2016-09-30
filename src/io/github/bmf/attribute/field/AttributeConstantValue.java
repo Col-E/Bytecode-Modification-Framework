@@ -14,6 +14,6 @@ public class AttributeConstantValue extends Attribute {
     @Override
     public int getLength() {
         // u2: constantIndex
-        return BASE_LEN + 2;
+        return 2;
     }
 }

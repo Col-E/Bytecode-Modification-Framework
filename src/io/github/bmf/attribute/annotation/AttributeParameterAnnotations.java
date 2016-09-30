@@ -23,6 +23,6 @@ public class AttributeParameterAnnotations extends Attribute {
     public int getLength() {
         // u1: num_parameters
         // ??: parameter_annotations
-        return BASE_LEN + 1 + MeasurableUtils.getLength(parametersAnnotations);
+        return 1 + MeasurableUtils.getLength(parametersAnnotations);
     }
 }

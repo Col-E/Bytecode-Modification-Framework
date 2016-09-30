@@ -14,6 +14,6 @@ public class AttributeSourceFile extends Attribute {
     @Override
     public int getLength() {
         // u2: source_index
-        return BASE_LEN + 2;
+        return 2;
     }
 }

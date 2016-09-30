@@ -14,6 +14,6 @@ public class AttributeStackMapTable extends Attribute {
     @Override
     public int getLength() {
         // TODO Change attrib length method later
-        return BASE_LEN + data.length;
+        return data.length;
     }
 }

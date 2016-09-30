@@ -97,7 +97,7 @@ public class AttributeCode extends Attribute {
         // TODO: Verify this is correct
         // u2: max_stack
         // u2: max_locals
-        int len = BASE_LEN + 8;
+        int len = 8;
         // u4: code_length
         // ??: CODE
         len += 2;

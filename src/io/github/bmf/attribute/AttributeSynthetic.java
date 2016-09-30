@@ -8,6 +8,6 @@ public class AttributeSynthetic extends Attribute {
 
     @Override
     public int getLength() {
-        return BASE_LEN;
+        return 0;
     }
 }
