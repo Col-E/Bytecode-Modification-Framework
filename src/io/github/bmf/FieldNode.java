@@ -36,22 +36,14 @@ public class FieldNode extends MemberNode {
     @Override
     public List<Attribute> getAttributes() {
         List<Attribute> attributes = Lists.newArrayList();
-        if (value != null)
-            attributes.add(value);
-        if (signature != null)
-            attributes.add(signature);
-        if (runtimeInvisibleAnnotations != null)
-            attributes.add(runtimeInvisibleAnnotations);
-        if (runtimeVisibleAnnotations != null)
-            attributes.add(runtimeVisibleAnnotations);
-        if (runtimeVisibleParamAnnotations != null)
-            attributes.add(runtimeVisibleParamAnnotations);
-        if (runtimeInvisibleParamAnnotations != null)
-            attributes.add(runtimeInvisibleParamAnnotations);
-        if (deprecated != null)
-            attributes.add(deprecated);
-        if (synthetic != null)
-            attributes.add(synthetic);
+        if (value != null) attributes.add(value);
+        if (signature != null) attributes.add(signature);
+        if (runtimeInvisibleAnnotations != null) attributes.add(runtimeInvisibleAnnotations);
+        if (runtimeVisibleAnnotations != null) attributes.add(runtimeVisibleAnnotations);
+        if (runtimeVisibleParamAnnotations != null) attributes.add(runtimeVisibleParamAnnotations);
+        if (runtimeInvisibleParamAnnotations != null) attributes.add(runtimeInvisibleParamAnnotations);
+        if (deprecated != null) attributes.add(deprecated);
+        if (synthetic != null) attributes.add(synthetic);
         return attributes;
     }
 }

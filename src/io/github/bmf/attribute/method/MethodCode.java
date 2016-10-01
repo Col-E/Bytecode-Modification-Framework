@@ -12,7 +12,6 @@ import io.github.bmf.util.IMeasurable;
  */
 public class MethodCode implements IMeasurable {
     public byte[] data;
-  
 
     @Override
     public int getLength() {

@@ -98,7 +98,8 @@ public class AttributeCode extends Attribute {
         // u2: max_stack
         // u2: max_locals
         int len = 8;
-        // Common to all attributes, only needed in length calculation for embedded attributes.
+        // Common to all attributes, only needed in length calculation for
+        // embedded attributes.
         // u2: name_index
         // u4: attribute_length
         int baseLen = 6;

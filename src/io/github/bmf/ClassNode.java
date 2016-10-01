@@ -187,32 +187,19 @@ public class ClassNode implements IAttributeOwner {
     @Override
     public List<Attribute> getAttributes() {
         List<Attribute> attributes = Lists.newArrayList();
-        if (signature != null)
-            attributes.add(signature);
-        if (runtimeInvisibleAnnotations != null)
-            attributes.add(runtimeInvisibleAnnotations);
-        if (runtimeVisibleAnnotations != null)
-            attributes.add(runtimeVisibleAnnotations);
-        if (runtimeVisibleParamAnnotations != null)
-            attributes.add(runtimeVisibleParamAnnotations);
-        if (runtimeInvisibleParamAnnotations != null)
-            attributes.add(runtimeInvisibleParamAnnotations);
-        if (bootstrapMethods != null)
-            attributes.add(bootstrapMethods);
-        if (deprecated != null)
-            attributes.add(deprecated);
-        if (synthetic != null)
-            attributes.add(synthetic);
-        if (sourceFile != null)
-            attributes.add(sourceFile);
-        if (enclosingMethod != null)
-            attributes.add(enclosingMethod);
-        if (innerClasses != null)
-            attributes.add(innerClasses);
-        if (bootstrapMethods != null)
-            attributes.add(bootstrapMethods);
-        if (sourceDebug != null)
-            attributes.add(sourceDebug);
+        if (signature != null) attributes.add(signature);
+        if (runtimeInvisibleAnnotations != null) attributes.add(runtimeInvisibleAnnotations);
+        if (runtimeVisibleAnnotations != null) attributes.add(runtimeVisibleAnnotations);
+        if (runtimeVisibleParamAnnotations != null) attributes.add(runtimeVisibleParamAnnotations);
+        if (runtimeInvisibleParamAnnotations != null) attributes.add(runtimeInvisibleParamAnnotations);
+        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
+        if (deprecated != null) attributes.add(deprecated);
+        if (synthetic != null) attributes.add(synthetic);
+        if (sourceFile != null) attributes.add(sourceFile);
+        if (enclosingMethod != null) attributes.add(enclosingMethod);
+        if (innerClasses != null) attributes.add(innerClasses);
+        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
+        if (sourceDebug != null) attributes.add(sourceDebug);
         return attributes;
     }
 
