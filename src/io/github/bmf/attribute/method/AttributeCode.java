@@ -66,7 +66,7 @@ public class AttributeCode extends Attribute {
 
     public AttributeCode(int name, int stack, int locals, List<MethodException> exceptions, MethodCode opcodes,
             List<Attribute> attributes) {
-        super(name, AttributeType.CONSTANT_VALUE);
+        super(name, AttributeType.CODE);
         this.maxStack = stack;
         this.maxLocals = locals;
         this.exceptions = exceptions;

@@ -258,10 +258,9 @@ public class ClassReader {
     private static MethodCode readMethodCode(ClassNode owner, DataInputStream is) throws IOException {
         // TODO: Actually read opcodes
         int codeLength = is.readInt();
-        byte[] code = new byte[codeLength];
-        is.read(code);
         MethodCode codeData = new MethodCode();
-        codeData.data = code;
+        codeData.data = new byte[codeLength];
+        is.read(codeData.data);
         return codeData;
     }
 
