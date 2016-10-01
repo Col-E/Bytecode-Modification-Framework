@@ -7,10 +7,10 @@ public class ConstInvokeDynamic extends Constant<Integer> {
     }
 
     public int getBootstrapAttribute() {
-        return value.intValue() & 0xffff;
+        return (value.intValue() >> 16) & 0xffff;
     }
 
     public int getNameTypeIndex() {
-        return (value.intValue() >> 16) & 0xffff;
+        return value.intValue() & 0xffff;
     }
 }

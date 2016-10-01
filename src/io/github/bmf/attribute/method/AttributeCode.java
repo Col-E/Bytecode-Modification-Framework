@@ -98,6 +98,10 @@ public class AttributeCode extends Attribute {
         // u2: max_stack
         // u2: max_locals
         int len = 8;
+        // Common to all attributes, only needed in length calculation for embedded attributes.
+        // u2: name_index
+        // u4: attribute_length
+        int baseLen = 6;
         // u4: code_length
         // ??: CODE
         len += 2;
@@ -113,17 +117,17 @@ public class AttributeCode extends Attribute {
         // u2: attributes_count
         // ??: ATTRIBS
         len += 2;
+        if (lines != null) {
+            len += baseLen + lines.getLength();
+        }
         if (variables != null) {
-            len += variables.getLength();
+            len += baseLen + variables.getLength();
         }
         if (variableTypes != null) {
-            len += variableTypes.getLength();
+            len += baseLen + variableTypes.getLength();
         }
         if (stackMap != null) {
-            len += stackMap.getLength();
-        }
-        if (lines != null) {
-            len += lines.getLength();
+            len += baseLen + stackMap.getLength();
         }
         return len;
     }

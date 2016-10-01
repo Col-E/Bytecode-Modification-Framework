@@ -207,16 +207,16 @@ public class ClassReader {
 		}
 		case LOCAL_VARIABLE_TYPE_TABLE: {
 			int tableLength = is.readUnsignedShort();
-			List<LocalVariableType> variableTypes = Lists.newArrayList();
+			List<LocalVariableType> localTypes = Lists.newArrayList();
 			for (int i = 0; i < tableLength; i++) {
-				int varStart = is.readUnsignedShort();
-				int varLen = is.readUnsignedShort();
-				int varName = is.readUnsignedShort();
-				int varSignature = is.readUnsignedShort();
-				int varIndex = is.readUnsignedShort();
-				variableTypes.add(new LocalVariableType(varStart, varLen, varName, varSignature, varIndex));
+				int lStart = is.readUnsignedShort();
+				int lLen = is.readUnsignedShort();
+				int lName = is.readUnsignedShort();
+				int lSignature = is.readUnsignedShort();
+				int lIndex = is.readUnsignedShort();
+				localTypes.add(new LocalVariableType(lStart, lLen, lName, lSignature, lIndex));
 			}
-			return new AttributeLocalVariableTypeTable(nameIndex, variableTypes);
+			return new AttributeLocalVariableTypeTable(nameIndex, localTypes);
 		}
 		
 		case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
@@ -391,7 +391,8 @@ public class ClassReader {
 		case FIELD: {
 			int clazz = is.readUnsignedShort();
 			int nameType = is.readUnsignedShort();
-			return new ConstField(clazz, nameType);
+			ConstField cf = new ConstField(clazz, nameType);
+			return cf;
 		}
 		case METHOD: {
 			int clazz = is.readUnsignedShort();

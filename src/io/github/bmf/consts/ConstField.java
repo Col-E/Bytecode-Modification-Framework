@@ -6,10 +6,10 @@ public class ConstField extends Constant<Integer> {
     }
 
     public int getClassIndex() {
-        return value.intValue() & 0xffff;
+        return (value.intValue() >> 16) & 0xffff;
     }
 
     public int getNameTypeIndex() {
-        return (value.intValue() >> 16) & 0xffff;
+        return value.intValue() & 0xffff;
     }
 }
