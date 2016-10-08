@@ -255,22 +255,30 @@ public class ClassWriter {
         case CONST_VALUE_INDEX_s:
             ElementValueConstValueIndex constValInd = (ElementValueConstValueIndex) value;
             ds.writeShort(constValInd.constValueIndex);
+            break;
         case ENUM_CONST_VALUE:
+            //ElementValueConstValueIndex 
+            //    cannot be cast to 
+            //ElementValueEnumConstValue
             ElementValueEnumConstValue constEnumVal = (ElementValueEnumConstValue) value;
             ds.writeShort(constEnumVal.type);
             ds.writeShort(constEnumVal.name);
+            break;
         case CLASS_INFO_INDEX:
             ElementValueClassInfoIndex classInfo = (ElementValueClassInfoIndex) value;
             ds.writeShort(classInfo.classInfoIndex);
+            break;
         case ANNOTATION_VALUE:
             ElementValueAnnotationValue annoVal = (ElementValueAnnotationValue) value;
             writeAnnotation(annoVal.annotation, ds);
+            break;
         case ARRAY_VALUE:
             ElementValueArrayValue arrayVal = (ElementValueArrayValue) value;
             ds.writeShort(arrayVal.values.size());
             for (ElementValue ev : arrayVal.values) {
                 writeElementValue(ev, ds);
             }
+            break;
         }
     }
 
@@ -307,9 +315,8 @@ public class ClassWriter {
             break;
         case UTF8:
             ConstUTF8 constUTF = (ConstUTF8) constant;
-            // ds.writeShort(constUTF.value.getBytes().length);
-            // ds.write(constUTF.value.getBytes());
-            ds.writeUTF(constUTF.value);
+            ds.writeShort(constUTF.value.getBytes().length);
+            ds.write(constUTF.value.getBytes());
             break;
         case CLASS:
             ConstClass constClass = (ConstClass) constant;

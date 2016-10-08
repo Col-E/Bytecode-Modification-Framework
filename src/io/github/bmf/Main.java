@@ -12,8 +12,10 @@ public class Main {
     private static final String IN_FILE = "tests/Jar.jar", OUT_FILE = "tests/Out.jar";
 
     public static void main(String[] args) {
-        all(IN_FILE);
-        // one(OUT_FILE, "IExample");
+        // all(IN_FILE);
+        // one(IN_FILE, "io/github/bmf/ClassNode");
+        // all(OUT_FILE);
+        // one(OUT_FILE, "io/github/bmf/ClassNode");
     }
 
     private static void all(String file) {
