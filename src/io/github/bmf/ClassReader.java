@@ -9,7 +9,7 @@ import io.github.bmf.attribute.field.AttributeConstantValue;
 import io.github.bmf.attribute.method.*;
 import io.github.bmf.consts.*;
 import io.github.bmf.exception.InvalidClassException;
-import io.github.bmf.io.StreamUtil;
+import io.github.bmf.util.io.StreamUtil;
 
 /**
  * 

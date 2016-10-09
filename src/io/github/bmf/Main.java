@@ -1,11 +1,11 @@
 package io.github.bmf;
 
-import io.github.bmf.io.JarUtil;
-
 import java.io.File;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+
+import io.github.bmf.util.io.JarUtil;
 
 @SuppressWarnings("unused")
 public class Main {

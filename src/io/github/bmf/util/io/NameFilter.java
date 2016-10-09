@@ -1,4 +1,4 @@
-package io.github.bmf.io;
+package io.github.bmf.util.io;
 
 /**
  * Simple filter. Implementations should check for valid input, and optionally

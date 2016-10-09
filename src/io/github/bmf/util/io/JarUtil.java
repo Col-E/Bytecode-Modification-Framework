@@ -1,4 +1,4 @@
-package io.github.bmf.io;
+package io.github.bmf.util.io;
 
 import com.google.common.collect.Maps;
 import io.github.bmf.ClassNode;
