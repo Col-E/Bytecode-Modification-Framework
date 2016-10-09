@@ -79,7 +79,8 @@ public class JarUtil {
     public static void writeJar(File in, File outf, Map<String, ClassNode> nodes) {
         try {
             FileOutputStream fos = new FileOutputStream(outf);
-            JarOutputStream jos = new JarOutputStream(fos, getManifest(in));
+            Manifest manifest = getManifest(in);
+            JarOutputStream jos = manifest != null ? new JarOutputStream(fos, manifest) : new JarOutputStream(fos);
             for (String className : nodes.keySet()) {
                 JarEntry entry = new JarEntry(className + ".class");
                 entry.setTime(System.currentTimeMillis());
