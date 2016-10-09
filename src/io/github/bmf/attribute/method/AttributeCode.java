@@ -97,7 +97,7 @@ public class AttributeCode extends Attribute {
         // TODO: Verify this is correct
         // u2: max_stack
         // u2: max_locals
-        int len = 8;
+        int len = 4;
         // Common to all attributes, only needed in length calculation for
         // embedded attributes.
         // u2: name_index
@@ -105,7 +105,7 @@ public class AttributeCode extends Attribute {
         int baseLen = 6;
         // u4: code_length
         // ??: CODE
-        len += 2;
+        len += 4;
         if (opcodes != null) {
             len += opcodes.getLength();
         }

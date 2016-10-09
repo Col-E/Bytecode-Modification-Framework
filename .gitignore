@@ -16,3 +16,4 @@ pull.sh
 push.sh
 .idea/*
 *.iml
+*.bat

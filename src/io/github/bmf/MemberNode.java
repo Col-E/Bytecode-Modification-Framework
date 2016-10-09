@@ -1,8 +1,7 @@
 package io.github.bmf;
 
 import io.github.bmf.attribute.*;
-import io.github.bmf.attribute.annotation.AttributeAnnotations;
-import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
+import io.github.bmf.attribute.annotation.*;
 
 /**
  * A member. Implementation is either a field or method.
@@ -95,6 +94,7 @@ public abstract class MemberNode implements IAttributeOwner {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName().replace("Node", "") + ": " + access + " , " + name + " , " + desc;
+        return this.getClass().getSimpleName().replace("Node", "") + ":" + access + ", "
+                + owner.getConst(name).toString() + ", " + owner.getConst(desc);
     }
 }

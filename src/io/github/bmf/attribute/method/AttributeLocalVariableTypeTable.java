@@ -20,5 +20,4 @@ public class AttributeLocalVariableTypeTable extends Attribute {
         // ??: variable_table
         return 2 + MeasurableUtils.getLength(localTypes);
     }
-
 }

@@ -187,18 +187,17 @@ public class ClassNode implements IAttributeOwner {
     @Override
     public List<Attribute> getAttributes() {
         List<Attribute> attributes = Lists.newArrayList();
+        if (sourceFile != null) attributes.add(sourceFile);
+        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
+        if (innerClasses != null) attributes.add(innerClasses);
         if (signature != null) attributes.add(signature);
         if (runtimeInvisibleAnnotations != null) attributes.add(runtimeInvisibleAnnotations);
         if (runtimeVisibleAnnotations != null) attributes.add(runtimeVisibleAnnotations);
         if (runtimeVisibleParamAnnotations != null) attributes.add(runtimeVisibleParamAnnotations);
         if (runtimeInvisibleParamAnnotations != null) attributes.add(runtimeInvisibleParamAnnotations);
-        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
         if (deprecated != null) attributes.add(deprecated);
         if (synthetic != null) attributes.add(synthetic);
-        if (sourceFile != null) attributes.add(sourceFile);
         if (enclosingMethod != null) attributes.add(enclosingMethod);
-        if (innerClasses != null) attributes.add(innerClasses);
-        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
         if (sourceDebug != null) attributes.add(sourceDebug);
         return attributes;
     }
@@ -207,18 +206,17 @@ public class ClassNode implements IAttributeOwner {
     public String toString() {
         String out = "  Version: " + major + "." + minor + "\n";
         out += "  Access: " + access + "\n";
-        out += "  Class Index: " + classIndex + "\n";
-        out += "  Super Index: " + superIndex + "\n";
-        // out += " Attributes[" + attributes.size() + "]\n";
+        out += "  Class Index: " + getConst(classIndex+1).toString() + "\n";
+        out += "  Super Index: " + getConst(superIndex+1).toString() + "\n";
         out += "  Interfaces { ";
         for (int index : interfaceIndices) {
-            out += index + ", ";
+            out +=getConst(index+1).toString() + ", ";
         }
         int interfaceCut = interfaceIndices.size() == 0 ? 0 : 2;
         out = out.substring(0, out.length() - interfaceCut) + " }\n";
         out += "  Constant Pool {\n";
         for (Constant constant : constants) {
-            out += "    " + constant.getType().toString() + " " + constant.value + "\n";
+            out += "    " + constant.toString() + "\n";
         }
         out += "  }\n";
         out += "  Fields { \n";

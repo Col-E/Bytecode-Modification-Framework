@@ -8,11 +8,11 @@ public class InnerClass implements IMeasurable {
     public int innerName;
     public int innerAccess;
 
-    public InnerClass(int ici, int oci, int in, int ia) {
-        this.innerAccess = ici;
-        this.outerClassIndex = oci;
-        this.innerName = in;
-        this.innerAccess = ia;
+    public InnerClass(int innerIndex, int outerIndex, int cInnerName, int innerAccess) {
+        this.innerClassIndex = innerIndex;
+        this.outerClassIndex = outerIndex;
+        this.innerName = cInnerName;
+        this.innerAccess = innerAccess;
     }
 
     @Override

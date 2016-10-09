@@ -31,6 +31,6 @@ public abstract class Constant<T> {
 
     @Override
     public String toString() {
-        return type.toString() + " - " + value;
+        return type.toString() + ":" + value;
     }
 }

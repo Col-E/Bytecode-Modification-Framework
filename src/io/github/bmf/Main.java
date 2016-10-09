@@ -12,10 +12,13 @@ public class Main {
     private static final String IN_FILE = "tests/Jar.jar", OUT_FILE = "tests/Out.jar";
 
     public static void main(String[] args) {
-        // all(IN_FILE);
-        // one(IN_FILE, "io/github/bmf/ClassNode");
+         all(IN_FILE);
+        // ClassNode c =  one(IN_FILE, "io/github/bmf/ClassNode");
         // all(OUT_FILE);
-        // one(OUT_FILE, "io/github/bmf/ClassNode");
+        // ClassNode c =  one(OUT_FILE, "io/github/bmf/ClassNode");
+        // if (c != null){
+        //     System.out.println(c.toString());
+        // }
     }
 
     private static void all(String file) {
@@ -26,18 +29,20 @@ public class Main {
                 ClassNode cn = ClassReader.getNode(entries.get(s));
                 nodes.put(s, cn);
             }
-            JarUtil.writeJar(new File(OUT_FILE), nodes);
+            JarUtil.writeJar(new File(IN_FILE), new File(OUT_FILE), nodes);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void one(String file, String entry) {
+    private static ClassNode one(String file, String entry) {
         try {
             Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
             ClassNode cn = ClassReader.getNode(entries.get(entry));
+            return cn;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

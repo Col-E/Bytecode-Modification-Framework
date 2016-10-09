@@ -25,5 +25,4 @@ public class AttributeLocalVariableTable extends Attribute {
     public int getLength() {
         return variableTable.getLength();
     }
-
 }

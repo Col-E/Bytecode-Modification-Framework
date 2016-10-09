@@ -42,5 +42,4 @@ public class LocalVariableTable implements IMeasurable {
         // ??: locals
         return 2 + MeasurableUtils.getLength(locals);
     }
-
 }

@@ -11,7 +11,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -73,18 +76,27 @@ public class JarUtil {
         return entries;
     }
 
-    public static void writeJar(File file, Map<String, ClassNode> nodes) {
+    public static void writeJar(File in, File outf, Map<String, ClassNode> nodes) {
         try {
-            JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(file));
-            for (String entry : nodes.keySet()) {
-                String ext = entry.contains(".") ? "" : ".class";
-                jarOut.putNextEntry(new ZipEntry(entry + ext));
-                jarOut.write(ClassWriter.write(nodes.get(entry)));
-                jarOut.closeEntry();
+            FileOutputStream fos = new FileOutputStream(outf);
+            JarOutputStream jos = new JarOutputStream(fos, getManifest(in));
+            for (String className : nodes.keySet()) {
+                JarEntry entry = new JarEntry(className + ".class");
+                entry.setTime(System.currentTimeMillis());
+                jos.putNextEntry(entry);
+                jos.write(ClassWriter.write(nodes.get(className)));
             }
-            jarOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            jos.close();
+            fos.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+    }
+
+    private static Manifest getManifest(File in) throws IOException {
+        JarFile jar = new JarFile(in);
+        Manifest manifest = jar.getManifest();
+        jar.close();
+        return manifest;
     }
 }
