@@ -11,10 +11,10 @@ import io.github.bmf.util.IMeasurable;
  * @author Matt
  */
 public class MethodCode implements IMeasurable {
-    public byte[] data;
+    public byte[] original;
 
     @Override
     public int getLength() {
-        return data.length;
+        return original.length;
     }
 }

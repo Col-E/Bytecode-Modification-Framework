@@ -1,9 +1,9 @@
 package io.github.bmf.attribute.method;
 
-import com.google.common.collect.Lists;
 import io.github.bmf.util.IMeasurable;
 import io.github.bmf.util.MeasurableUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,12 +14,16 @@ import java.util.List;
  * @author Matt
  */
 public class LocalVariableTable implements IMeasurable {
-    public List<Local> locals = Lists.newArrayList();
+    public List<Local> locals;
+
+    public LocalVariableTable(int size) {
+        locals = new ArrayList<Local>(size);
+    }
 
     /**
      * Creates and adds a local variable to the table. See the documentation of
      * {@link io.github.bmf.attribute.method.Local Local} for more information.
-     *
+     * 
      * @param start
      *            Start index in the opcodes
      * @param len
@@ -32,8 +36,7 @@ public class LocalVariableTable implements IMeasurable {
      *            Stack frame index.
      */
     public void add(int start, int len, int name, int desc, int index) {
-        Local local = new Local(start, len, name, desc, index);
-        locals.add(local);
+        locals.add(new Local(start, len, name, desc, index));
     }
 
     @Override

@@ -34,6 +34,7 @@ public class ClassReader {
         // Read the constant pool
         int poolIndex = 1;
         int poolLength = is.readUnsignedShort();
+        node.setPoolSize(poolLength);
         while (poolIndex < poolLength) {
             ConstantType type = ConstantType.fromTag(is.readUnsignedByte());
             Constant constant = readConst(type, is);
@@ -51,17 +52,20 @@ public class ClassReader {
         node.superIndex = is.readUnsignedShort();
         // Read interfaces
         int interfaceLength = is.readUnsignedShort();
+        node.setInterfaceCount(interfaceLength);
         for (int i = 0; i < interfaceLength; i++) {
             node.addInterfaceIndex(is.readUnsignedShort());
         }
         // Read fields
         int fieldLength = is.readUnsignedShort();
+        node.setFieldCount(fieldLength);
         for (int i = 0; i < fieldLength; i++) {
             FieldNode field = readField(node, is);
             node.addField(field);
         }
         // Read methods
         int methodLength = is.readUnsignedShort();
+        node.setMethodCount(methodLength);
         for (int i = 0; i < methodLength; i++) {
             MethodNode method = readMethod(node, is);
             node.addMethod(method);
@@ -112,15 +116,15 @@ public class ClassReader {
         }
         case BOOTSTRAP_METHODS: {
             int methods = is.readUnsignedShort();
-            List<BootstrapMethod> bsMethods = Lists.newArrayList();
+            List<BootstrapMethod> bsMethods = new ArrayList<BootstrapMethod>(methods);
             for (int i = 0; i < methods; i++) {
                 int methodRef = is.readUnsignedShort();
                 int args = is.readUnsignedShort();
-                BootstrapMethod bsm = new BootstrapMethod(methodRef);
+                BootstrapMethod bsm = new BootstrapMethod(methodRef, args);
                 for (int a = 0; a < args; a++) {
                     bsm.addArgument(is.readUnsignedShort());
                 }
-                bsMethods.add(bsm);
+                bsMethods.set(i,bsm);
             }
             return new AttributeBootstrapMethods(nameIndex, bsMethods);
         }
@@ -193,8 +197,8 @@ public class ClassReader {
             return new AttributeLineNumberTable(nameIndex, table);
         }
         case LOCAL_VARIABLE_TABLE: {
-            LocalVariableTable locals = new LocalVariableTable();
             int tableLength = is.readUnsignedShort();
+            LocalVariableTable locals = new LocalVariableTable(tableLength);
             for (int i = 0; i < tableLength; i++) {
                 int lstartPC = is.readUnsignedShort();
                 int llength = is.readUnsignedShort();
@@ -259,8 +263,8 @@ public class ClassReader {
         // TODO: Actually read opcodes
         int codeLength = is.readInt();
         MethodCode codeData = new MethodCode();
-        codeData.data = new byte[codeLength];
-        is.read(codeData.data);
+        codeData.original = new byte[codeLength];
+        is.read(codeData.original);
         return codeData;
     }
 

@@ -1,20 +1,21 @@
 package io.github.bmf.attribute.clazz;
 
-import com.google.common.collect.Lists;
 import io.github.bmf.util.IMeasurable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BootstrapMethod implements IMeasurable {
     public int methodReference;
-    public List<Integer> arguments = Lists.newArrayList();
+    public List<Integer> arguments;
 
-    public BootstrapMethod(int methodReference) {
+    public BootstrapMethod(int methodReference, int argCount) {
         this.methodReference = methodReference;
+        this.arguments = new ArrayList<Integer>(argCount);
     }
 
-    public void addArgument(int i) {
-        arguments.add(i);
+    public void addArgument(int arg) {
+        arguments.add(arg);
     }
 
     @Override
@@ -24,4 +25,5 @@ public class BootstrapMethod implements IMeasurable {
         // u2[]: args
         return 4 + 2 * arguments.size();
     }
+
 }

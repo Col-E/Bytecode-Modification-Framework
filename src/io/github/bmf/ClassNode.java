@@ -7,6 +7,7 @@ import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
 import io.github.bmf.attribute.clazz.*;
 import io.github.bmf.consts.Constant;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,19 +33,19 @@ public class ClassNode implements IAttributeOwner {
      * A list of indices in the constant pool pointing to classes that are
      * implemented.
      */
-    public List<Integer> interfaceIndices = Lists.newArrayList();
+    public List<Integer> interfaceIndices;
     /**
      * The constant pool.
      */
-    public List<Constant> constants = Lists.newArrayList();
+    public List<Constant> constants;
     /**
      * Fields.
      */
-    public List<FieldNode> fields = Lists.newArrayList();
+    public List<FieldNode> fields;
     /**
      * Methods.
      */
-    public List<MethodNode> methods = Lists.newArrayList();
+    public List<MethodNode> methods;
     /**
      * Attribute: If not-null, the class is deprecated.
      */
@@ -114,12 +115,38 @@ public class ClassNode implements IAttributeOwner {
     }
 
     /**
+     * Sets or extends the constant pool to a given size.
+     * 
+     * @param size
+     */
+    public void setPoolSize(int size) {
+        if (constants == null) {
+            constants = new ArrayList<Constant>(size);
+        } else {
+            ((ArrayList<Constant>) constants).ensureCapacity(size);
+        }
+    }
+
+    /**
      * Adds an interface index to the class indices list.
      *
      * @param index
      */
     public void addInterfaceIndex(int index) {
         interfaceIndices.add(index);
+    }
+
+    /**
+     * Sets or extends the size of the interface index list to a given size.
+     * 
+     * @param size
+     */
+    public void setInterfaceCount(int size) {
+        if (interfaceIndices == null) {
+            interfaceIndices = new ArrayList<Integer>(size);
+        } else {
+            ((ArrayList<Integer>) interfaceIndices).ensureCapacity(size);
+        }
     }
 
     /**
@@ -132,12 +159,39 @@ public class ClassNode implements IAttributeOwner {
     }
 
     /**
+     * Sets or extends the size of the field list to a given size.
+     * 
+     * @param size
+     */
+    public void setFieldCount(int size) {
+        if (fields == null) {
+            fields = new ArrayList<FieldNode>(size);
+        } else {
+            ((ArrayList<FieldNode>) fields).ensureCapacity(size);
+        }
+    }
+
+    /**
      * Adds a method to the class.
      *
      * @param method
      */
     public void addMethod(MethodNode method) {
         methods.add(method);
+    }
+
+    /**
+     * Sets or extends the size of the method list to a given size.
+     * 
+     * @param size
+     */
+    public void setMethodCount(int size) {
+        if (methods == null) {
+            methods = new ArrayList<MethodNode>(size);
+        } else {
+            ((ArrayList<MethodNode>) methods).ensureCapacity(size);
+        }
+
     }
 
     @Override
@@ -206,11 +260,11 @@ public class ClassNode implements IAttributeOwner {
     public String toString() {
         String out = "  Version: " + major + "." + minor + "\n";
         out += "  Access: " + access + "\n";
-        out += "  Class Index: " + getConst(classIndex+1).toString() + "\n";
-        out += "  Super Index: " + getConst(superIndex+1).toString() + "\n";
+        out += "  Class Index: " + getConst(classIndex + 1).toString() + "\n";
+        out += "  Super Index: " + getConst(superIndex + 1).toString() + "\n";
         out += "  Interfaces { ";
         for (int index : interfaceIndices) {
-            out +=getConst(index+1).toString() + ", ";
+            out += getConst(index + 1).toString() + ", ";
         }
         int interfaceCut = interfaceIndices.size() == 0 ? 0 : 2;
         out = out.substring(0, out.length() - interfaceCut) + " }\n";

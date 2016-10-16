@@ -237,8 +237,8 @@ public class ClassWriter {
 
     private static void writeMethodCode(MethodCode opcodes, DataOutputStream ds) throws IOException {
         // TODO: Actually write opcodes (Pre-req: reading them)
-        ds.writeInt(opcodes.data.length);
-        ds.write(opcodes.data);
+        ds.writeInt(opcodes.original.length);
+        ds.write(opcodes.original);
     }
 
     private static void writeElementValue(ElementValue value, DataOutputStream ds) throws IOException {
