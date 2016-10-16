@@ -268,6 +268,12 @@ public class ClassReader {
         is.read(origOpcodeBytes);
         MethodCode codeData = new MethodCode(origOpcodeBytes);
 
+        if (true) {
+            // Skip the parsing of opcodes until it's implementation is further
+            // along.
+            return codeData;
+        }
+
         // Create opcode data
         codeData.opcodes = new ArrayList<Opcode>();
         DataInputStream opstr = StreamUtil.fromBytes(codeData.original);
@@ -288,7 +294,7 @@ public class ClassReader {
         }
         OpcodeType type = OpcodeType.fromValue(code);
         // Not all opcodes will be here, such as WIDE
-        // 
+        //
         // Also for things like ICONST_0, ICONST_1 ... should constant Opcode
         // values be used instead of creating new IConst() every time?
         switch (type) {
