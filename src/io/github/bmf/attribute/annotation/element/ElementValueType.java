@@ -44,10 +44,10 @@ public enum ElementValueType {
      *
      * @param valueType
      */
-    private void register(ElementValueType valueType) {
+    private void register(ElementValueType type) {
         if (typeMap == null) {
             typeMap = Maps.newHashMap();
         }
-        typeMap.put(key, this);
+        typeMap.put(key, type);
     }
 }

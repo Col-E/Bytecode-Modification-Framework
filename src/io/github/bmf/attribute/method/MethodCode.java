@@ -1,5 +1,8 @@
 package io.github.bmf.attribute.method;
 
+import java.util.ArrayList;
+
+import io.github.bmf.consts.opcode.Opcode;
 import io.github.bmf.util.IMeasurable;
 
 /**
@@ -11,7 +14,12 @@ import io.github.bmf.util.IMeasurable;
  * @author Matt
  */
 public class MethodCode implements IMeasurable {
-    public byte[] original;
+    public final byte[] original;
+    public ArrayList<Opcode> opcodes;
+
+    public MethodCode(byte[] original) {
+       this.original = original;
+    }
 
     @Override
     public int getLength() {

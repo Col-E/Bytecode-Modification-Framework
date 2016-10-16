@@ -68,7 +68,7 @@ public enum ConstantType {
         if (typeMap == null) {
             typeMap = Maps.newHashMap();
         }
-        typeMap.put(tag, this);
+        typeMap.put(tag, type);
     }
 
     public int getTag() {

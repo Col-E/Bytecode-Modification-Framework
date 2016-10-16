@@ -59,6 +59,6 @@ public enum AttributeType {
         if (nameMap == null) {
             nameMap = Maps.newHashMap();
         }
-        nameMap.put(name, this);
+        nameMap.put(name, attribute);
     }
 }

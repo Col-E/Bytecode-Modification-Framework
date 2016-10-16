@@ -31,10 +31,13 @@ public enum AccessType {
     VOLATILE(0x0040);
     //@formatter:on
 
+   /**
+    * Map of values to types.
+    */
+    private static Map<Integer, AccessType> typeMap;
     /**
      * The tag of the Constant type.
      */
-    private static Map<Integer, AccessType> typeMap;
     private final int tag;
 
     AccessType(int tag) {
@@ -72,7 +75,7 @@ public enum AccessType {
         if (typeMap == null) {
             typeMap = Maps.newHashMap();
         }
-        typeMap.put(tag, this);
+        typeMap.put(tag, type);
     }
 
     public int getTag() {

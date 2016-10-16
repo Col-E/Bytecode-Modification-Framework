@@ -8,6 +8,8 @@ import io.github.bmf.attribute.clazz.*;
 import io.github.bmf.attribute.field.AttributeConstantValue;
 import io.github.bmf.attribute.method.*;
 import io.github.bmf.consts.*;
+import io.github.bmf.consts.opcode.Opcode;
+import io.github.bmf.consts.opcode.OpcodeType;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.util.io.StreamUtil;
 
@@ -124,7 +126,7 @@ public class ClassReader {
                 for (int a = 0; a < args; a++) {
                     bsm.addArgument(is.readUnsignedShort());
                 }
-                bsMethods.set(i,bsm);
+                bsMethods.set(i, bsm);
             }
             return new AttributeBootstrapMethods(nameIndex, bsMethods);
         }
@@ -260,12 +262,39 @@ public class ClassReader {
     }
 
     private static MethodCode readMethodCode(ClassNode owner, DataInputStream is) throws IOException {
-        // TODO: Actually read opcodes
         int codeLength = is.readInt();
-        MethodCode codeData = new MethodCode();
-        codeData.original = new byte[codeLength];
-        is.read(codeData.original);
+        // Store original opcode bytes
+        byte[] origOpcodeBytes = new byte[codeLength];
+        is.read(origOpcodeBytes);
+        MethodCode codeData = new MethodCode(origOpcodeBytes);
+
+        // Create opcode data
+        codeData.opcodes = new ArrayList<Opcode>();
+        DataInputStream opstr = StreamUtil.fromBytes(codeData.original);
+        // Is there a way to find the # of opcodes? Can't seem to figure one out
+        // aside from reading and knowing after the fact.
+        while (opstr.available() > 0) {
+            codeData.opcodes.add(readOpcode(opstr));
+        }
+        opstr.close();
         return codeData;
+    }
+
+    private static Opcode readOpcode(DataInputStream is) throws IOException {
+        int code = is.readUnsignedByte();
+        boolean wide = code == Opcode.WIDE;
+        if (wide) {
+            code = is.readUnsignedByte();
+        }
+        OpcodeType type = OpcodeType.fromValue(code);
+        // Not all opcodes will be here, such as WIDE
+        // 
+        // Also for things like ICONST_0, ICONST_1 ... should constant Opcode
+        // values be used instead of creating new IConst() every time?
+        switch (type) {
+
+        }
+        return null;
     }
 
     private static Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
