@@ -1,8 +1,8 @@
 package io.github.bmf.attribute.method;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
-public class LocalVariableType implements IMeasurable {
+public class LocalVariableType implements Measurable {
     public int start;
     public int length;
     public int name;

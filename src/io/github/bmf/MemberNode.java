@@ -8,7 +8,7 @@ import io.github.bmf.attribute.annotation.*;
  *
  * @author Matt
  */
-public abstract class MemberNode implements IAttributeOwner {
+public abstract class MemberNode implements AttributeOwner {
     /**
      * The class the member belongs to.
      */

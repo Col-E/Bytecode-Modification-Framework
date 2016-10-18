@@ -1,8 +1,8 @@
 package io.github.bmf.consts.opcode;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
-public abstract class Opcode implements IMeasurable {
+public abstract class Opcode implements Measurable {
     public final static int NOP = 0x00;
     public final static int ACONST_NULL = 0x01;
     public final static int ICONST_M1 = 0x02;
@@ -189,7 +189,6 @@ public abstract class Opcode implements IMeasurable {
     public final static int INVOKESPECIAL = 0xB7;
     public final static int INVOKESTATIC = 0xB8;
     public final static int INVOKEINTERFACE = 0xB9;
-    public final static int UNUSED = 0xBA;
     public final static int NEW = 0xBB;
     public final static int NEWARRAY = 0xBC;
     public final static int ANEWARRAY = 0xBD;

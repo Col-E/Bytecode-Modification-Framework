@@ -1,13 +1,13 @@
 package io.github.bmf.attribute;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
 /**
  * Generic Attribute.
  *
  * @author Matt
  */
-public abstract class Attribute implements IMeasurable {
+public abstract class Attribute implements Measurable {
     /**
      * An attribute's {@link io.github.bmf.attribute.AttributeType type}.
      */

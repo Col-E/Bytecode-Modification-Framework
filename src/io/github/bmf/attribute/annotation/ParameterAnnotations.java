@@ -1,11 +1,11 @@
 package io.github.bmf.attribute.annotation;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 import io.github.bmf.util.MeasurableUtils;
 
 import java.util.List;
 
-public class ParameterAnnotations implements IMeasurable {
+public class ParameterAnnotations implements Measurable {
     /**
      * List of annotations belonging to the parameter.
      */

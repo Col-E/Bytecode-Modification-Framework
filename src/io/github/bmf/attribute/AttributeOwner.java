@@ -2,7 +2,7 @@ package io.github.bmf.attribute;
 
 import java.util.List;
 
-public interface IAttributeOwner {
+public interface AttributeOwner {
     /**
      * Adds an attribute to the owner.
      *

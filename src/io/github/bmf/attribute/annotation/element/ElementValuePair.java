@@ -1,8 +1,8 @@
 package io.github.bmf.attribute.annotation.element;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
-public class ElementValuePair implements IMeasurable {
+public class ElementValuePair implements Measurable {
     /**
      * Index in constant pool that indicated the pair's name.
      */

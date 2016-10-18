@@ -1,8 +1,8 @@
 package io.github.bmf.attribute.clazz;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
-public class InnerClass implements IMeasurable {
+public class InnerClass implements Measurable {
     public int innerClassIndex;
     public int outerClassIndex;
     public int innerName;

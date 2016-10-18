@@ -1,12 +1,12 @@
 package io.github.bmf.attribute.annotation;
 
 import io.github.bmf.attribute.annotation.element.ElementValuePair;
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 import io.github.bmf.util.MeasurableUtils;
 
 import java.util.List;
 
-public class Annotation implements IMeasurable {
+public class Annotation implements Measurable {
     /**
      * Index in classpool that indicated the annotation's type.
      */

@@ -1,11 +1,11 @@
 package io.github.bmf.attribute.clazz;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BootstrapMethod implements IMeasurable {
+public class BootstrapMethod implements Measurable {
     public int methodReference;
     public List<Integer> arguments;
 

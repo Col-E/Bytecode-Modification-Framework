@@ -3,7 +3,7 @@ package io.github.bmf.attribute.method;
 import java.util.ArrayList;
 
 import io.github.bmf.consts.opcode.Opcode;
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
 /**
  * A temporary garbage class containing the raw data of what should be a list of
@@ -13,7 +13,7 @@ import io.github.bmf.util.IMeasurable;
  *
  * @author Matt
  */
-public class MethodCode implements IMeasurable {
+public class MethodCode implements Measurable {
     public final byte[] original;
     public ArrayList<Opcode> opcodes;
 

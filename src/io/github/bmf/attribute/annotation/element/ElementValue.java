@@ -1,6 +1,6 @@
 package io.github.bmf.attribute.annotation.element;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
 /**
  * A structure used by annotations that represent different values depending on
@@ -8,7 +8,7 @@ import io.github.bmf.util.IMeasurable;
  *
  * @author Matt
  */
-public abstract class ElementValue implements IMeasurable {
+public abstract class ElementValue implements Measurable {
     /**
      * <pre>
      * u1: tag

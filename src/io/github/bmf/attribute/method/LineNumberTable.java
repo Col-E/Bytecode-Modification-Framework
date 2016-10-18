@@ -1,11 +1,11 @@
 package io.github.bmf.attribute.method;
 
 import com.google.common.collect.Maps;
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
 import java.util.Map;
 
-public class LineNumberTable implements IMeasurable {
+public class LineNumberTable implements Measurable {
     public Map<Integer, Integer> indexToLine = Maps.newHashMap();
 
     public void add(int startPC, int lineNumber) {

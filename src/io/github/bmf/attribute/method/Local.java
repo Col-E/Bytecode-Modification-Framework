@@ -1,6 +1,6 @@
 package io.github.bmf.attribute.method;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
 /**
  * Local variable entry for the
@@ -15,7 +15,7 @@ import io.github.bmf.util.IMeasurable;
  *
  * @author Matt
  */
-public class Local implements IMeasurable {
+public class Local implements Measurable {
 
     /**
      * Start index in the opcodes

@@ -1,8 +1,8 @@
 package io.github.bmf.attribute.method;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 
-public class MethodException implements IMeasurable {
+public class MethodException implements Measurable {
     /**
      * Opcode indices in the method.
      */

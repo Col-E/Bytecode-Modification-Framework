@@ -1,6 +1,6 @@
 package io.github.bmf.attribute.method;
 
-import io.github.bmf.util.IMeasurable;
+import io.github.bmf.util.Measurable;
 import io.github.bmf.util.MeasurableUtils;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author Matt
  */
-public class LocalVariableTable implements IMeasurable {
+public class LocalVariableTable implements Measurable {
     public List<Local> locals;
 
     public LocalVariableTable(int size) {
