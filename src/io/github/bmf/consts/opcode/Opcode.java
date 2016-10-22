@@ -13,7 +13,7 @@ public abstract class Opcode implements Measurable {
     public final static int ICONST_4 = 0x07;
     public final static int ICONST_5 = 0x08;
     public final static int LCONST_0 = 0x09;
-    public final static int LCONST_1 = 0x10;
+    public final static int LCONST_1 = 0x0A;
     public final static int FCONST_0 = 0x0B;
     public final static int FCONST_1 = 0x0C;
     public final static int FCONST_2 = 0x0D;
@@ -128,7 +128,7 @@ public abstract class Opcode implements Measurable {
     public final static int ISHR = 0x7A;
     public final static int LSHR = 0x7B;
     public final static int IUSHR = 0x7C;
-    public final static int LUSHR = 0x7B;
+    public final static int LUSHR = 0x7D;
     public final static int IAND = 0x7E;
     public final static int LAND = 0x7F;
     public final static int IOR = 0x80;
@@ -206,11 +206,13 @@ public abstract class Opcode implements Measurable {
     public final static int JSR_W = 0xC9;
     public final static int BREAKPOINT = 0xCA;
     public final static int IMPDEP1 = 0xFE;
-    public final static int IMPDEP2 = 0xFF;;
-    private final OpcodeType opcode;
-    private final int length;
+    public final static int IMPDEP2 = 0xFF;
+    
+    private final OpcodeType type;
+    private final int length, opcode;
 
-    public Opcode(OpcodeType opcode, int length) {
+    public Opcode(OpcodeType type, int opcode,  int length) {
+        this.type = type;
         this.opcode = opcode;
         this.length = length;
     }
@@ -220,11 +222,11 @@ public abstract class Opcode implements Measurable {
         return length;
     }
 
-    public OpcodeType getOpcode() {
-        return opcode;
+    public OpcodeType getType() {
+        return type;
     }
 
-    public int getOpcodeValue() {
-        return opcode.getValue();
+    public int getOpcode() {
+        return 1;
     }
 }

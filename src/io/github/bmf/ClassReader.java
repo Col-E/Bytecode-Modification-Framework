@@ -9,6 +9,7 @@ import io.github.bmf.attribute.field.AttributeConstantValue;
 import io.github.bmf.attribute.method.*;
 import io.github.bmf.consts.*;
 import io.github.bmf.consts.opcode.Opcode;
+import io.github.bmf.consts.opcode.OpcodeInst;
 import io.github.bmf.consts.opcode.OpcodeType;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.util.io.StreamUtil;
@@ -286,423 +287,214 @@ public class ClassReader {
         if (wide) {
             code = is.readUnsignedByte();
         }
-        OpcodeType type = OpcodeType.fromValue(code);
-        // Should opcodes representing constant values be constants themselves?
-        // Ex: (general idea)
-        // ICONST_0 --> Opcode.INST_ICONST_0
-        //
-        // Also is a BCEL-like setup for opcodes the best course of action?
-        // Currently just have empty classes for each but no implementations.
-        switch (type) {
-        case AALOAD:
-            break;
-        case AASTORE:
-            break;
-        case ACONST_NULL:
-            break;
-        case ALOAD:
-            break;
-        case ALOAD_0:
-            break;
-        case ALOAD_1:
-            break;
-        case ALOAD_2:
-            break;
-        case ALOAD_3:
-            break;
-        case ANEWARRAY:
-            break;
-        case ARETURN:
-            break;
-        case ARRAYLENGTH:
-            break;
-        case ASTORE:
-            break;
-        case ASTORE_0:
-            break;
-        case ASTORE_1:
-            break;
-        case ASTORE_2:
-            break;
-        case ASTORE_3:
-            break;
-        case ATHROW:
-            break;
-        case BALOAD:
-            break;
-        case BASTORE:
-            break;
-        case BIPUSH:
-            break;
-        case BREAKPOINT:
-            break;
-        case CALOAD:
-            break;
-        case CASTORE:
-            break;
-        case CHECKCAST:
-            break;
-        case D2F:
-            break;
-        case D2I:
-            break;
-        case D2L:
-            break;
-        case DADD:
-            break;
-        case DALOAD:
-            break;
-        case DASTORE:
-            break;
-        case DCMPG:
-            break;
-        case DCMPL:
-            break;
-        case DCONST_0:
-            break;
-        case DCONST_1:
-            break;
-        case DDIV:
-            break;
-        case DLOAD:
-            break;
-        case DLOAD_0:
-            break;
-        case DLOAD_1:
-            break;
-        case DLOAD_2:
-            break;
-        case DLOAD_3:
-            break;
-        case DMUL:
-            break;
-        case DNEG:
-            break;
-        case DREM:
-            break;
-        case DRETURN:
-            break;
-        case DSTORE:
-            break;
-        case DSTORE_0:
-            break;
-        case DSTORE_1:
-            break;
-        case DSTORE_2:
-            break;
-        case DSTORE_3:
-            break;
-        case DSUB:
-            break;
-        case DUP:
-            break;
-        case DUP2:
-            break;
-        case DUP2_X1:
-            break;
-        case DUP2_X2:
-            break;
-        case DUP_X1:
-            break;
-        case DUP_X2:
-            break;
-        case F2D:
-            break;
-        case F2I:
-            break;
-        case F2L:
-            break;
-        case FADD:
-            break;
-        case FALOAD:
-            break;
-        case FASTORE:
-            break;
-        case FCMPG:
-            break;
-        case FCMPL:
-            break;
-        case FCONST_0:
-            break;
-        case FCONST_1:
-            break;
-        case FCONST_2:
-            break;
-        case FDIV:
-            break;
-        case FLOAD:
-            break;
-        case FLOAD_0:
-            break;
-        case FLOAD_1:
-            break;
-        case FLOAD_2:
-            break;
-        case FLOAD_3:
-            break;
-        case FMUL:
-            break;
-        case FNEG:
-            break;
-        case FREM:
-            break;
-        case FRETURN:
-            break;
-        case FSTORE:
-            break;
-        case FSTORE_0:
-            break;
-        case FSTORE_1:
-            break;
-        case FSTORE_2:
-            break;
-        case FSTORE_3:
-            break;
-        case FSUB:
-            break;
-        case GETFIELD:
-            break;
-        case GETSTATIC:
-            break;
-        case GOTO:
-            break;
-        case GOTO_W:
-            break;
-        case I2B:
-            break;
-        case I2C:
-            break;
-        case I2D:
-            break;
-        case I2F:
-            break;
-        case I2L:
-            break;
-        case I2S:
-            break;
-        case IADD:
-            break;
-        case IALOAD:
-            break;
-        case IAND:
-            break;
-        case IASTORE:
-            break;
-        case ICONST_0:
-            break;
-        case ICONST_1:
-            break;
-        case ICONST_2:
-            break;
-        case ICONST_3:
-            break;
-        case ICONST_4:
-            break;
-        case ICONST_5:
-            break;
-        case ICONST_M1:
-            break;
-        case IDIV:
-            break;
-        case IFEQ:
-            break;
-        case IFGE:
-            break;
-        case IFGT:
-            break;
-        case IFLE:
-            break;
-        case IFLT:
-            break;
-        case IFNE:
-            break;
-        case IFNONNULL:
-            break;
-        case IFNULL:
-            break;
-        case IF_ACMPEQ:
-            break;
-        case IF_ACMPNE:
-            break;
-        case IF_ICMPEQ:
-            break;
-        case IF_ICMPGE:
-            break;
-        case IF_ICMPGT:
-            break;
-        case IF_ICMPLE:
-            break;
-        case IF_ICMPLT:
-            break;
-        case IF_ICMPNE:
-            break;
-        case IINC:
-            break;
-        case ILOAD:
-            break;
-        case ILOAD_0:
-            break;
-        case ILOAD_1:
-            break;
-        case ILOAD_2:
-            break;
-        case ILOAD_3:
-            break;
-        case IMPDEP1:
-            break;
-        case IMPDEP2:
-            break;
-        case IMUL:
-            break;
-        case INEG:
-            break;
-        case INSTANCEOF:
-            break;
-        case INVOKEINTERFACE:
-            break;
-        case INVOKESPECIAL:
-            break;
-        case INVOKESTATIC:
-            break;
-        case INVOKEVIRTUAL:
-            break;
-        case IOR:
-            break;
-        case IREM:
-            break;
-        case IRETURN:
-            break;
-        case ISHL:
-            break;
-        case ISHR:
-            break;
-        case ISTORE:
-            break;
-        case ISTORE_0:
-            break;
-        case ISTORE_1:
-            break;
-        case ISTORE_2:
-            break;
-        case ISTORE_3:
-            break;
-        case ISUB:
-            break;
-        case IUSHR:
-            break;
-        case IXOR:
-            break;
-        case JSR:
-            break;
-        case JSR_W:
-            break;
-        case L2D:
-            break;
-        case L2F:
-            break;
-        case L2I:
-            break;
-        case LADD:
-            break;
-        case LALOAD:
-            break;
-        case LAND:
-            break;
-        case LASTORE:
-            break;
-        case LCMP:
-            break;
-        case LCONST_0:
-            break;
-        case LCONST_1:
-            break;
-        case LDC:
-            break;
-        case LDC2_W:
-            break;
-        case LDC_W:
-            break;
-        case LDIV:
-            break;
-        case LLOAD:
-            break;
-        case LLOAD_0:
-            break;
-        case LLOAD_1:
-            break;
-        case LLOAD_2:
-            break;
-        case LLOAD_3:
-            break;
-        case LMUL:
-            break;
-        case LNEG:
-            break;
-        case LOOKUPSWITCH:
-            break;
-        case LOR:
-            break;
-        case LREM:
-            break;
-        case LRETURN:
-            break;
-        case LSHL:
-            break;
-        case LSHR:
-            break;
-        case LSTORE:
-            break;
-        case LSTORE_0:
-            break;
-        case LSTORE_1:
-            break;
-        case LSTORE_2:
-            break;
-        case LSTORE_3:
-            break;
-        case LSUB:
-            break;
-        case LUSHR:
-            break;
-        case LXOR:
-            break;
-        case MONITORENTER:
-            break;
-        case MONITOREXIT:
-            break;
-        case MULTIANEWARRAY:
-            break;
-        case NEW:
-            break;
-        case NEWARRAY:
-            break;
-        case NOP:
-            break;
-        case POP:
-            break;
-        case POP2:
-            break;
-        case PUTFIELD:
-            break;
-        case PUTSTATIC:
-            break;
-        case RET:
-            break;
-        case RETURN:
-            break;
-        case SALOAD:
-            break;
-        case SASTORE:
-            break;
-        case SIPUSH:
-            break;
-        case SWAP:
-            break;
-        case TABLESWITCH:
-            break;
-        default:
-            break;
-
+        switch (code) {
+        case Opcode.NOP:
+            return OpcodeInst.NOP;
+        case Opcode.ACONST_NULL:
+            return OpcodeInst.ACONST_NULL;
+        case Opcode.ICONST_M1:
+            return OpcodeInst.ICONST_M1;
+        case Opcode.ICONST_0:
+        case Opcode.ICONST_1:
+        case Opcode.ICONST_2:
+        case Opcode.ICONST_3:
+        case Opcode.ICONST_4:
+        case Opcode.ICONST_5:
+        case Opcode.LCONST_0:
+        case Opcode.LCONST_1:
+        case Opcode.FCONST_0:
+        case Opcode.FCONST_1:
+        case Opcode.FCONST_2:
+        case Opcode.DCONST_0:
+        case Opcode.DCONST_1:
+        case Opcode.BIPUSH:
+        case Opcode.SIPUSH:
+        case Opcode.LDC:
+        case Opcode.LDC_W:
+        case Opcode.LDC2_W:
+        case Opcode.ILOAD:
+        case Opcode.LLOAD:
+        case Opcode.FLOAD:
+        case Opcode.DLOAD:
+        case Opcode.ALOAD:
+        case Opcode.ILOAD_0:
+        case Opcode.ILOAD_1:
+        case Opcode.ILOAD_2:
+        case Opcode.ILOAD_3:
+        case Opcode.LLOAD_0:
+        case Opcode.LLOAD_1:
+        case Opcode.LLOAD_2:
+        case Opcode.LLOAD_3:
+        case Opcode.FLOAD_0:
+        case Opcode.FLOAD_1:
+        case Opcode.FLOAD_2:
+        case Opcode.FLOAD_3:
+        case Opcode.DLOAD_0:
+        case Opcode.DLOAD_1:
+        case Opcode.DLOAD_2:
+        case Opcode.DLOAD_3:
+        case Opcode.ALOAD_0:
+        case Opcode.ALOAD_1:
+        case Opcode.ALOAD_2:
+        case Opcode.ALOAD_3:
+        case Opcode.IALOAD:
+        case Opcode.LALOAD:
+        case Opcode.FALOAD:
+        case Opcode.DALOAD:
+        case Opcode.AALOAD:
+        case Opcode.BALOAD:
+        case Opcode.CALOAD:
+        case Opcode.SALOAD:
+        case Opcode.ISTORE:
+        case Opcode.LSTORE:
+        case Opcode.FSTORE:
+        case Opcode.DSTORE:
+        case Opcode.ASTORE:
+        case Opcode.ISTORE_0:
+        case Opcode.ISTORE_1:
+        case Opcode.ISTORE_2:
+        case Opcode.ISTORE_3:
+        case Opcode.LSTORE_0:
+        case Opcode.LSTORE_1:
+        case Opcode.LSTORE_2:
+        case Opcode.LSTORE_3:
+        case Opcode.FSTORE_0:
+        case Opcode.FSTORE_1:
+        case Opcode.FSTORE_2:
+        case Opcode.FSTORE_3:
+        case Opcode.DSTORE_0:
+        case Opcode.DSTORE_1:
+        case Opcode.DSTORE_2:
+        case Opcode.DSTORE_3:
+        case Opcode.ASTORE_0:
+        case Opcode.ASTORE_1:
+        case Opcode.ASTORE_2:
+        case Opcode.ASTORE_3:
+        case Opcode.IASTORE:
+        case Opcode.LASTORE:
+        case Opcode.FASTORE:
+        case Opcode.DASTORE:
+        case Opcode.AASTORE:
+        case Opcode.BASTORE:
+        case Opcode.CASTORE:
+        case Opcode.SASTORE:
+        case Opcode.POP:
+        case Opcode.POP2:
+        case Opcode.DUP:
+        case Opcode.DUP_X1:
+        case Opcode.DUP_X2:
+        case Opcode.DUP2:
+        case Opcode.DUP2_X1:
+        case Opcode.DUP2_X2:
+        case Opcode.SWAP:
+        case Opcode.IADD:
+        case Opcode.LADD:
+        case Opcode.FADD:
+        case Opcode.DADD:
+        case Opcode.ISUB:
+        case Opcode.LSUB:
+        case Opcode.FSUB:
+        case Opcode.DSUB:
+        case Opcode.IMUL:
+        case Opcode.LMUL:
+        case Opcode.FMUL:
+        case Opcode.DMUL:
+        case Opcode.IDIV:
+        case Opcode.LDIV:
+        case Opcode.FDIV:
+        case Opcode.DDIV:
+        case Opcode.IREM:
+        case Opcode.LREM:
+        case Opcode.FREM:
+        case Opcode.DREM:
+        case Opcode.INEG:
+        case Opcode.LNEG:
+        case Opcode.FNEG:
+        case Opcode.DNEG:
+        case Opcode.ISHL:
+        case Opcode.LSHL:
+        case Opcode.ISHR:
+        case Opcode.LSHR:
+        case Opcode.IUSHR:
+        case Opcode.LUSHR:
+        case Opcode.IAND:
+        case Opcode.LAND:
+        case Opcode.IOR:
+        case Opcode.LOR:
+        case Opcode.IXOR:
+        case Opcode.LXOR:
+        case Opcode.IINC:
+        case Opcode.I2L:
+        case Opcode.I2F:
+        case Opcode.I2D:
+        case Opcode.L2I:
+        case Opcode.L2F:
+        case Opcode.L2D:
+        case Opcode.F2I:
+        case Opcode.F2L:
+        case Opcode.F2D:
+        case Opcode.D2I:
+        case Opcode.D2L:
+        case Opcode.D2F:
+        case Opcode.I2B:
+        case Opcode.I2C:
+        case Opcode.I2S:
+        case Opcode.LCMP:
+        case Opcode.FCMPL:
+        case Opcode.FCMPG:
+        case Opcode.DCMPL:
+        case Opcode.DCMPG:
+        case Opcode.IFEQ:
+        case Opcode.IFNE:
+        case Opcode.IFLT:
+        case Opcode.IFGE:
+        case Opcode.IFGT:
+        case Opcode.IFLE:
+        case Opcode.IF_ICMPEQ:
+        case Opcode.IF_ICMPNE:
+        case Opcode.IF_ICMPLT:
+        case Opcode.IF_ICMPGE:
+        case Opcode.IF_ICMPGT:
+        case Opcode.IF_ICMPLE:
+        case Opcode.IF_ACMPEQ:
+        case Opcode.IF_ACMPNE:
+        case Opcode.GOTO:
+        case Opcode.JSR:
+        case Opcode.RET:
+        case Opcode.TABLESWITCH:
+        case Opcode.LOOKUPSWITCH:
+        case Opcode.IRETURN:
+        case Opcode.LRETURN:
+        case Opcode.FRETURN:
+        case Opcode.DRETURN:
+        case Opcode.ARETURN:
+        case Opcode.RETURN:
+        case Opcode.GETSTATIC:
+        case Opcode.PUTSTATIC:
+        case Opcode.GETFIELD:
+        case Opcode.PUTFIELD:
+        case Opcode.INVOKEVIRTUAL:
+        case Opcode.INVOKESPECIAL:
+        case Opcode.INVOKESTATIC:
+        case Opcode.INVOKEINTERFACE:
+        case Opcode.NEW:
+        case Opcode.NEWARRAY:
+        case Opcode.ANEWARRAY:
+        case Opcode.ARRAYLENGTH:
+        case Opcode.ATHROW:
+        case Opcode.CHECKCAST:
+        case Opcode.INSTANCEOF:
+        case Opcode.MONITORENTER:
+        case Opcode.MONITOREXIT:
+        case Opcode.WIDE:
+        case Opcode.MULTIANEWARRAY:
+        case Opcode.IFNULL:
+        case Opcode.IFNONNULL:
+        case Opcode.GOTO_W:
+        case Opcode.JSR_W:
+        case Opcode.BREAKPOINT:
+        case Opcode.IMPDEP1:
+        case Opcode.IMPDEP2:
         }
         return null;
     }
