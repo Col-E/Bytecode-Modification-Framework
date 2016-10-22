@@ -207,11 +207,14 @@ public abstract class Opcode implements Measurable {
     public final static int BREAKPOINT = 0xCA;
     public final static int IMPDEP1 = 0xFE;
     public final static int IMPDEP2 = 0xFF;
-    
-    private final OpcodeType type;
-    private final int length, opcode;
+    /*
+     * 
+     */
+    public final OpcodeType type;
+    public final int opcode;
+    private final int length;
 
-    public Opcode(OpcodeType type, int opcode,  int length) {
+    public Opcode(OpcodeType type, int opcode, int length) {
         this.type = type;
         this.opcode = opcode;
         this.length = length;
@@ -220,13 +223,5 @@ public abstract class Opcode implements Measurable {
     @Override
     public int getLength() {
         return length;
-    }
-
-    public OpcodeType getType() {
-        return type;
-    }
-
-    public int getOpcode() {
-        return 1;
     }
 }

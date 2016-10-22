@@ -3,8 +3,8 @@ package io.github.bmf.consts.opcode.impl;
 import io.github.bmf.consts.opcode.SingleValueOpcode;
 import io.github.bmf.consts.opcode.OpcodeType;
 
-public class ICONST extends SingleValueOpcode<Integer> {
-    public ICONST(int opcode, int value) {
+public class LCONST extends SingleValueOpcode<Long> {
+    public LCONST(int opcode, long value) {
         super(OpcodeType.CONST_VALUE, opcode, 1, value);
     }
 }

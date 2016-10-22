@@ -10,7 +10,7 @@ import io.github.bmf.attribute.method.*;
 import io.github.bmf.consts.*;
 import io.github.bmf.consts.opcode.Opcode;
 import io.github.bmf.consts.opcode.OpcodeInst;
-import io.github.bmf.consts.opcode.OpcodeType;
+import io.github.bmf.consts.opcode.impl.*;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.util.io.StreamUtil;
 
@@ -295,23 +295,48 @@ public class ClassReader {
         case Opcode.ICONST_M1:
             return OpcodeInst.ICONST_M1;
         case Opcode.ICONST_0:
+            return OpcodeInst.ICONST_0;
         case Opcode.ICONST_1:
+            return OpcodeInst.ICONST_1;
         case Opcode.ICONST_2:
+            return OpcodeInst.ICONST_2;
         case Opcode.ICONST_3:
+            return OpcodeInst.ICONST_3;
         case Opcode.ICONST_4:
+            return OpcodeInst.ICONST_4;
         case Opcode.ICONST_5:
+            return OpcodeInst.ICONST_5;
         case Opcode.LCONST_0:
+            return OpcodeInst.LCONST_0;
         case Opcode.LCONST_1:
+            return OpcodeInst.LCONST_1;
         case Opcode.FCONST_0:
+            return OpcodeInst.FCONST_0;
         case Opcode.FCONST_1:
+            return OpcodeInst.FCONST_1;
         case Opcode.FCONST_2:
+            return OpcodeInst.FCONST_2;
         case Opcode.DCONST_0:
+            return OpcodeInst.DCONST_0;
         case Opcode.DCONST_1:
+            return OpcodeInst.DCONST_1;
         case Opcode.BIPUSH:
+            int byteVal = is.readUnsignedByte();
+            return new BIPUSH(byteVal);
         case Opcode.SIPUSH:
-        case Opcode.LDC:
-        case Opcode.LDC_W:
-        case Opcode.LDC2_W:
+            int shortVal = is.readUnsignedShort();
+            return new SIPUSH(shortVal);
+        case Opcode.LDC: {
+            int index = is.readUnsignedByte();
+            return new LDC(index);
+        }
+        case Opcode.LDC_W: 
+        case Opcode.LDC2_W:{
+            int indexbyte1 = is.readUnsignedByte();
+            int indexbyte2 = is.readUnsignedByte();
+            int index = indexbyte1 << 8 + indexbyte2;
+            return code == Opcode.LDC2_W ? new LDC2_W(index) : new LDC_W(index);
+        }
         case Opcode.ILOAD:
         case Opcode.LLOAD:
         case Opcode.FLOAD:
