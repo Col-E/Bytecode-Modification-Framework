@@ -330,140 +330,290 @@ public class ClassReader {
             int index = is.readUnsignedByte();
             return new LDC(index);
         }
-        case Opcode.LDC_W: 
-        case Opcode.LDC2_W:{
+        case Opcode.LDC_W:
+        case Opcode.LDC2_W: {
             int indexbyte1 = is.readUnsignedByte();
             int indexbyte2 = is.readUnsignedByte();
             int index = indexbyte1 << 8 + indexbyte2;
             return code == Opcode.LDC2_W ? new LDC2_W(index) : new LDC_W(index);
         }
-        case Opcode.ILOAD:
-        case Opcode.LLOAD:
-        case Opcode.FLOAD:
-        case Opcode.DLOAD:
-        case Opcode.ALOAD:
+        case Opcode.ILOAD: {
+            int index = is.readUnsignedByte();
+            return new ILOAD(index);
+        }
+        case Opcode.LLOAD: {
+            int index = is.readUnsignedByte();
+            return new LLOAD(index);
+        }
+        case Opcode.FLOAD: {
+            int index = is.readUnsignedByte();
+            return new FLOAD(index);
+        }
+        case Opcode.DLOAD: {
+            int index = is.readUnsignedByte();
+            return new DLOAD(index);
+        }
+        case Opcode.ALOAD: {
+            int index = is.readUnsignedByte();
+            return new ALOAD(index);
+        }
         case Opcode.ILOAD_0:
+            return OpcodeInst.ILOAD_0;
         case Opcode.ILOAD_1:
+            return OpcodeInst.ILOAD_1;
         case Opcode.ILOAD_2:
+            return OpcodeInst.ILOAD_2;
         case Opcode.ILOAD_3:
+            return OpcodeInst.ILOAD_3;
         case Opcode.LLOAD_0:
+            return OpcodeInst.LLOAD_0;
         case Opcode.LLOAD_1:
+            return OpcodeInst.LLOAD_1;
         case Opcode.LLOAD_2:
+            return OpcodeInst.LLOAD_2;
         case Opcode.LLOAD_3:
+            return OpcodeInst.LLOAD_3;
         case Opcode.FLOAD_0:
+            return OpcodeInst.FLOAD_0;
         case Opcode.FLOAD_1:
+            return OpcodeInst.FLOAD_1;
         case Opcode.FLOAD_2:
+            return OpcodeInst.FLOAD_2;
         case Opcode.FLOAD_3:
+            return OpcodeInst.FLOAD_3;
         case Opcode.DLOAD_0:
+            return OpcodeInst.DLOAD_0;
         case Opcode.DLOAD_1:
+            return OpcodeInst.DLOAD_1;
         case Opcode.DLOAD_2:
+            return OpcodeInst.DLOAD_2;
         case Opcode.DLOAD_3:
+            return OpcodeInst.DLOAD_3;
         case Opcode.ALOAD_0:
+            return OpcodeInst.ALOAD_0;
         case Opcode.ALOAD_1:
+            return OpcodeInst.ALOAD_1;
         case Opcode.ALOAD_2:
+            return OpcodeInst.ALOAD_2;
         case Opcode.ALOAD_3:
-        case Opcode.IALOAD:
-        case Opcode.LALOAD:
-        case Opcode.FALOAD:
-        case Opcode.DALOAD:
-        case Opcode.AALOAD:
-        case Opcode.BALOAD:
-        case Opcode.CALOAD:
-        case Opcode.SALOAD:
-        case Opcode.ISTORE:
-        case Opcode.LSTORE:
-        case Opcode.FSTORE:
-        case Opcode.DSTORE:
-        case Opcode.ASTORE:
+            return OpcodeInst.ALOAD_3;
+        case Opcode.ISTORE: {
+            int index = is.readUnsignedByte();
+            return new ISTORE(index);
+        }
+        case Opcode.LSTORE: {
+            int index = is.readUnsignedByte();
+            return new LSTORE(index);
+        }
+        case Opcode.FSTORE: {
+            int index = is.readUnsignedByte();
+            return new FSTORE(index);
+        }
+        case Opcode.DSTORE: {
+            int index = is.readUnsignedByte();
+            return new DSTORE(index);
+        }
+        case Opcode.ASTORE: {
+            int index = is.readUnsignedByte();
+            return new ASTORE(index);
+        }
         case Opcode.ISTORE_0:
+            return OpcodeInst.ISTORE_0;
         case Opcode.ISTORE_1:
+            return OpcodeInst.ISTORE_1;
         case Opcode.ISTORE_2:
+            return OpcodeInst.ISTORE_2;
         case Opcode.ISTORE_3:
+            return OpcodeInst.ISTORE_3;
         case Opcode.LSTORE_0:
+            return OpcodeInst.LSTORE_0;
         case Opcode.LSTORE_1:
+            return OpcodeInst.LSTORE_1;
         case Opcode.LSTORE_2:
+            return OpcodeInst.LSTORE_2;
         case Opcode.LSTORE_3:
+            return OpcodeInst.LSTORE_3;
         case Opcode.FSTORE_0:
+            return OpcodeInst.FSTORE_0;
         case Opcode.FSTORE_1:
+            return OpcodeInst.FSTORE_1;
         case Opcode.FSTORE_2:
+            return OpcodeInst.FSTORE_2;
         case Opcode.FSTORE_3:
+            return OpcodeInst.FSTORE_3;
         case Opcode.DSTORE_0:
+            return OpcodeInst.DSTORE_0;
         case Opcode.DSTORE_1:
+            return OpcodeInst.DSTORE_1;
         case Opcode.DSTORE_2:
+            return OpcodeInst.DSTORE_2;
         case Opcode.DSTORE_3:
+            return OpcodeInst.DSTORE_3;
         case Opcode.ASTORE_0:
+            return OpcodeInst.ASTORE_0;
         case Opcode.ASTORE_1:
+            return OpcodeInst.ASTORE_1;
         case Opcode.ASTORE_2:
+            return OpcodeInst.ASTORE_2;
         case Opcode.ASTORE_3:
+            return OpcodeInst.ASTORE_3;
+        case Opcode.IALOAD:
+            return OpcodeInst.IALOAD;
+        case Opcode.LALOAD:
+            return OpcodeInst.LALOAD;
+        case Opcode.FALOAD:
+            return OpcodeInst.FALOAD;
+        case Opcode.DALOAD:
+            return OpcodeInst.DALOAD;
+        case Opcode.AALOAD:
+            return OpcodeInst.AALOAD;
+        case Opcode.BALOAD:
+            return OpcodeInst.BALOAD;
+        case Opcode.CALOAD:
+            return OpcodeInst.CALOAD;
+        case Opcode.SALOAD:
+            return OpcodeInst.SALOAD;
         case Opcode.IASTORE:
+            return OpcodeInst.IASTORE;
         case Opcode.LASTORE:
+            return OpcodeInst.LASTORE;
         case Opcode.FASTORE:
+            return OpcodeInst.FASTORE;
         case Opcode.DASTORE:
+            return OpcodeInst.DASTORE;
         case Opcode.AASTORE:
+            return OpcodeInst.AASTORE;
         case Opcode.BASTORE:
+            return OpcodeInst.BASTORE;
         case Opcode.CASTORE:
+            return OpcodeInst.CASTORE;
         case Opcode.SASTORE:
+            return OpcodeInst.SASTORE;
         case Opcode.POP:
+            return OpcodeInst.POP;
         case Opcode.POP2:
+            return OpcodeInst.POP2;
         case Opcode.DUP:
+            return OpcodeInst.DUP;
         case Opcode.DUP_X1:
+            return OpcodeInst.DUP_X1;
         case Opcode.DUP_X2:
+            return OpcodeInst.DUP_X2;
         case Opcode.DUP2:
+            return OpcodeInst.DUP2;
         case Opcode.DUP2_X1:
+            return OpcodeInst.DUP2_X1;
         case Opcode.DUP2_X2:
+            return OpcodeInst.DUP2_X2;
         case Opcode.SWAP:
+            return OpcodeInst.SWAP;
         case Opcode.IADD:
+            return OpcodeInst.IADD;
         case Opcode.LADD:
+            return OpcodeInst.LADD;
         case Opcode.FADD:
+            return OpcodeInst.FADD;
         case Opcode.DADD:
+            return OpcodeInst.DADD;
         case Opcode.ISUB:
+            return OpcodeInst.ISUB;
         case Opcode.LSUB:
+            return OpcodeInst.LSUB;
         case Opcode.FSUB:
+            return OpcodeInst.FSUB;
         case Opcode.DSUB:
+            return OpcodeInst.DSUB;
         case Opcode.IMUL:
+            return OpcodeInst.ISUB;
         case Opcode.LMUL:
+            return OpcodeInst.LSUB;
         case Opcode.FMUL:
+            return OpcodeInst.FSUB;
         case Opcode.DMUL:
+            return OpcodeInst.DSUB;
         case Opcode.IDIV:
+            return OpcodeInst.ISUB;
         case Opcode.LDIV:
+            return OpcodeInst.LSUB;
         case Opcode.FDIV:
+            return OpcodeInst.FSUB;
         case Opcode.DDIV:
+            return OpcodeInst.DSUB;
         case Opcode.IREM:
+            return OpcodeInst.IREM;
         case Opcode.LREM:
+            return OpcodeInst.LREM;
         case Opcode.FREM:
+            return OpcodeInst.FREM;
         case Opcode.DREM:
+            return OpcodeInst.DREM;
         case Opcode.INEG:
+            return OpcodeInst.INEG;
         case Opcode.LNEG:
+            return OpcodeInst.LNEG;
         case Opcode.FNEG:
+            return OpcodeInst.FNEG;
         case Opcode.DNEG:
+            return OpcodeInst.DNEG;
         case Opcode.ISHL:
+            return OpcodeInst.ISHL;
         case Opcode.LSHL:
+            return OpcodeInst.LSHL;
         case Opcode.ISHR:
+            return OpcodeInst.ISHR;
         case Opcode.LSHR:
+            return OpcodeInst.LSHR;
         case Opcode.IUSHR:
+            return OpcodeInst.IUSHR;
         case Opcode.LUSHR:
+            return OpcodeInst.LUSHR;
         case Opcode.IAND:
+            return OpcodeInst.IAND;
         case Opcode.LAND:
+            return OpcodeInst.LAND;
         case Opcode.IOR:
+            return OpcodeInst.IOR;
         case Opcode.LOR:
+            return OpcodeInst.LOR;
         case Opcode.IXOR:
+            return OpcodeInst.IXOR;
         case Opcode.LXOR:
-        case Opcode.IINC:
+            return OpcodeInst.LXOR;
+        case Opcode.IINC: {
+            int index = is.readUnsignedByte();
+            int increment = is.readUnsignedByte();
+            return new IINC(index, increment);
+        }
         case Opcode.I2L:
+            return OpcodeInst.I2L;
         case Opcode.I2F:
+            return OpcodeInst.I2F;
         case Opcode.I2D:
+            return OpcodeInst.I2D;
         case Opcode.L2I:
+            return OpcodeInst.L2I;
         case Opcode.L2F:
+            return OpcodeInst.L2F;
         case Opcode.L2D:
+            return OpcodeInst.L2D;
         case Opcode.F2I:
+            return OpcodeInst.F2I;
         case Opcode.F2L:
+            return OpcodeInst.F2L;
         case Opcode.F2D:
+            return OpcodeInst.F2D;
         case Opcode.D2I:
+            return OpcodeInst.D2I;
         case Opcode.D2L:
+            return OpcodeInst.D2L;
         case Opcode.D2F:
+            return OpcodeInst.D2F;
         case Opcode.I2B:
+            return OpcodeInst.I2B;
         case Opcode.I2C:
+            return OpcodeInst.I2C;
         case Opcode.I2S:
+            return OpcodeInst.I2S;
         case Opcode.LCMP:
         case Opcode.FCMPL:
         case Opcode.FCMPG:
