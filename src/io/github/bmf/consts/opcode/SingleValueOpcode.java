@@ -1,6 +1,6 @@
 package io.github.bmf.consts.opcode;
 
-public class SingleValueOpcode<T> extends Opcode {
+public class SingleValueOpcode<T extends Number> extends Opcode {
     public T value;
 
     public SingleValueOpcode(OpcodeType type, int opcode, int length) {
