@@ -2,7 +2,7 @@ package io.github.bmf.attribute.method;
 
 import java.util.ArrayList;
 
-import io.github.bmf.consts.opcode.Opcode;
+import io.github.bmf.opcode.Opcode;
 import io.github.bmf.util.Measurable;
 
 /**

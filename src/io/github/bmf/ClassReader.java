@@ -8,10 +8,10 @@ import io.github.bmf.attribute.clazz.*;
 import io.github.bmf.attribute.field.AttributeConstantValue;
 import io.github.bmf.attribute.method.*;
 import io.github.bmf.consts.*;
-import io.github.bmf.consts.opcode.Opcode;
-import io.github.bmf.consts.opcode.OpcodeInst;
-import io.github.bmf.consts.opcode.impl.*;
 import io.github.bmf.exception.InvalidClassException;
+import io.github.bmf.opcode.Opcode;
+import io.github.bmf.opcode.OpcodeInst;
+import io.github.bmf.opcode.impl.*;
 import io.github.bmf.util.io.StreamUtil;
 
 /**
