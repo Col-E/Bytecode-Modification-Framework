@@ -283,10 +283,6 @@ public class ClassReader {
 
     private static Opcode readOpcode(DataInputStream is) throws IOException {
         int code = is.readUnsignedByte();
-        boolean wide = code == Opcode.WIDE;
-        if (wide) {
-            code = is.readUnsignedByte();
-        }
         switch (code) {
         case Opcode.NOP:
             return OpcodeInst.NOP;
@@ -634,7 +630,9 @@ public class ClassReader {
         case Opcode.IF_ACMPEQ:
         case Opcode.IF_ACMPNE:
         case Opcode.GOTO:
+        case Opcode.GOTO_W:
         case Opcode.JSR:
+        case Opcode.JSR_W:
         case Opcode.RET:
         case Opcode.TABLESWITCH:
         case Opcode.LOOKUPSWITCH:
@@ -661,15 +659,13 @@ public class ClassReader {
         case Opcode.INSTANCEOF:
         case Opcode.MONITORENTER:
         case Opcode.MONITOREXIT:
-        case Opcode.WIDE:
         case Opcode.MULTIANEWARRAY:
         case Opcode.IFNULL:
         case Opcode.IFNONNULL:
-        case Opcode.GOTO_W:
-        case Opcode.JSR_W:
         case Opcode.BREAKPOINT:
         case Opcode.IMPDEP1:
         case Opcode.IMPDEP2:
+        case Opcode.WIDE:
         }
         return null;
     }
