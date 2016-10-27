@@ -30,7 +30,7 @@ public abstract class AbstractLDC extends SingleValueOpcode<Integer> {
      * @return Referenced value
      */
     public Object getValue(ClassNode node) {
-        return node.getConst(value).value;
+        return node.getConst(value).getValue();
     }
 
     /**
@@ -61,8 +61,8 @@ public abstract class AbstractLDC extends SingleValueOpcode<Integer> {
      */
     public String getString(ClassNode node) {
         ConstString cs = (ConstString) node.getConst(value);
-        ConstUTF8 utf = (ConstUTF8) node.getConst(cs.value);
-        return utf.value;
+        ConstUTF8 utf = (ConstUTF8) node.getConst(cs.getValue());
+        return utf.getValue();
     }
 
     /**

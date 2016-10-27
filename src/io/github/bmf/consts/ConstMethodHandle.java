@@ -7,10 +7,10 @@ public class ConstMethodHandle extends Constant<Integer> {
     }
 
     public int getKind() {
-        return (value.intValue() >> 16) & 0xffff;
+        return (getValue().intValue() >> 16) & 0xffff;
     }
 
     public int getIndex() {
-        return value.intValue() & 0xffff;
+        return getValue().intValue() & 0xffff;
     }
 }

@@ -295,32 +295,32 @@ public class ClassWriter {
         switch (constant.type) {
         case DOUBLE:
             ConstDouble constDouble = (ConstDouble) constant;
-            ds.writeDouble(constDouble.value);
+            ds.writeDouble(constDouble.getValue());
             break;
         case LONG:
             ConstLong constLong = (ConstLong) constant;
-            ds.writeLong(constLong.value);
+            ds.writeLong(constLong.getValue());
             break;
         case FLOAT:
             ConstFloat constFloat = (ConstFloat) constant;
-            ds.writeFloat(constFloat.value);
+            ds.writeFloat(constFloat.getValue());
             break;
         case INT:
             ConstInt constInt = (ConstInt) constant;
-            ds.writeInt(constInt.value);
+            ds.writeInt(constInt.getValue());
             break;
         case STRING:
             ConstString constString = (ConstString) constant;
-            ds.writeShort(constString.value);
+            ds.writeShort(constString.getValue());
             break;
         case UTF8:
             ConstUTF8 constUTF = (ConstUTF8) constant;
-            ds.writeShort(constUTF.value.getBytes().length);
-            ds.write(constUTF.value.getBytes());
+            ds.writeShort(constUTF.getValue().getBytes().length);
+            ds.write(constUTF.getValue().getBytes());
             break;
         case CLASS:
             ConstClass constClass = (ConstClass) constant;
-            ds.writeShort(constClass.value);
+            ds.writeShort(constClass.getValue());
             break;
         case FIELD:
             ConstField constField = (ConstField) constant;
@@ -349,7 +349,7 @@ public class ClassWriter {
             break;
         case METHOD_TYPE:
             ConstMethodType constMethodType = (ConstMethodType) constant;
-            ds.writeShort(constMethodType.value);
+            ds.writeShort(constMethodType.getValue());
             break;
         case NAME_TYPE:
             ConstNameType constNameType = (ConstNameType) constant;

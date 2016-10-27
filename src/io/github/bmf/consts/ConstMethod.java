@@ -7,10 +7,10 @@ public class ConstMethod extends Constant<Integer> {
     }
 
     public int getClassIndex() {
-        return (value.intValue() >> 16) & 0xffff;
+        return (getValue().intValue() >> 16) & 0xffff;
     }
 
     public int getNameTypeIndex() {
-        return value.intValue() & 0xffff;
+        return getValue().intValue() & 0xffff;
     }
 }

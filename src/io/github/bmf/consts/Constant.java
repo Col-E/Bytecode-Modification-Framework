@@ -14,7 +14,7 @@ public abstract class Constant<T> {
     /**
      * Constant's value.
      */
-    public T value;
+    private T value;
 
     public ConstantType getType() {
         return type;
@@ -29,8 +29,16 @@ public abstract class Constant<T> {
         this.value = value;
     }
 
+    public T getValue() {
+        return value;
+    }
+
+    public void setValue(T value) {
+        this.value = value;
+    }
+
     @Override
     public String toString() {
-        return type.toString() + ":" + value;
+        return type.toString() + ":" + getValue();
     }
 }
