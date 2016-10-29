@@ -12,7 +12,6 @@ import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.opcode.Opcode;
 import io.github.bmf.opcode.OpcodeInst;
 import io.github.bmf.opcode.impl.*;
-import io.github.bmf.util.ClassData;
 import io.github.bmf.util.io.StreamUtil;
 
 import java.io.DataInputStream;
@@ -27,9 +26,7 @@ import java.util.List;
 @SuppressWarnings("rawtypes")
 public class ClassReader {
 
-    public ArrayList<ClassData> classData = new ArrayList<>();
-
-    public ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
+    public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
         DataInputStream is = StreamUtil.fromBytes(data);
         if (is.readInt() != 0xCAFEBABE) { throw new InvalidClassException(); }
         // Create the node
@@ -85,7 +82,7 @@ public class ClassReader {
         return node;
     }
 
-    private FieldNode readField(ClassNode owner, DataInputStream is) throws IOException {
+    private static FieldNode readField(ClassNode owner, DataInputStream is) throws IOException {
         FieldNode field = new FieldNode(owner);
         field.access = is.readUnsignedShort();
         field.name = is.readUnsignedShort();
@@ -98,7 +95,7 @@ public class ClassReader {
         return field;
     }
 
-    private MethodNode readMethod(ClassNode owner, DataInputStream is) throws IOException {
+    private static MethodNode readMethod(ClassNode owner, DataInputStream is) throws IOException {
         MethodNode method = new MethodNode(owner);
         method.access = is.readUnsignedShort();
         method.name = is.readUnsignedShort();
@@ -111,7 +108,7 @@ public class ClassReader {
         return method;
     }
 
-    private Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException {
+    private static Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
         String name = owner.getConst(nameIndex).getValue().toString();
@@ -265,26 +262,30 @@ public class ClassReader {
         throw new RuntimeException("Unhandled attribute! " + attributeType);
     }
 
-    private MethodCode readMethodCode(ClassNode owner, DataInputStream is) throws IOException {
+    private static MethodCode readMethodCode(ClassNode owner, DataInputStream is) throws IOException {
         int codeLength = is.readInt();
         // Store original opcode bytes
         byte[] origOpcodeBytes = new byte[codeLength];
         is.read(origOpcodeBytes);
         MethodCode codeData = new MethodCode(origOpcodeBytes);
 
-        // Create opcode data
-        codeData.opcodes = new ArrayList<Opcode>();
-        DataInputStream opstr = StreamUtil.fromBytes(codeData.original);
-        // Is there a way to find the # of opcodes? Can't seem to figure one out
-        // aside from reading and knowing after the fact.
-        while (opstr.available() > 0) {
-            codeData.opcodes.add(readOpcode(opstr));
+        boolean testing = false;
+        if (testing) {
+            // Create opcode data
+            codeData.opcodes = new ArrayList<Opcode>();
+            DataInputStream opstr = StreamUtil.fromBytes(codeData.original);
+            // Is there a way to find the # of opcodes? Can't seem to figure one
+            // out
+            // aside from reading and knowing after the fact.
+            while (opstr.available() > 0) {
+                codeData.opcodes.add(readOpcode(opstr));
+            }
+            opstr.close();
         }
-        opstr.close();
         return codeData;
     }
 
-    private Opcode readOpcode(DataInputStream is) throws IOException {
+    private static Opcode readOpcode(DataInputStream is) throws IOException {
         int code = is.readUnsignedByte();
         switch (code) {
         case Opcode.NOP:
@@ -673,7 +674,7 @@ public class ClassReader {
         return null;
     }
 
-    private Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
+    private static Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
             int length) throws IOException {
         boolean param = type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS
                 || type == AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS;
@@ -701,7 +702,7 @@ public class ClassReader {
         }
     }
 
-    private Annotation readAnnotation(ClassNode owner, DataInputStream is) throws IOException {
+    private static Annotation readAnnotation(ClassNode owner, DataInputStream is) throws IOException {
         int typeIndex = is.readUnsignedShort();
         int num = is.readUnsignedShort();
         List<ElementValuePair> valuePairs = Lists.newArrayList();
@@ -713,7 +714,7 @@ public class ClassReader {
         return new Annotation(typeIndex, valuePairs);
     }
 
-    private ElementValue readElementValue(ClassNode owner, DataInputStream is) throws IOException {
+    private static ElementValue readElementValue(ClassNode owner, DataInputStream is) throws IOException {
         char tag = (char) is.readUnsignedByte();
         ElementValueType type = ElementValueType.fromType(tag);
         if (type == null) { throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TAG: " + tag); }
@@ -752,8 +753,7 @@ public class ClassReader {
         }
     }
 
-    private ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is)
-            throws IOException {
+    private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is) throws IOException {
         int num = is.readUnsignedShort();
         List<Annotation> annotations = Lists.newArrayList();
         for (int i = 0; i < num; i++) {
@@ -762,7 +762,7 @@ public class ClassReader {
         return new ParameterAnnotations(annotations);
     }
 
-    private Constant readConst(ConstantType constType, DataInputStream is) throws IOException {
+    private static Constant readConst(ConstantType constType, DataInputStream is) throws IOException {
         // Braces in switches are ugly, but having variable name pass-through
         // sucks.
         switch (constType) {

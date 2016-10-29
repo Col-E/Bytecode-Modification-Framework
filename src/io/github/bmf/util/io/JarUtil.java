@@ -26,6 +26,11 @@ import java.util.zip.ZipFile;
  */
 public class JarUtil {
     /**
+     * Manifest entry name.
+     */
+    private static final String MANIFEST_ENTRY_NAME = "META-INF/MANIFEST.MF";
+
+    /**
      * Reads all classes in a jar file and stores them in a map of byte arrays.
      *
      * @param file
@@ -43,6 +48,29 @@ public class JarUtil {
             @Override
             public String filterName(String name) {
                 return name.replace(".class", "");
+            }
+        });
+    }
+
+    /**
+     * Reads all non-class entries in a jar file and stores them in a map of
+     * byte arrays.
+     *
+     * @param file
+     * @return
+     * @throws ZipException
+     * @throws IOException
+     */
+    public static Map<String, byte[]> readJarNonClasses(File file) throws ZipException, IOException {
+        return readJar(file, new NameFilter() {
+            @Override
+            public boolean matches(String name) {
+                return !name.endsWith(".class");
+            }
+
+            @Override
+            public String filterName(String name) {
+                return name;
             }
         });
     }
@@ -76,9 +104,32 @@ public class JarUtil {
         return entries;
     }
 
-    public static void writeJar(File in, File outf, Map<String, ClassNode> nodes) {
+    /**
+     * Creates a new jar file given the original file <i>in</i>, the output file
+     * <i>out</i>, and a map of ClassNodes.
+     * 
+     * @param in
+     * @param out
+     * @param nodes
+     */
+    public static void writeJar(File in, File out, Map<String, ClassNode> nodes) {
+        writeJar(in, out, nodes, null);
+    }
+
+    /**
+     * Creates a new jar file given the original file <i>in</i>, the output file
+     * <i>out</i>, a map of ClassNodes, and a map of non-class entries.
+     * 
+     * 
+     * @param in
+     * @param out
+     * @param nodes
+     * @param nonClasses
+     */
+    public static void writeJar(File in, File out, Map<String, ClassNode> nodes, Map<String, byte[]> nonClasses) {
         try {
-            FileOutputStream fos = new FileOutputStream(outf);
+            FileOutputStream fos = new FileOutputStream(out);
+
             Manifest manifest = getManifest(in);
             JarOutputStream jos = manifest != null ? new JarOutputStream(fos, manifest) : new JarOutputStream(fos);
             for (String className : nodes.keySet()) {
@@ -87,6 +138,17 @@ public class JarUtil {
                 jos.putNextEntry(entry);
                 jos.write(ClassWriter.write(nodes.get(className)));
             }
+            if (nonClasses != null) {
+                if (manifest != null && nonClasses.containsKey(MANIFEST_ENTRY_NAME)) {
+                    nonClasses.remove(MANIFEST_ENTRY_NAME);
+                }
+                for (String entryName : nonClasses.keySet()) {
+                    JarEntry entry = new JarEntry(entryName);
+                    entry.setTime(System.currentTimeMillis());
+                    jos.putNextEntry(entry);
+                    jos.write(nonClasses.get(entryName));
+                }
+            }
             jos.close();
             fos.close();
         } catch (Exception ex) {
@@ -94,6 +156,13 @@ public class JarUtil {
         }
     }
 
+    /**
+     * Assumes the given file is a jar and retrieves the manifest.
+     * 
+     * @param in
+     * @return
+     * @throws IOException
+     */
     private static Manifest getManifest(File in) throws IOException {
         JarFile jar = new JarFile(in);
         Manifest manifest = jar.getManifest();

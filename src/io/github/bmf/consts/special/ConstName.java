@@ -4,7 +4,6 @@ import io.github.bmf.consts.ConstUTF8;
 import io.github.bmf.util.Box;
 
 public class ConstName extends ConstUTF8 {
-
     public Box<String> name;
 
     public ConstName(Box<String> name) {
