@@ -6,6 +6,7 @@ public class FieldDescriptor  extends MemberDescriptor {
     public Type fieldType;
 
     public FieldDescriptor(Type type) {
+        super(type.toDesc());
         fieldType = type;
     }
 

@@ -9,11 +9,13 @@ public class MethodDescriptor extends MemberDescriptor {
     public final List<Type> parameters;
     public Type returnType;
 
-    public MethodDescriptor(List<Type> parameters, Type returnType) {
+    public MethodDescriptor(String desc, List<Type> parameters, Type returnType) {
+        super(desc);
         this.parameters = parameters;
         this.returnType = returnType;
     }
 
+   
     @Override
     public String toDesc() {
         StringBuilder sb = new StringBuilder();
@@ -25,4 +27,5 @@ public class MethodDescriptor extends MemberDescriptor {
         sb.append(returnType.toString());
         return sb.toString();
     }
+
 }

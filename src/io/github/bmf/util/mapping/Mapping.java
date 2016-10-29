@@ -3,7 +3,9 @@ package io.github.bmf.util.mapping;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.github.bmf.consts.ConstantType;
 import io.github.bmf.util.Box;
+import io.github.bmf.util.descriptors.MemberDescriptor;
 
 public class Mapping {
     private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
@@ -16,9 +18,38 @@ public class Mapping {
         mappings.put(mapping.name.value, mapping);
     }
 
-    public Box<String> get(String name) {
-        if (mappings.containsKey(name)) { return mappings.get(name).name; }
-        throw new RuntimeException("Unknown name mapping: " + name);
+    public Box<String> getClassName(String name) {
+        if (hasClass(name)) {
+            return mappings.get(name).name;
+        } else {
+            mappings.put(name, new ClassMapping(name));
+            return getClassName(name);
+        }
+    }
+
+    public ClassMapping getMapping(String name) {
+        return mappings.get(name);
+    }
+
+    public boolean hasClass(String name) {
+        return mappings.containsKey(name);
+    }
+
+    public MemberDescriptor getDesc(String name, String v) {
+        if (hasClass(name)){
+            ClassMapping cm = getMapping(name);
+            for (MemberMapping mm : cm.members){
+                if (mm.desc.original.equals(v)){
+                    return mm.desc;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean hasDesc(String name, String v) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

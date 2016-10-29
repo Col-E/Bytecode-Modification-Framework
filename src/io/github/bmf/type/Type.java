@@ -35,7 +35,6 @@ public abstract class Type {
     public static MethodDescriptor method(Mapping mapping, String desc) {
         char[] carr = desc.toCharArray();
         List<Type> types = new ArrayList<Type>();
-        System.out.println(desc);
         int i = 1;
         while (true) {
             char c = carr[i];
@@ -62,10 +61,7 @@ public abstract class Type {
             }
             i++;
         }
-        for (Type t : types) {
-            System.out.println("\t" + t.toDesc());
-        }
-        return new MethodDescriptor(types, type(mapping, desc.substring(desc.indexOf(')') + 1)));
+        return new MethodDescriptor(desc,types, type(mapping, desc.substring(desc.indexOf(')') + 1)));
     }
 
     private static ArrayType readArray(Mapping mapping, String desc, int i) {
@@ -120,10 +116,10 @@ public abstract class Type {
         if (desc.length() == 1) {
             return readPrim(desc.charAt(0));
         } else if (desc.charAt(0) == '[') { return readArray(mapping, desc, 1); }
-        return new ClassType(mapping.get(desc));
+        return new ClassType(mapping.getClassName(desc));
     }
 
     private static Type type(Mapping mapping, String desc, int i, int len) {
-        return new ClassType(mapping.get(desc.substring(i + 1, i + len - 1)));
+        return new ClassType(mapping.getClassName(desc.substring(i + 1, i + len - 1)));
     }
 }

@@ -4,6 +4,10 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.github.bmf.consts.ConstUTF8;
+import io.github.bmf.consts.Constant;
+import io.github.bmf.consts.special.ConstMemberDesc;
+import io.github.bmf.consts.special.ConstName;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.descriptors.MethodDescriptor;
@@ -60,18 +64,41 @@ public class JarReader {
         }
     }
 
+    public static final int PASS_MAKE_CLASS = 0;
+    public static final int PASS_MAKE_MEMBER_DATA = 1;
+    public static final int PASS_UPDATE_CONSTANTS = 2;
+
     /**
      * Sets up the mapping.
      */
-    public void genMappings() {
+    public void genMappings(int pass) {
         for (ClassNode node : classEntries.values()) {
-            ClassMapping map = new ClassMapping(ConstUtil.getName(node));
-            for (MethodNode method : node.methods) {
-                String name = ConstUtil.getUTF8String(node, method.name);
-                String descStr = ConstUtil.getUTF8String(node, method.desc);
-                MethodDescriptor desc = Type.method(mapping, descStr);
-                MemberMapping member = new MemberMapping(name, desc);
-                map.members.add(member);
+            if (pass == PASS_MAKE_CLASS) {
+                ClassMapping map = new ClassMapping(ConstUtil.getName(node));
+                mapping.addMapping(map);
+            } else if (pass == PASS_MAKE_MEMBER_DATA) {
+                ClassMapping map = mapping.getMapping(ConstUtil.getName(node));
+                for (MethodNode method : node.methods) {
+                    String name = ConstUtil.getUTF8String(node, method.name);
+                    String descStr = ConstUtil.getUTF8String(node, method.desc);
+                    MethodDescriptor desc = Type.method(mapping, descStr);
+                    MemberMapping member = new MemberMapping(name, desc);
+                    map.members.add(member);
+                }
+            } else if (pass == PASS_UPDATE_CONSTANTS) {
+                for (int i = 0; i < node.constants.size(); i++) {
+                    Constant<?> cnst = node.constants.get(i);
+                    if (cnst == null || !(cnst instanceof ConstUTF8)){
+                        continue;
+                    }
+                    ConstUTF8 utf = (ConstUTF8) cnst;
+                    String v = utf.getValue();
+                    if (mapping.hasClass(v)){
+                        node.constants.set(i, new ConstName(mapping.getClassName(v)));
+                    } else if (mapping.hasDesc(ConstUtil.getName(node), v)){
+                        node.constants.set(i, new ConstMemberDesc(mapping.getDesc(ConstUtil.getName(node), v)));
+                    }
+                }
             }
         }
     }

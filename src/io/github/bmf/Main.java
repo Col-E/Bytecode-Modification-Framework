@@ -20,6 +20,10 @@ public class Main {
     private static void all(String file) {
         try {
             JarReader read = new JarReader(new File(file), true);
+            read.genMappings(JarReader.PASS_MAKE_CLASS);
+            read.genMappings(JarReader.PASS_MAKE_MEMBER_DATA);
+            read.genMappings(JarReader.PASS_UPDATE_CONSTANTS);
+            read.getMapping().getMapping("io/github/bmf/attribute/Attribute").name.value = "dank/meme/NewAttribute";
             read.saveTo(new File(OUT_FILE));
         } catch (Exception e) {
             e.printStackTrace();

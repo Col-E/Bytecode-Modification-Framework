@@ -3,6 +3,7 @@ package io.github.bmf.util.io;
 import com.google.common.collect.Maps;
 import io.github.bmf.ClassNode;
 import io.github.bmf.ClassWriter;
+import io.github.bmf.util.ConstUtil;
 
 import org.apache.commons.io.IOUtils;
 
@@ -131,11 +132,11 @@ public class JarUtil {
             FileOutputStream fos = new FileOutputStream(out);
             Manifest manifest = getManifest(in);
             JarOutputStream jos = manifest != null ? new JarOutputStream(fos, manifest) : new JarOutputStream(fos);
-            for (String className : nodes.keySet()) {
-                JarEntry entry = new JarEntry(className + ".class");
+            for (ClassNode node : nodes.values()) {
+                JarEntry entry = new JarEntry(ConstUtil.getName(node) + ".class");
                 entry.setTime(System.currentTimeMillis());
                 jos.putNextEntry(entry);
-                jos.write(ClassWriter.write(nodes.get(className)));
+                jos.write(ClassWriter.write(node));
             }
             if (nonClasses != null) {
                 if (manifest != null && nonClasses.containsKey(MANIFEST_ENTRY_NAME))
