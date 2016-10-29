@@ -12,24 +12,18 @@ public class Main {
 
     public static void main(String[] args) {
         all(IN_FILE);
-        // ClassNode c = one(IN_FILE, "io/github/bmf/ClassNode");
-        // all(OUT_FILE);
-        // ClassNode c = one(OUT_FILE, "io/github/bmf/ClassNode");
-        // if (c != null){
-        // System.out.println(c.toString());
-        // }
     }
 
     private static void all(String file) {
         try {
-            Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
-            Map<String, ClassNode> nodes = Maps.newHashMap();
-            JarReader jarReader = new JarReader(new File(file));
-            for (String s : entries.keySet()) {
-                ClassNode cn = ClassReader.getNode(entries.get(s));
-                nodes.put(s, cn);
+            
+            JarReader read = new JarReader(new File(file));
+            read.read();
+            System.out.println(read.getClassEntries().size());
+            System.out.println(read.getFileEntries().size());
+            for (String s : read.getFileEntries().keySet()){
+                System.out.println(s);
             }
-            JarUtil.writeJar(new File(IN_FILE), new File(OUT_FILE), nodes);
         } catch (Exception e) {
             e.printStackTrace();
         }

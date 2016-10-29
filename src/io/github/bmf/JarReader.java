@@ -45,9 +45,9 @@ public class JarReader {
     public void read() {
         try {
             Map<String, byte[]> classEntryBytes = JarUtil.readJarClasses(file);
-            fileEntries = JarUtil.readJarClasses(file);
+            fileEntries = JarUtil.readJarNonClasses(file);
             classEntries = new HashMap<String, ClassNode>();
-            for (String className : classEntries.keySet()) {
+            for (String className : classEntryBytes.keySet()) {
                 ClassNode cn = ClassReader.getNode(classEntryBytes.get(className));
                 classEntries.put(className, cn);
             }
