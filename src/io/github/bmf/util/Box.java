@@ -15,4 +15,12 @@ public class Box<T> {
     public Box(T value) {
         this.value = value;
     }
+
+    //
+    // Static builders
+    //
+    
+    public static Box<String> string(String s) {
+        return new Box<String>(s);
+    }
 }

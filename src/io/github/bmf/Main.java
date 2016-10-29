@@ -2,8 +2,11 @@ package io.github.bmf;
 
 import com.google.common.collect.Maps;
 import io.github.bmf.util.io.JarUtil;
+import io.github.bmf.util.mapping.ClassMapping;
+import io.github.bmf.util.mapping.Mapping;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
@@ -16,14 +19,8 @@ public class Main {
 
     private static void all(String file) {
         try {
-            
-            JarReader read = new JarReader(new File(file));
-            read.read();
-            System.out.println(read.getClassEntries().size());
-            System.out.println(read.getFileEntries().size());
-            for (String s : read.getFileEntries().keySet()){
-                System.out.println(s);
-            }
+            JarReader read = new JarReader(new File(file), true);
+            read.saveTo(new File(OUT_FILE));
         } catch (Exception e) {
             e.printStackTrace();
         }

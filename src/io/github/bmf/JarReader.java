@@ -1,16 +1,19 @@
 package io.github.bmf;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import io.github.bmf.type.Type;
+import io.github.bmf.util.ConstUtil;
+import io.github.bmf.util.descriptors.MethodDescriptor;
 import io.github.bmf.util.io.JarUtil;
 import io.github.bmf.util.mapping.ClassMapping;
+import io.github.bmf.util.mapping.Mapping;
+import io.github.bmf.util.mapping.MemberMapping;
 
 public class JarReader {
-    private final Map<String, ClassMapping> infoMap;
+    private final Mapping mapping;
     private final File file;
     private Map<String, ClassNode> classEntries;
     private Map<String, byte[]> fileEntries;
@@ -35,7 +38,7 @@ public class JarReader {
         if (file == null || !file.exists())
             throw new IllegalArgumentException("Invalid file given: " + file.getAbsolutePath());
         this.file = file;
-        this.infoMap = new HashMap<String, ClassMapping>();
+        this.mapping = new Mapping();
         if (read) read();
     }
 
@@ -51,8 +54,25 @@ public class JarReader {
                 ClassNode cn = ClassReader.getNode(classEntryBytes.get(className));
                 classEntries.put(className, cn);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Sets up the mapping.
+     */
+    public void genMappings() {
+        for (ClassNode node : classEntries.values()) {
+            ClassMapping map = new ClassMapping(ConstUtil.getName(node));
+            for (MethodNode method : node.methods) {
+                String name = ConstUtil.getUTF8String(node, method.name);
+                String descStr = ConstUtil.getUTF8String(node, method.desc);
+                MethodDescriptor desc = Type.method(mapping, descStr);
+                MemberMapping member = new MemberMapping(name, desc);
+                map.members.add(member);
+            }
         }
     }
 
@@ -78,7 +98,7 @@ public class JarReader {
         return fileEntries;
     }
 
-    public Map<String, ClassMapping> getClassInfos() {
-        return infoMap;
+    public Mapping getMapping() {
+        return mapping;
     }
 }

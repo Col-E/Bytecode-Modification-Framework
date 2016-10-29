@@ -9,7 +9,7 @@ public class ClassMapping {
     public final ArrayList<MemberMapping> members = new ArrayList<>();
 
     public ClassMapping(String name) {
-        this.name = new Box<>(name);
+        this.name = new Box<String>(name);
     }
 
     public MemberMapping getMemberData(String name, String desc) {

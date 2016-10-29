@@ -1,7 +1,6 @@
 package io.github.bmf.type;
 
 public class Sort {
-    
     public static final int BYTE = 0;
     public static final int CHAR = 1;
     public static final int DOUBLE = 2;
@@ -13,5 +12,4 @@ public class Sort {
     public static final int BOOLEAN = 8;
     public static final int ARRAY = 9;
     public static final int VOID = 10;
-    
 }

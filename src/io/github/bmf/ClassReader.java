@@ -13,7 +13,6 @@ import io.github.bmf.opcode.Opcode;
 import io.github.bmf.opcode.OpcodeInst;
 import io.github.bmf.opcode.impl.*;
 import io.github.bmf.util.io.StreamUtil;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -753,7 +752,8 @@ public class ClassReader {
         }
     }
 
-    private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is) throws IOException {
+    private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is)
+            throws IOException {
         int num = is.readUnsignedShort();
         List<Annotation> annotations = Lists.newArrayList();
         for (int i = 0; i < num; i++) {
@@ -790,7 +790,8 @@ public class ClassReader {
             int length = is.readUnsignedShort();
             byte[] data = new byte[length];
             is.read(data);
-            return new ConstUTF8(new String(data));
+            String s = new String(data);
+            return new ConstUTF8(s);
         }
         case CLASS: {
             int name = is.readUnsignedShort();

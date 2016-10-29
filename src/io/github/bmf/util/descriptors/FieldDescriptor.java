@@ -10,7 +10,7 @@ public class FieldDescriptor  extends MemberDescriptor {
     }
 
     @Override
-    public String toString() {
+    public String toDesc() {
         return fieldType.toString();
     }
 }

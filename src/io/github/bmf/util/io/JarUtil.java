@@ -129,7 +129,6 @@ public class JarUtil {
     public static void writeJar(File in, File out, Map<String, ClassNode> nodes, Map<String, byte[]> nonClasses) {
         try {
             FileOutputStream fos = new FileOutputStream(out);
-
             Manifest manifest = getManifest(in);
             JarOutputStream jos = manifest != null ? new JarOutputStream(fos, manifest) : new JarOutputStream(fos);
             for (String className : nodes.keySet()) {
@@ -139,9 +138,8 @@ public class JarUtil {
                 jos.write(ClassWriter.write(nodes.get(className)));
             }
             if (nonClasses != null) {
-                if (manifest != null && nonClasses.containsKey(MANIFEST_ENTRY_NAME)) {
+                if (manifest != null && nonClasses.containsKey(MANIFEST_ENTRY_NAME))
                     nonClasses.remove(MANIFEST_ENTRY_NAME);
-                }
                 for (String entryName : nonClasses.keySet()) {
                     JarEntry entry = new JarEntry(entryName);
                     entry.setTime(System.currentTimeMillis());

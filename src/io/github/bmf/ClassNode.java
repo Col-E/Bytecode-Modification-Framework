@@ -6,6 +6,7 @@ import io.github.bmf.attribute.annotation.AttributeAnnotations;
 import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
 import io.github.bmf.attribute.clazz.*;
 import io.github.bmf.consts.Constant;
+import io.github.bmf.util.ConstUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -260,8 +261,8 @@ public class ClassNode implements AttributeOwner {
     public String toString() {
         String out = "  Version: " + major + "." + minor + "\n";
         out += "  Access: " + access + "\n";
-        out += "  Class Index: " + getConst(classIndex + 1).toString() + "\n";
-        out += "  Super Index: " + getConst(superIndex + 1).toString() + "\n";
+        out += "  Class Index: " + ConstUtil.getName(this) + "\n";
+        out += "  Super Index: " + ConstUtil.getSuperName(this) + "\n";
         out += "  Interfaces { ";
         for (int index : interfaceIndices) {
             out += getConst(index + 1).toString() + ", ";
