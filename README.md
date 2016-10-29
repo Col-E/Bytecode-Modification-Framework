@@ -1,18 +1,25 @@
 # Bytecode Modification Framework (BMF)
 
 BMF is an alternative to ASM, BCEL and other JVM bytecode modification frameworks.
-Its aim is to provide a more efficient, advanced and versatile way to modify bytecode.
+Its aim is to provide better means of accessing and modifying the class file with little hidden away behind abstraction. The only abstraction is what powers some of the more special features of BMF.
 
 ### So what's so special about it?
 
-BMF provides full control over the constant pool, without losing on ease-of-use.
-This approach provides a way to modify different values, very efficiently.
+BMF provides direct access to the constant pool. Some of the special features hinted at previously take advantage of how impactful even small changes become in the constant pool.
 
-Think about ASM, how would you rename a class? You would need to search for every single reference and change it.
-This is not only non-practical, but also very slow.  
-With BMF, you can just modify a few class pool constants and you're done.
+For example with BMF renaming classes is as easy as updating a single string and can be done in 6 lines at the time of this commit.
+
+Here is an example for renaming a single class:
+```java
+    JarReader read = new JarReader(new File("input.jar"), true);
+    read.genMappings(JarReader.PASS_MAKE_CLASS);
+    read.genMappings(JarReader.PASS_MAKE_MEMBER_DATA);
+    read.genMappings(JarReader.PASS_UPDATE_CONSTANTS);
+    read.getMapping().getMapping("com/example/OldClassName").name.value = "com/example/NewClassName";
+    read.saveTo(new File("output.jar"));
+```
 
 ### Sounds cool! Any idea when it might be ready?
 
 We are still finishing up the basic functionalities and adding a few neat features that will make this framework even more special.
-We honestly have no idea when we'll manage to finish the first version.
+We honestly have no idea when we'll manage to finish the first version. 
