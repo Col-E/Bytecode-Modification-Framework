@@ -9,6 +9,7 @@ public class PrimitiveType extends Type {
         this.desc = desc;
     }
 
+    @Override
     public String toDesc() {
         return desc;
     }

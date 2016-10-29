@@ -13,6 +13,6 @@ public class ConstMemberDesc extends ConstUTF8{
 
     @Override
     public String getValue() {
-        return desc.toString();
+        return desc.toDesc();
     }
 }

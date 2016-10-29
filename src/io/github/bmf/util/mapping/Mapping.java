@@ -48,7 +48,14 @@ public class Mapping {
     }
 
     public boolean hasDesc(String name, String v) {
-        // TODO Auto-generated method stub
+        if (hasClass(name)){
+            ClassMapping cm = getMapping(name);
+            for (MemberMapping mm : cm.members){
+                if (mm.desc.original.equals(v)){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

@@ -21,10 +21,10 @@ public class MethodDescriptor extends MemberDescriptor {
         StringBuilder sb = new StringBuilder();
         sb.append("(");
         for (Type parameter : parameters) {
-            sb.append(parameter.toString());
+            sb.append(parameter.toDesc());
         }
         sb.append(")");
-        sb.append(returnType.toString());
+        sb.append(returnType.toDesc());
         return sb.toString();
     }
 

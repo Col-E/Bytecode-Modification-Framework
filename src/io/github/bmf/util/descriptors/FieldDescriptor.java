@@ -2,7 +2,7 @@ package io.github.bmf.util.descriptors;
 
 import io.github.bmf.type.Type;
 
-public class FieldDescriptor  extends MemberDescriptor {
+public class FieldDescriptor extends MemberDescriptor {
     public Type fieldType;
 
     public FieldDescriptor(Type type) {
@@ -12,6 +12,6 @@ public class FieldDescriptor  extends MemberDescriptor {
 
     @Override
     public String toDesc() {
-        return fieldType.toString();
+        return fieldType.toDesc();
     }
 }

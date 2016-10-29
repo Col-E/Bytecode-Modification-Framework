@@ -10,6 +10,7 @@ import io.github.bmf.consts.special.ConstMemberDesc;
 import io.github.bmf.consts.special.ConstName;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.ConstUtil;
+import io.github.bmf.util.descriptors.MemberDescriptor;
 import io.github.bmf.util.descriptors.MethodDescriptor;
 import io.github.bmf.util.io.JarUtil;
 import io.github.bmf.util.mapping.ClassMapping;
@@ -88,15 +89,18 @@ public class JarReader {
             } else if (pass == PASS_UPDATE_CONSTANTS) {
                 for (int i = 0; i < node.constants.size(); i++) {
                     Constant<?> cnst = node.constants.get(i);
-                    if (cnst == null || !(cnst instanceof ConstUTF8)){
+                    if (cnst == null || !(cnst instanceof ConstUTF8)) {
                         continue;
                     }
                     ConstUTF8 utf = (ConstUTF8) cnst;
                     String v = utf.getValue();
-                    if (mapping.hasClass(v)){
+                    if (mapping.hasClass(v)) {
                         node.constants.set(i, new ConstName(mapping.getClassName(v)));
-                    } else if (mapping.hasDesc(ConstUtil.getName(node), v)){
-                        node.constants.set(i, new ConstMemberDesc(mapping.getDesc(ConstUtil.getName(node), v)));
+                    } else {
+                        MemberDescriptor md = mapping.getDesc(ConstUtil.getName(node), v);
+                        if (md != null) {
+                            node.constants.set(i, new ConstMemberDesc(mapping.getDesc(ConstUtil.getName(node), v)));
+                        }
                     }
                 }
             }
