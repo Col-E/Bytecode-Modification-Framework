@@ -55,13 +55,11 @@ public abstract class Type {
                 Type prim = readPrim(c);
                 if (prim != null) {
                     types.add(prim);
-                } else {
-                    throw new RuntimeException("Invalid method descriptor[" + i + ":" + c + "]: " + desc);
                 }
             }
             i++;
         }
-        return new MethodDescriptor(desc,types, type(mapping, desc.substring(desc.indexOf(')') + 1)));
+        return new MethodDescriptor(desc, types, type(mapping, desc.substring(desc.indexOf(')') + 1)));
     }
 
     private static ArrayType readArray(Mapping mapping, String desc, int i) {
@@ -116,8 +114,8 @@ public abstract class Type {
         if (desc.length() == 1) {
             return readPrim(desc.charAt(0));
         } else if (desc.charAt(0) == '[') { return readArray(mapping, desc, 1); }
-        
-        return new ClassType(mapping.getClassName(desc.substring(1, desc.length()-1)));
+
+        return new ClassType(mapping.getClassName(desc.substring(1, desc.length() - 1)));
     }
 
     private static Type type(Mapping mapping, String desc, int i, int len) {

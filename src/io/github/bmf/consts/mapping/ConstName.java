@@ -1,4 +1,4 @@
-package io.github.bmf.consts.special;
+package io.github.bmf.consts.mapping;
 
 import io.github.bmf.consts.ConstUTF8;
 import io.github.bmf.util.Box;

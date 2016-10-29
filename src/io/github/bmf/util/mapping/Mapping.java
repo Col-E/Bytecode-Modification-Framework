@@ -3,7 +3,6 @@ package io.github.bmf.util.mapping;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.github.bmf.consts.ConstantType;
 import io.github.bmf.util.Box;
 import io.github.bmf.util.descriptors.MemberDescriptor;
 

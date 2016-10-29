@@ -6,8 +6,8 @@ import java.util.Map;
 
 import io.github.bmf.consts.ConstUTF8;
 import io.github.bmf.consts.Constant;
-import io.github.bmf.consts.special.ConstMemberDesc;
-import io.github.bmf.consts.special.ConstName;
+import io.github.bmf.consts.mapping.ConstMemberDesc;
+import io.github.bmf.consts.mapping.ConstName;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.descriptors.MemberDescriptor;
