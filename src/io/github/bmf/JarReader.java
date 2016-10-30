@@ -97,7 +97,7 @@ public class JarReader {
                     String descStr = ConstUtil.getUTF8String(node, method.desc);
                     MethodDescriptor desc = Type.method(mapping, descStr);
                     MemberMapping member = new MemberMapping(name, desc);
-                    map.members.add(member);
+                    map.getMembers().add(member);
                 }
             } else if (pass == PASS_UPDATE_CONSTANTS) {
                 for (int i = 0; i < node.constants.size(); i++) {
@@ -106,13 +106,15 @@ public class JarReader {
                         continue;
                     }
                     ConstUTF8 utf = (ConstUTF8) cnst;
-                    String v = utf.getValue();
-                    if (mapping.hasMapping(v)) {
-                        node.constants.set(i, new ConstName(mapping.getClassName(v)));
+                    String memDesc = utf.getValue();
+                    String memName = "";
+                    if (mapping.hasMapping(memDesc)) {
+                        node.constants.set(i, new ConstName(mapping.getClassName(memDesc)));
                     } else {
-                        MemberDescriptor md = mapping.getDesc(ConstUtil.getName(node), v);
+                        MemberDescriptor md = mapping.getDesc(ConstUtil.getName(node), memDesc);
                         if (md != null) {
-                            node.constants.set(i, new ConstMemberDesc(mapping.getDesc(ConstUtil.getName(node), v)));
+                            node.constants.set(i,
+                                    new ConstMemberDesc(mapping.getDesc(ConstUtil.getName(node), memDesc)));
                         }
                     }
                 }

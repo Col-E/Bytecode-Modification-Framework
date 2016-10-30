@@ -6,6 +6,7 @@ package io.github.bmf.util;
  * @param <T>
  */
 public class Box<T> {
+    public final T original;
     private T value;
 
     public Box() {
@@ -13,6 +14,7 @@ public class Box<T> {
     }
 
     public Box(T value) {
+        this.original = value;
         this.value = value;
     }
 
