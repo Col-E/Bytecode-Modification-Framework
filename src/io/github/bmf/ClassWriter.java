@@ -257,9 +257,9 @@ public class ClassWriter {
             ds.writeShort(constValInd.constValueIndex);
             break;
         case ENUM_CONST_VALUE:
-            //ElementValueConstValueIndex 
-            //    cannot be cast to 
-            //ElementValueEnumConstValue
+            // ElementValueConstValueIndex
+            // cannot be cast to
+            // ElementValueEnumConstValue
             ElementValueEnumConstValue constEnumVal = (ElementValueEnumConstValue) value;
             ds.writeShort(constEnumVal.type);
             ds.writeShort(constEnumVal.name);

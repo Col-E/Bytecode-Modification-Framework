@@ -15,7 +15,6 @@ public class MethodDescriptor extends MemberDescriptor {
         this.returnType = returnType;
     }
 
-   
     @Override
     public String toDesc() {
         StringBuilder sb = new StringBuilder();

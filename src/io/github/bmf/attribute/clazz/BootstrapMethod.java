@@ -23,7 +23,7 @@ public class BootstrapMethod implements Measurable {
         // u2: method_ref
         // u2: num_args
         // u2[]: args
-        return 4 + 2 * arguments.size();
+        return 4 + (2 * arguments.size());
     }
 
 }

@@ -15,9 +15,7 @@ public class ClassMapping {
 
     public MemberMapping getMemberData(String name, String desc) {
         for (MemberMapping data : members) {
-            if (data.name.value.equals(name) && data.desc.toString().equals(desc)) {
-                return data;
-            }
+            if (data.name.value.equals(name) && data.desc.toString().equals(desc)) { return data; }
         }
         return null;
     }

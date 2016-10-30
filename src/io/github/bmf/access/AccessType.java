@@ -31,9 +31,9 @@ public enum AccessType {
     VOLATILE(0x0040);
     //@formatter:on
 
-   /**
-    * Map of values to types.
-    */
+    /**
+     * Map of values to types.
+     */
     private static Map<Integer, AccessType> typeMap;
     /**
      * The tag of the Constant type.

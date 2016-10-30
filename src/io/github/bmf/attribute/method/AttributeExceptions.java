@@ -17,6 +17,6 @@ public class AttributeExceptions extends Attribute {
     public int getLength() {
         // u2: num_exceptions
         // u2[]: exceptions
-        return 2 + 2 * exceptionIndicies.size();
+        return 2 + (2 * exceptionIndicies.size());
     }
 }

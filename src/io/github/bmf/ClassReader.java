@@ -41,7 +41,7 @@ public class ClassReader {
             ConstantType type = ConstantType.fromTag(is.readUnsignedByte());
             Constant constant = readConst(type, is);
             node.addConst(constant);
-            if (type == ConstantType.DOUBLE || type == ConstantType.LONG) {
+            if ((type == ConstantType.DOUBLE) || (type == ConstantType.LONG)) {
                 // They take up 2 constant places in the pool.
                 node.addConst(null);
                 poolIndex++;
@@ -333,7 +333,7 @@ public class ClassReader {
         case Opcode.LDC2_W: {
             int indexbyte1 = is.readUnsignedByte();
             int indexbyte2 = is.readUnsignedByte();
-            int index = indexbyte1 << 8 + indexbyte2;
+            int index = indexbyte1 << (8 + indexbyte2);
             return code == Opcode.LDC2_W ? new LDC2_W(index) : new LDC_W(index);
         }
         case Opcode.ILOAD: {
@@ -675,10 +675,10 @@ public class ClassReader {
 
     private static Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
             int length) throws IOException {
-        boolean param = type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS
-                || type == AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS;
-        boolean invisible = type == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS
-                || type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
+        boolean param = (type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS)
+                || (type == AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS);
+        boolean invisible = (type == AttributeType.RUNTIME_INVISIBLE_ANNOTATIONS)
+                || (type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS);
         int num = param ? is.readUnsignedByte() : is.readUnsignedShort();
         switch (type) {
         case RUNTIME_INVISIBLE_ANNOTATIONS:

@@ -18,6 +18,11 @@ import io.github.bmf.util.mapping.Mapping;
 import io.github.bmf.util.mapping.MemberMapping;
 
 public class JarReader {
+    public static final int PASS_MAKE_CLASS = 0;
+    public static final int PASS_MAKE_MEMBER_DATA = 1;
+    public static final int PASS_UPDATE_CONSTANTS = 2;
+    public static final int PASS_LINK_HIERARCHY = 3;
+
     private final Mapping mapping;
     private final File file;
     private Map<String, ClassNode> classEntries;
@@ -40,11 +45,13 @@ public class JarReader {
      * @param read
      */
     public JarReader(File file, boolean read) {
-        if (file == null || !file.exists())
-            throw new IllegalArgumentException("Invalid file given: " + file.getAbsolutePath());
+        if ((file == null) || !file
+                .exists()) { throw new IllegalArgumentException("Invalid file given: " + file.getAbsolutePath()); }
         this.file = file;
         this.mapping = new Mapping();
-        if (read) read();
+        if (read) {
+            read();
+        }
     }
 
     /**
@@ -65,12 +72,18 @@ public class JarReader {
         }
     }
 
-    public static final int PASS_MAKE_CLASS = 0;
-    public static final int PASS_MAKE_MEMBER_DATA = 1;
-    public static final int PASS_UPDATE_CONSTANTS = 2;
-
     /**
      * Sets up the mapping.
+     */
+    public void genMappings() {
+        genMappings(PASS_MAKE_CLASS);
+        genMappings(PASS_MAKE_MEMBER_DATA);
+        genMappings(PASS_UPDATE_CONSTANTS);
+        genMappings(PASS_LINK_HIERARCHY);
+    }
+
+    /**
+     * Sets up part of the mapping based on the pass used.
      */
     public void genMappings(int pass) {
         for (ClassNode node : classEntries.values()) {
@@ -89,12 +102,13 @@ public class JarReader {
             } else if (pass == PASS_UPDATE_CONSTANTS) {
                 for (int i = 0; i < node.constants.size(); i++) {
                     Constant<?> cnst = node.constants.get(i);
-                    if (cnst == null || !(cnst instanceof ConstUTF8)) {
+                    if ((cnst == null) || !(cnst instanceof ConstUTF8)) {
                         continue;
                     }
+
                     ConstUTF8 utf = (ConstUTF8) cnst;
                     String v = utf.getValue();
-                    if (mapping.hasClass(v)) {
+                    if (mapping.hasMapping(v)) {
                         node.constants.set(i, new ConstName(mapping.getClassName(v)));
                     } else {
                         MemberDescriptor md = mapping.getDesc(ConstUtil.getName(node), v);
@@ -103,6 +117,8 @@ public class JarReader {
                         }
                     }
                 }
+            } else if (pass == PASS_LINK_HIERARCHY) {
+
             }
         }
     }

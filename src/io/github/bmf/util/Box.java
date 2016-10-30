@@ -19,7 +19,7 @@ public class Box<T> {
     //
     // Static builders
     //
-    
+
     public static Box<String> string(String s) {
         return new Box<String>(s);
     }

@@ -5,7 +5,7 @@ import io.github.bmf.opcode.OpcodeType;
 import io.github.bmf.opcode.SingleValueOpcode;
 
 public class FCONST extends SingleValueOpcode<Float> {
-    public FCONST( float value) {
+    public FCONST(float value) {
         super(OpcodeType.CONST_VALUE, opFromValue((int) Math.round(value)), 1, value);
     }
 

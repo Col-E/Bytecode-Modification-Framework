@@ -139,8 +139,9 @@ public class JarUtil {
                 jos.write(ClassWriter.write(node));
             }
             if (nonClasses != null) {
-                if (manifest != null && nonClasses.containsKey(MANIFEST_ENTRY_NAME))
+                if ((manifest != null) && nonClasses.containsKey(MANIFEST_ENTRY_NAME)) {
                     nonClasses.remove(MANIFEST_ENTRY_NAME);
+                }
                 for (String entryName : nonClasses.keySet()) {
                     JarEntry entry = new JarEntry(entryName);
                     entry.setTime(System.currentTimeMillis());

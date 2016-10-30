@@ -18,7 +18,7 @@ public class MethodCode implements Measurable {
     public ArrayList<Opcode> opcodes;
 
     public MethodCode(byte[] original) {
-       this.original = original;
+        this.original = original;
     }
 
     @Override

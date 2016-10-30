@@ -38,7 +38,9 @@ public abstract class Type {
         int i = 1;
         while (true) {
             char c = carr[i];
-            if (c == ')') break;
+            if (c == ')') {
+                break;
+            }
             if (c == '[') {
                 ArrayType array = readArray(mapping, desc, i + 1);
                 types.add(array);
@@ -80,7 +82,9 @@ public abstract class Type {
             i += len - 1;
             break;
         }
-        if (t == null) t = readPrim(carr[i]);
+        if (t == null) {
+            t = readPrim(carr[i]);
+        }
         return new ArrayType(t);
     }
 
@@ -119,6 +123,6 @@ public abstract class Type {
     }
 
     private static Type type(Mapping mapping, String desc, int i, int len) {
-        return new ClassType(mapping.getClassName(desc.substring(i + 1, i + len - 1)));
+        return new ClassType(mapping.getClassName(desc.substring(i + 1, (i + len) - 1)));
     }
 }
