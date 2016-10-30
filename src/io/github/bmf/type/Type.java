@@ -1,5 +1,6 @@
 package io.github.bmf.type;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -125,4 +126,46 @@ public abstract class Type {
     private static Type type(Mapping mapping, String desc, int i, int len) {
         return new ClassType(mapping.getClassName(desc.substring(i + 1, (i + len) - 1)));
     }
+
+    /**
+     * <a href=
+     * "http://stackoverflow.com/questions/32148846/get-java-field-and-method-descriptors-at-runtime">
+     * From Stackoverflow</a>
+     * 
+     * @param c
+     * @return
+     */
+    public static String getDescriptorForClass(final Class<?> c) {
+        if (c.isPrimitive()) {
+            if (c == byte.class) return "B";
+            if (c == char.class) return "C";
+            if (c == double.class) return "D";
+            if (c == float.class) return "F";
+            if (c == int.class) return "I";
+            if (c == long.class) return "J";
+            if (c == short.class) return "S";
+            if (c == boolean.class) return "Z";
+            if (c == void.class) return "V";
+            throw new RuntimeException("Unrecognized primitive " + c);
+        }
+        if (c.isArray()) return c.getName().replace('.', '/');
+        return ('L' + c.getName() + ';').replace('.', '/');
+    }
+
+    /**
+     * <a href=
+     * "http://stackoverflow.com/questions/32148846/get-java-field-and-method-descriptors-at-runtime">
+     * From Stackoverflow</a>
+     * 
+     * @param m
+     * @return
+     */
+    public static String getMethodDescriptor(Method m) {
+        String s = "(";
+        for (final Class<?> c : m.getParameterTypes())
+            s += getDescriptorForClass(c);
+        s += ')';
+        return s + getDescriptorForClass(m.getReturnType());
+    }
+
 }

@@ -13,6 +13,6 @@ public class ConstName extends ConstUTF8 {
 
     @Override
     public String getValue() {
-        return name.value;
+        return name.getValue();
     }
 }

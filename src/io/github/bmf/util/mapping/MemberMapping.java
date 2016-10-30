@@ -5,10 +5,14 @@ import io.github.bmf.util.descriptors.MemberDescriptor;
 
 public class MemberMapping {
     public final Box<String> name;
-    public final MemberDescriptor desc;// MethodDescriptor
+    public final MemberDescriptor desc;
 
     public MemberMapping(String name, MemberDescriptor desc) {
-        this.name = new Box<>(name);
+        this(new Box<String>(name), desc);
+    }
+
+    public MemberMapping(Box<String> name, MemberDescriptor desc) {
+        this.name = name;
         this.desc = desc;
     }
 }

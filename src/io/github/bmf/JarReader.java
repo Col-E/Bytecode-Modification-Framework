@@ -105,7 +105,6 @@ public class JarReader {
                     if ((cnst == null) || !(cnst instanceof ConstUTF8)) {
                         continue;
                     }
-
                     ConstUTF8 utf = (ConstUTF8) cnst;
                     String v = utf.getValue();
                     if (mapping.hasMapping(v)) {
@@ -118,7 +117,9 @@ public class JarReader {
                     }
                 }
             } else if (pass == PASS_LINK_HIERARCHY) {
-
+                // TODO: This will be for linking the child/parent,
+                // child/interfaces structures and linking methods together that
+                // are overridden.
             }
         }
     }

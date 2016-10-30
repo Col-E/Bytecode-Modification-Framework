@@ -6,7 +6,7 @@ package io.github.bmf.util;
  * @param <T>
  */
 public class Box<T> {
-    public T value;
+    private T value;
 
     public Box() {
         this(null);
@@ -16,6 +16,13 @@ public class Box<T> {
         this.value = value;
     }
 
+    public T getValue() {
+        return value;
+    }
+
+    public void setValue(T value) {
+        this.value = value;
+    }
     //
     // Static builders
     //
@@ -23,4 +30,5 @@ public class Box<T> {
     public static Box<String> string(String s) {
         return new Box<String>(s);
     }
+
 }

@@ -12,6 +12,6 @@ public class ClassType extends Type {
 
     @Override
     public String toDesc() {
-        return "L" + className.value + ";";
+        return "L" + className.getValue() + ";";
     }
 }

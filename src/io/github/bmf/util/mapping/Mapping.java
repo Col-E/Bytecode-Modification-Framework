@@ -1,20 +1,45 @@
 package io.github.bmf.util.mapping;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.bmf.type.Type;
 import io.github.bmf.util.Box;
+import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.descriptors.MemberDescriptor;
 
 public class Mapping {
     private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
-    // TODO: Idea is to given a class find way of detecting parent
-    // Unsure if it should be <Class, String> or <Class, Class>
-    // Unsure of exact future usage
     private final Map<ClassMapping, ClassMapping> parents = new HashMap<ClassMapping, ClassMapping>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
+
+    // TODO: Figure out approach:
+    // 
+    // This isn't permanent and just serves as an example.
+    // But it shows an idea that will be important.
+    // For mappings of methods to understand inheritcance
+    // the basic classes will have to be mapped.
+    // The issue becomes how to read them while being greedy
+    // and not reading all of the default classpath (rt.jar).
+    public Mapping() {
+        setup(java.lang.Comparable.class);
+        setup(java.lang.Object.class);
+        setup(java.util.Iterator.class);
+        setup(java.util.Collection.class);
+    }
+
+    private void setup(Class<?> c) {
+        String name = c.getName().replace(".", "/");
+        if (!mappings.containsKey(name)) {
+            ClassMapping cm = new ClassMapping(name);
+            for (Method m : c.getMethods()) {
+                cm.members.add(new MemberMapping(new ImmutableBox<String>(m.getName()), Type.method(this, Type.getMethodDescriptor(m))));
+            }
+        }
+    }
 
     public Box<String> getClassName(String name) {
         if (hasMapping(name)) {
@@ -26,7 +51,7 @@ public class Mapping {
     }
 
     public void addMapping(ClassMapping mapping) {
-        mappings.put(mapping.name.value, mapping);
+        mappings.put(mapping.name.getValue(), mapping);
     }
 
     public ClassMapping getMapping(String name) {
