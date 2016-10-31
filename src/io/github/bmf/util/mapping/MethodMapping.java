@@ -3,8 +3,8 @@ package io.github.bmf.util.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.bmf.type.descriptors.MemberDescriptor;
 import io.github.bmf.util.Box;
-import io.github.bmf.util.descriptors.MemberDescriptor;
 
 public class MethodMapping extends MemberMapping {
     private final List<MemberMapping> variables = new ArrayList<MemberMapping>();

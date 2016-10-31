@@ -1,4 +1,4 @@
-package io.github.bmf.util.descriptors;
+package io.github.bmf.type.descriptors;
 
 import io.github.bmf.type.Type;
 

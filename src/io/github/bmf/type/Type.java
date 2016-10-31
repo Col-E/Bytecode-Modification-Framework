@@ -4,8 +4,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.bmf.util.descriptors.VariableDescriptor;
-import io.github.bmf.util.descriptors.MethodDescriptor;
+import io.github.bmf.type.descriptors.MethodDescriptor;
+import io.github.bmf.type.descriptors.VariableDescriptor;
 import io.github.bmf.util.mapping.Mapping;
 
 public abstract class Type {

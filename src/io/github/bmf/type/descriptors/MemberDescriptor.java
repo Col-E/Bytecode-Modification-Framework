@@ -1,4 +1,4 @@
-package io.github.bmf.util.descriptors;
+package io.github.bmf.type.descriptors;
 
 public abstract class MemberDescriptor {
     public final String original;

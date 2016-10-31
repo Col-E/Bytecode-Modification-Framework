@@ -12,10 +12,10 @@ import io.github.bmf.ClassNode;
 import io.github.bmf.FieldNode;
 import io.github.bmf.MethodNode;
 import io.github.bmf.type.Type;
+import io.github.bmf.type.descriptors.MemberDescriptor;
 import io.github.bmf.util.Box;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
-import io.github.bmf.util.descriptors.MemberDescriptor;
 
 public class Mapping {
 
@@ -24,29 +24,6 @@ public class Mapping {
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<ClassMapping, List<ClassMapping>> children = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<String, MemberMapping> descToMember = new HashMap<String, MemberMapping>();
-
-    /**
-     * Retrieves the Boxed name of a class. Throws an exception if the boxed
-     * name could not be located.
-     * 
-     * @param name
-     *            Class name
-     * 
-     * @return
-     */
-    public Box<String> getClassNameOrCreate(String name) {
-        if (hasMapping(name)) {
-            return mappings.get(name).name;
-        } else {
-            try {
-                ClassMapping cm = makeMappingFromRuntime(name, false, false);
-                if (cm != null) return cm.name;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            throw new RuntimeException("Requested unmapped class: " + name);
-        }
-    }
 
     /**
      * Generates a ClassMapping from a given ClassNode. The generated
@@ -106,19 +83,42 @@ public class Mapping {
     }
 
     /**
+     * Retrieves the Boxed name of a class. Throws an exception if the boxed
+     * name could not be located.
+     * 
+     * @param name
+     *            Class name
+     * 
+     * @return
+     */
+    public Box<String> getClassNameOrCreate(String name) {
+        if (hasMapping(name)) {
+            return mappings.get(name).name;
+        } else {
+            try {
+                ClassMapping cm = makeMappingFromRuntime(name, false, false);
+                if (cm != null) return cm.name;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            throw new RuntimeException("Requested unmapped class: " + name);
+        }
+    }
+
+    /**
      * Retrieves the Boxed name of a class.
      * 
      * @param name
      * @return
      */
     public Box<String> getClassName(String name) {
-        return getClassNameOrCreate(name);
-        // TODO: Uncomment this when done testing
-        /*
-         * if (hasMapping(name)) { return mappings.get(name).name; } else {
-         * mappings.put(name, new ClassMapping(name)); return
-         * getClassName(name); }
-         */
+        // Return if cached
+        if (hasMapping(name)) return mappings.get(name).name;
+        // If the class is in the default classpath
+        // but not mapped create it on the fly.
+        if (name.startsWith("java")) return getClassNameOrCreate(name);
+        // We have a problem...
+        return null;
     }
 
     /**
@@ -254,7 +254,7 @@ public class Mapping {
     public boolean hasInterfaces(ClassMapping child) {
         return interfaces.containsKey(child);
     }
-    
+
     // ------------------------------------------- //
     // ------------------------------------------- //
 
