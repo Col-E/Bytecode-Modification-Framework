@@ -7,17 +7,17 @@ Its aim is to provide better means of accessing and modifying the class file wit
 
 BMF provides direct access to the constant pool. Some of the special features hinted at previously take advantage of how impactful even small changes become in the constant pool.
 
-For example with BMF renaming classes is as easy as updating a single string and can be done in 6 lines at the time of this commit.
+For example with BMF renaming classes and methods is as easy as updating a single string and can be done in 4 lines at the time of this commit. 
 
-Here is an example for renaming a single class:
+Here is an example for renaming a single class *(+1 line for renaming a method as well)*:
 ```java
-    JarReader read = new JarReader(new File("input.jar"), true);
-    read.genMappings(JarReader.PASS_MAKE_CLASS);
-    read.genMappings(JarReader.PASS_MAKE_MEMBER_DATA);
-    read.genMappings(JarReader.PASS_UPDATE_CONSTANTS);
-    read.getMapping().getMapping("com/example/OldClassName").name.value = "com/example/NewClassName";
-    read.saveTo(new File("output.jar"));
+JarReader read = new JarReader(new File(file), true);
+read.genMappings();
+read.getMapping().getMapping("com/example/test/Edible").name.setValue("com/example/test/Consumable");
+read.getMapping().getMapping("com/example/test/Edible").getMemberMapping("isRotten", "()Z").name.setValue("renamedRotten");
+read.saveTo(new File(OUT_FILE));
 ```
+In the example program the class `Edible` is updated everwhere with `Consumable` and the method `isRotten` is also updated everwhere regardless of class hierarchy.
 
 ### Sounds cool! Any idea when it might be ready?
 

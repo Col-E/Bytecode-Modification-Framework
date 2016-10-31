@@ -247,7 +247,7 @@ public class ClassReader {
             return new AttributeSourceFile(nameIndex, source);
         }
         case STACK_MAP_TABLE: {
-            // TODO: Do this
+            // TODO: Interpret StackMapTable
             byte[] data = new byte[length];
             is.read(data);
             return new AttributeStackMapTable(nameIndex, data);

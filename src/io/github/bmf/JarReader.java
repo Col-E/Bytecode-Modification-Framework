@@ -6,16 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.bmf.attribute.method.Local;
+import io.github.bmf.attribute.method.LocalVariableType;
 import io.github.bmf.consts.ConstClass;
 import io.github.bmf.consts.ConstInterfaceMethod;
 import io.github.bmf.consts.ConstInvokeDynamic;
 import io.github.bmf.consts.ConstMethod;
-import io.github.bmf.consts.ConstMethodHandle;
-import io.github.bmf.consts.ConstMethodType;
 import io.github.bmf.consts.ConstNameType;
-import io.github.bmf.consts.ConstUTF8;
 import io.github.bmf.consts.Constant;
-import io.github.bmf.consts.ConstantType;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
 import io.github.bmf.type.Type;
@@ -112,16 +109,8 @@ public class JarReader {
                     node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
                     if (mn.code != null) {
                         if (mn.code.variables != null) {
-                            // Lists of local data
                             List<Local> locals = mn.code.variables.variableTable.locals;
-                            // TODO: Generics with LocalVariableType attribute
-                            //
-                            // List<LocalVariableType> types =
-                            // mn.code.variableTypes.localTypes;
-                            for (int i = 0; i < locals.size(); i++) {
-                                // Get locals and their type
-                                // Indices should line up
-                                Local local = locals.get(i);
+                            for (Local local : locals) {
                                 // Values
                                 String lname = ConstUtil.getUTF8String(node, local.name);
                                 String ldesc = ConstUtil.getUTF8String(node, local.desc);
@@ -130,6 +119,15 @@ public class JarReader {
                                 mm.addVariable(mapping, var);
                                 node.setConst(local.name, new ConstName(var.name));
                                 node.setConst(local.desc, new ConstMemberDesc(var.desc));
+                            }
+                            // TODO: Extra generics information.
+                            if (mn.code.variableTypes != null) {
+                                List<LocalVariableType> types = mn.code.variableTypes.localTypes;
+                                for (LocalVariableType type : types) {
+                                    String lname = ConstUtil.getUTF8String(node, type.name);
+                                    String ldesc = ConstUtil.getUTF8String(node, type.signature);
+                                    // System.out.println(lname + ":" + ldesc);
+                                }
                             }
                         }
                     }
