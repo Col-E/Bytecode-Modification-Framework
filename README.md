@@ -7,7 +7,7 @@ Its aim is to provide better means of accessing and modifying the class file wit
 
 BMF provides direct access to the constant pool. Some of the special features hinted at previously take advantage of how impactful even small changes become in the constant pool.
 
-For example with BMF renaming classes and methods is as easy as updating a single string and can be done in 3 lines at the time of this commit. 
+For example with BMF renaming classes and methods is as easy as updating a single string and can each be done in 3 lines at the time of this commit. 
 
 Here is an example for renaming a single class *(+1 line for renaming a method as well)*:
 ```java
