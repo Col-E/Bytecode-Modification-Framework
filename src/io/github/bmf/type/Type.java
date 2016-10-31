@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.bmf.util.descriptors.VariableDescriptor;
 import io.github.bmf.util.descriptors.MethodDescriptor;
 import io.github.bmf.util.mapping.Mapping;
 
@@ -26,8 +27,45 @@ public abstract class Type {
     abstract public String toDesc();
 
     /**
-     * This is all really ugly but trying to keep
-     * "change once, applies everwhere" logic in kinda makes pretty code hard.
+     * Creates a VariableDescriptor given the Mapping source and member
+     * descriptor. Used for both fields and local variables.
+     * 
+     * @param mapping
+     * @param desc
+     * @return
+     */
+    public static VariableDescriptor variable(Mapping mapping, String desc) {
+        char[] carr = desc.toCharArray();
+        Type type = null;
+        int i = 0;
+        while (true) {
+            char c = carr[i];
+            if (c == '[') {
+                type = readArray(mapping, desc, i + 1);
+                break;
+            } else if (c == 'L') {
+                int len = 1;
+                while (c != ';') {
+                    c = carr[i + len];
+                    len++;
+                }
+                type = (type(mapping, desc, i, len));
+                break;
+            } else {
+                Type prim = readPrim(c);
+                if (prim != null) {
+                    type = prim;
+                    break;
+                }
+            }
+            i++;
+        }
+        return new VariableDescriptor(type);
+    }
+
+    /**
+     * Creates a MethodDescriptor given the Mapping source and member
+     * descriptor.
      * 
      * @param mapping
      * @param desc
@@ -167,5 +205,4 @@ public abstract class Type {
         s += ')';
         return s + getDescriptorForClass(m.getReturnType());
     }
-
 }

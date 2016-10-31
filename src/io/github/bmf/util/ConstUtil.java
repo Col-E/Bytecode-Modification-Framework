@@ -24,7 +24,7 @@ public class ConstUtil {
      * @return
      */
     public static String getName(ClassNode node) {
-        return ((ConstUTF8) node.getConst(((ConstClass) node.getConst(node.classIndex)).getValue())).getValue();
+        return getClassName(node, node.classIndex);
     }
 
     /**
@@ -34,7 +34,18 @@ public class ConstUtil {
      * @return
      */
     public static String getSuperName(ClassNode node) {
-        return ((ConstUTF8) node.getConst(((ConstClass) node.getConst(node.superIndex)).getValue())).getValue();
+        return getClassName(node, node.superIndex);
+    }
+
+    /**
+     * Gets a name from a ConstClass at index i in a given node's constant pool.
+     * 
+     * @param node
+     * @param i
+     * @return
+     */
+    public static String getClassName(ClassNode node, int i) {
+        return ((ConstUTF8) node.getConst(((ConstClass) node.getConst(i)).getValue())).getValue();
     }
 
 }

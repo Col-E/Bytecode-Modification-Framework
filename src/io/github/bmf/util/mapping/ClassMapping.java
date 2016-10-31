@@ -15,13 +15,11 @@ public class ClassMapping {
         this.name = new Box<String>(name);
     }
 
-    public MemberMapping getMemberData(String name, String desc) {
+    public MemberMapping getMemberMapping(String name, String desc) {
         for (MemberMapping data : members) {
-            // TODO: Instead of name.getValue should the original value (field:
-            // original) be used? Would make it easier for users to get the
-            // correct member after renaming it.
-            // Could make this idea into a boolean parameter
-            if (data.name.getValue().equals(name) && data.desc.toString().equals(desc)) { return data; }
+            // TODO: Determine if using the original values is the best
+            // practice.
+            if (data.name.original.equals(name) && data.desc.original.equals(desc)) { return data; }
         }
         return null;
     }
@@ -39,6 +37,20 @@ public class ClassMapping {
      */
     public void addMember(Mapping mapping, MemberMapping mm) {
         members.add(mapping.getMemberInstance(mm));
+    }
+
+    /**
+     * Returns a list of members matching the given name.
+     * 
+     * @param name
+     * @return
+     */
+    public List<MemberMapping> getMembersByName(String name) {
+        List<MemberMapping> list = new ArrayList<MemberMapping>();
+        for (MemberMapping mm : members) {
+            if (mm.name.original.equals(name)) list.add(mm);
+        }
+        return list;
     }
 
 }

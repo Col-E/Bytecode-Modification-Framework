@@ -116,6 +116,16 @@ public class ClassNode implements AttributeOwner {
     }
 
     /**
+     * Sets a constant at the given value to another constant.
+     * 
+     * @param index
+     * @param constant
+     */
+    public void setConst(int index, Constant constant) {
+        constants.set(index - 1, constant);
+    }
+
+    /**
      * Sets or extends the constant pool to a given size.
      * 
      * @param size

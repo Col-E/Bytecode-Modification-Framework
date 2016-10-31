@@ -1,52 +1,108 @@
 package io.github.bmf.util.mapping;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.bmf.ClassNode;
+import io.github.bmf.FieldNode;
+import io.github.bmf.MethodNode;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.Box;
+import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.descriptors.MemberDescriptor;
 
 public class Mapping {
+
     private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
     private final Map<ClassMapping, ClassMapping> parents = new HashMap<ClassMapping, ClassMapping>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
+    private final Map<ClassMapping, List<ClassMapping>> children = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<String, MemberMapping> descToMember = new HashMap<String, MemberMapping>();
 
-    // TODO: Figure out approach:
-    //
-    // This isn't permanent and just serves as an example.
-    // But it shows an idea that will be important.
-    // For mappings of methods to understand inheritcance
-    // the basic classes will have to be mapped.
-    // The issue becomes how to read them while being greedy
-    // and not reading all of the default classpath (rt.jar).
-    public Mapping() {
-        setup(java.lang.Comparable.class);
-        setup(java.lang.Object.class);
-        setup(java.util.Iterator.class);
-        setup(java.util.Collection.class);
-        setup(java.util.List.class);
+    /**
+     * Retrieves the Boxed name of a class. Throws an exception if the boxed
+     * name could not be located.
+     * 
+     * @param name
+     *            Class name
+     * 
+     * @return
+     */
+    public Box<String> getClassNameOrCreate(String name) {
+        if (hasMapping(name)) {
+            return mappings.get(name).name;
+        } else {
+            try {
+                ClassMapping cm = makeMappingFromRuntime(name, false, false);
+                if (cm != null) return cm.name;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            throw new RuntimeException("Requested unmapped class: " + name);
+        }
     }
 
     /**
-     * Creates immutable mappings from a given class.
+     * Generates a ClassMapping from a given ClassNode. The generated
+     * ClassMapping is automatically added to the mappings map.
      * 
-     * @param c
+     * @param node
+     * @return
      */
-    private void setup(Class<?> c) {
-        String name = c.getName().replace(".", "/");
-        if (!mappings.containsKey(name)) {
-            ClassMapping cm = new ClassMapping(name);
-            for (Method m : c.getMethods()) {
-                cm.addMember(this, new MemberMapping(new ImmutableBox<String>(m.getName()),
+    public ClassMapping makeMappingFromNode(ClassNode node) {
+        String name = ConstUtil.getName(node);
+        ClassMapping cm = new ClassMapping(name);
+        mappings.put(name, cm);
+        for (MethodNode mn : node.methods) {
+            cm.addMember(this, new MethodMapping(new Box<String>(ConstUtil.getUTF8String(node, mn.name)),
+                    Type.method(this, ConstUtil.getUTF8String(node, mn.desc))));
+        }
+        for (FieldNode fn : node.fields) {
+            cm.addMember(this, new MemberMapping(new Box<String>(ConstUtil.getUTF8String(node, fn.name)),
+                    Type.method(this, ConstUtil.getUTF8String(node, fn.desc))));
+        }
+        return cm;
+    }
+
+    /**
+     * Generates a ClassMapping from a class loaded into the classpath. The
+     * generated ClassMapping is automatically added to the mappings map.
+     * 
+     * @param name
+     *            Class name
+     * @param onlyPublic
+     *            Only makes mappings for public members
+     * @param fields
+     *            Whether to make MemberMappings for fields
+     * @return
+     * @throws ClassNotFoundException
+     */
+    public ClassMapping makeMappingFromRuntime(String name, boolean onlyPublic, boolean fields)
+            throws ClassNotFoundException {
+        Class<?> c = Class.forName(name.replace("/", "."));
+        ClassMapping cm = new ClassMapping(name);
+        mappings.put(name, cm);
+        for (Method m : c.getMethods()) {
+            if (!onlyPublic || (m.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC) {
+                cm.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
                         Type.method(this, Type.getMethodDescriptor(m))));
             }
         }
+        if (fields) {
+            for (Field f : c.getFields()) {
+                if (!onlyPublic || (f.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC) {
+                    cm.addMember(this, new MemberMapping(new ImmutableBox<String>(f.getName()),
+                            Type.variable(this, Type.getDescriptorForClass(f.getType()))));
+                }
+            }
+        }
+        return cm;
     }
 
     /**
@@ -56,12 +112,13 @@ public class Mapping {
      * @return
      */
     public Box<String> getClassName(String name) {
-        if (hasMapping(name)) {
-            return mappings.get(name).name;
-        } else {
-            mappings.put(name, new ClassMapping(name));
-            return getClassName(name);
-        }
+        return getClassNameOrCreate(name);
+        // TODO: Uncomment this when done testing
+        /*
+         * if (hasMapping(name)) { return mappings.get(name).name; } else {
+         * mappings.put(name, new ClassMapping(name)); return
+         * getClassName(name); }
+         */
     }
 
     /**
@@ -110,21 +167,34 @@ public class Mapping {
      *            Member's desc
      * @return <i>null</i> if not such member exists
      */
-    public MemberDescriptor getDesc(String className, String desc) {
+    public MemberDescriptor getDesc(String className, String name, String desc) {
         ClassMapping cm = getMapping(className);
         if (cm != null) {
             for (MemberMapping mm : cm.getMembers()) {
-                if (mm.desc.original.equals(desc)) { return mm.desc; }
+                if (mm.desc.original.equals(desc) && mm.name.original.equals(name)) { return mm.desc; }
             }
         }
         return null;
     }
 
-    public boolean hasDesc(String name, String v) {
-        if (hasMapping(name)) {
-            ClassMapping cm = getMapping(name);
+    public List<MemberDescriptor> getDescs(String className, String desc) {
+        List<MemberDescriptor> list = new ArrayList<MemberDescriptor>();
+        ClassMapping cm = getMapping(className);
+        if (cm != null) {
             for (MemberMapping mm : cm.getMembers()) {
-                if (mm.desc.original.equals(v)) { return true; }
+                if (mm.desc.original.equals(desc)) {
+                    list.add(mm.desc);
+                }
+            }
+        }
+        return list;
+    }
+
+    public boolean hasDesc(String className, String name, String desc) {
+        if (hasMapping(className)) {
+            ClassMapping cm = getMapping(className);
+            for (MemberMapping mm : cm.getMembers()) {
+                if (mm.desc.original.equals(desc) && mm.name.original.equals(name)) { return true; }
             }
         }
         return false;
@@ -183,5 +253,23 @@ public class Mapping {
 
     public boolean hasInterfaces(ClassMapping child) {
         return interfaces.containsKey(child);
+    }
+    
+    // ------------------------------------------- //
+    // ------------------------------------------- //
+
+    public List<ClassMapping> getChildren(ClassMapping parent) {
+        return children.get(parent);
+    }
+
+    public void addChild(ClassMapping parent, ClassMapping child) {
+        if (!hasChildren(parent)) {
+            children.put(parent, new ArrayList<ClassMapping>());
+        }
+        children.get(parent).add(child);
+    }
+
+    public boolean hasChildren(ClassMapping parent) {
+        return children.containsKey(parent);
     }
 }

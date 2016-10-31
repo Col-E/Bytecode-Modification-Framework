@@ -16,10 +16,6 @@ public abstract class Constant<T> {
      */
     private T value;
 
-    public ConstantType getType() {
-        return type;
-    }
-
     public Constant(ConstantType type) {
         this(type, null);
     }
