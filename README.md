@@ -11,8 +11,7 @@ For example with BMF renaming classes and methods is as easy as updating a singl
 
 Here is an example for renaming a single class *(+1 line for renaming a method as well)*:
 ```java
-JarReader read = new JarReader(new File(file), true);
-read.genMappings();
+JarReader read = new JarReader(new File(file), true, true);
 read.getMapping().getMapping("com/example/test/Edible").name.setValue("com/example/test/Consumable");
 read.getMapping().getMapping("com/example/test/Edible").getMemberMapping("isRotten", "()Z").name.setValue("renamedRotten");
 read.saveTo(new File(OUT_FILE));

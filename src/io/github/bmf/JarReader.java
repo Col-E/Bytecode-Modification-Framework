@@ -34,7 +34,8 @@ public class JarReader {
     private Map<String, byte[]> fileEntries;
 
     /**
-     * Creates a JarReader without reading from the file initially.
+     * Creates a JarReader without reading from the file initially. This also
+     * prevents mappings from being generated initially.
      * 
      * @param file
      */
@@ -43,19 +44,37 @@ public class JarReader {
     }
 
     /**
-     * Creates a JarReader. If <i>read</i> is true the file will be read from
+     * Creates a JarReader that can read the file initially. No mappings are
+     * generated. initially.
+     * 
+     * @param file
+     *            Read and create ClassNodes on init.
+     * @param read
+     */
+    public JarReader(File file, boolean read) {
+        this(file, read, false);
+    }
+
+    /**
+     * Creates a JarReader that can read the file and creates mappings
      * initially.
      * 
      * @param file
      * @param read
+     *            Read and create ClassNodes on init.
+     * @param genMappings
+     *            Also create mappings on init.
      */
-    public JarReader(File file, boolean read) {
+    public JarReader(File file, boolean read, boolean genMappings) {
         if ((file == null) || !file
                 .exists()) { throw new IllegalArgumentException("Invalid file given: " + file.getAbsolutePath()); }
         this.file = file;
         this.mapping = new Mapping();
         if (read) {
             read();
+            if (genMappings) {
+                genMappings();
+            }
         }
     }
 

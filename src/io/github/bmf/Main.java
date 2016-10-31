@@ -21,12 +21,11 @@ public class Main {
 
     private static void all(String file) {
         try {
-            JarReader read = new JarReader(new File(file), true);
-            read.genMappings();
+            JarReader read = new JarReader(new File(file), true, true);
            // read.getMapping().getClassName("com/example/test/Edible").setValue("dank/memes/WeedJokeHere");
            // read.getMapping().getClassName("com/example/test/Apple").setValue("keep/the/doctors/Away");
            // read.getMapping().getClassName("com/example/test/Fruit").setValue("not/a/Vegetable");
-           
+            read.getMapping().getMapping("com/example/test/Edible").name.setValue("com/example/test/Consumable");
             MemberMapping mm = read.getMapping().getMapping("com/example/test/Edible").getMemberMapping("isRotten", "()Z");
             mm.name.setValue("renamedRotten");
 
