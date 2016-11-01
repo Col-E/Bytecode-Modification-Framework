@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.bmf.attribute.clazz.InnerClass;
 import io.github.bmf.attribute.method.Local;
 import io.github.bmf.attribute.method.LocalVariableType;
 import io.github.bmf.consts.ConstClass;
+import io.github.bmf.consts.ConstField;
 import io.github.bmf.consts.ConstInterfaceMethod;
 import io.github.bmf.consts.ConstInvokeDynamic;
 import io.github.bmf.consts.ConstMethod;
@@ -25,8 +27,10 @@ import io.github.bmf.util.mapping.MethodMapping;
 
 public class JarReader {
     public static final int PASS_MAKE_CLASSES = 0;
-    public static final int PASS_UPDATE_CONSTANTS = 1;
+    public static final int PASS_FINISH_CLASSES = 1;
     public static final int PASS_LINK_HIERARCHY = 2;
+    public static final int PASS_UPDATE_CONSTANTS = 3;
+
 
     private final Mapping mapping;
     private final File file;
@@ -100,8 +104,9 @@ public class JarReader {
      */
     public void genMappings() {
         genMappings(PASS_MAKE_CLASSES);
-        genMappings(PASS_UPDATE_CONSTANTS);
+        genMappings(PASS_FINISH_CLASSES);
         genMappings(PASS_LINK_HIERARCHY);
+        genMappings(PASS_UPDATE_CONSTANTS);
     }
 
     /**
@@ -111,6 +116,22 @@ public class JarReader {
         for (ClassNode node : classEntries.values()) {
             if (pass == PASS_MAKE_CLASSES) {
                 mapping.addMapping(mapping.makeMappingFromNode(node));
+            } else if (pass == PASS_FINISH_CLASSES) {
+                mapping.addMemberMappings(node);
+            } else if (pass == PASS_LINK_HIERARCHY) {
+                String className = ConstUtil.getName(node);
+                String superName = ConstUtil.getSuperName(node);
+                ClassMapping cm = mapping.getMapping(className);
+                ClassMapping sm = mapping.getMapping(superName);
+                mapping.addParent(cm, sm);
+                mapping.addChild(sm, cm);
+                for (int i : node.interfaceIndices) {
+                    String interfaceName = ConstUtil.getClassName(node, i);
+                    ClassMapping im = mapping.getMapping(interfaceName);
+                    mapping.addInterface(cm, im);
+                    mapping.addChild(im, cm);
+
+                }
             } else if (pass == PASS_UPDATE_CONSTANTS) {
                 String className = ConstUtil.getName(node);
                 ConstClass cc = (ConstClass) node.getConst(node.classIndex);
@@ -120,6 +141,11 @@ public class JarReader {
                 node.setConst(ccs.getValue(),
                         new ConstName(mapping.getClassName(ConstUtil.getUTF8String(node, ccs.getValue()))));
                 ClassMapping cm = mapping.getMapping(className);
+                if (node.innerClasses != null) {
+                    for (InnerClass i : node.innerClasses.classes) {
+                        // TODO: Inner classes are not updated correctly
+                    }
+                }
                 for (MethodNode mn : node.methods) {
                     String name = ConstUtil.getUTF8String(node, mn.name);
                     String desc = ConstUtil.getUTF8String(node, mn.desc);
@@ -159,71 +185,74 @@ public class JarReader {
                 }
                 for (Constant<?> c : node.constants) {
                     if (c != null) {
+                        boolean dynamic = false;
+                        int classI = -1, nt = -1;
+                        String methodOwner = null, name = null, desc = null;
                         switch (c.type) {
-                        case INTERFACE_METHOD: {
+                        case INTERFACE_METHOD:
                             ConstInterfaceMethod cim = (ConstInterfaceMethod) c;
-                            String methodOwner = ConstUtil.getClassName(node, cim.getClassIndex());
-                            ConstNameType cnt = (ConstNameType) node.getConst(cim.getNameTypeIndex());
-                            String name = ConstUtil.getUTF8String(node, cnt.getNameIndex());
-                            String desc = ConstUtil.getUTF8String(node, cnt.getDescIndex());
-                            ClassMapping owner = mapping.getMapping(methodOwner);
-                            MemberMapping method = owner.getMemberMapping(name, desc);
-                            node.setConst(cnt.getNameIndex(), new ConstName(method.name));
-                            node.setConst(cnt.getDescIndex(), new ConstMemberDesc(method.desc));
+                            classI = cim.getClassIndex();
+                            nt = cim.getNameTypeIndex();
                             break;
-                        }
-                        case INVOKEDYNAMIC: {
+                        case INVOKEDYNAMIC:
+                            dynamic = true;
                             ConstInvokeDynamic cid = (ConstInvokeDynamic) c;
-                            ConstNameType cnt = (ConstNameType) node.getConst(cid.getNameTypeIndex());
-                            String name = ConstUtil.getUTF8String(node, cnt.getNameIndex());
-                            String desc = ConstUtil.getUTF8String(node, cnt.getDescIndex());
-                            MemberMapping method = cm.getMemberMapping(name, desc);
-                            node.setConst(cnt.getNameIndex(), new ConstName(method.name));
-                            node.setConst(cnt.getDescIndex(), new ConstMemberDesc(method.desc));
+                            nt = cid.getNameTypeIndex();
                             break;
-                        }
-                        case METHOD: {
+                        case METHOD:
                             ConstMethod cm2 = (ConstMethod) c;
-                            String methodOwner = ConstUtil.getClassName(node, cm2.getClassIndex());
-                            ConstNameType cnt = (ConstNameType) node.getConst(cm2.getNameTypeIndex());
-                            String name = ConstUtil.getUTF8String(node, cnt.getNameIndex());
-                            String desc = ConstUtil.getUTF8String(node, cnt.getDescIndex());
-                            ClassMapping owner = mapping.getMapping(methodOwner);
-                            MemberMapping method = owner.getMemberMapping(name, desc);
-                            if (method == null) {
-                                // TODO: This backup case is used if the mapping
-                                // for the methodOwner doesn't have the method
-                                // described by name/desc.
-                                //
-                                // Example:
-                                // java/lang/Object.<init>()V
-                                //
-                                // A proper fix should be used instead since I
-                                // can see this causing problems elsewhere.
-                                method = cm.getMemberMapping(name, desc);
-                            }
-                            node.setConst(cnt.getNameIndex(), new ConstName(method.name));
-                            node.setConst(cnt.getDescIndex(), new ConstMemberDesc(method.desc));
+                            classI = cm2.getClassIndex();
+                            nt = cm2.getNameTypeIndex();
                             break;
-                        }
+                        case FIELD:
+                            ConstField cf = (ConstField) c;
+                            classI = cf.getClassIndex();
+                            nt = cf.getNameTypeIndex();
+                            break;
+                        case CLASS:
+                            // Sure this is all member based except for here,
+                            // but it works when I have class constants I can't
+                            // yet access for things like opcodes.
+                            int nameI = ((ConstClass) c).getValue();
+                            if (node.getConst(nameI) instanceof ConstName) continue;
+                            name = ConstUtil.getUTF8String(node, nameI);
+                            // For some brilliant reason the following is
+                            // considered a "legitimate" class name:
+                            //
+                            // [Lcom/example/Name;
+                            // Happens mostly with enums, encountered in
+                            // minecraft.jar testing.
+                            // This is a poor fix but it's the only way
+                            // logically that I can think of getting around it,
+                            if (name.startsWith("[")) {
+                                name = name.replace("[", "");
+                                if (name.endsWith(";")) {
+                                    name = name.substring(1, name.length() - 1);
+                                }
+                            }
+                            node.setConst(nameI, new ConstName(mapping.getClassName(name)));
+                            break;
                         default:
                             break;
                         }
+                        if (nt == -1) continue;
+                        methodOwner = dynamic ? className : ConstUtil.getClassName(node, classI);
+                        ConstNameType cnt = (ConstNameType) node.getConst(nt);
+                        name = ConstUtil.getUTF8String(node, cnt.getNameIndex());
+                        desc = ConstUtil.getUTF8String(node, cnt.getDescIndex());
+                        ClassMapping owner = mapping.getMapping(methodOwner);
+                        if (owner == null) {
+                            continue;
+                        }
+                        MemberMapping method = mapping.getMemberMapping(owner, name, desc);
+                        if (method == null) {
+                            if (methodOwner.length() < 16) System.out
+                                    .println("2: " + className + " " + methodOwner + "      " + name + " " + desc);
+                            continue;
+                        }
+                        node.setConst(cnt.getNameIndex(), new ConstName(method.name));
+                        node.setConst(cnt.getDescIndex(), new ConstMemberDesc(method.desc));
                     }
-                }
-            } else if (pass == PASS_LINK_HIERARCHY) {
-                String className = ConstUtil.getName(node);
-                String superName = ConstUtil.getSuperName(node);
-                ClassMapping cm = mapping.getMapping(className);
-                ClassMapping sm = mapping.getMapping(superName);
-                mapping.setParent(cm, sm);
-                mapping.addChild(sm, cm);
-                for (int i : node.interfaceIndices) {
-                    String interfaceName = ConstUtil.getClassName(node, i);
-                    ClassMapping im = mapping.getMapping(interfaceName);
-                    mapping.addInterface(cm, im);
-                    mapping.addChild(im, cm);
-
                 }
             }
         }

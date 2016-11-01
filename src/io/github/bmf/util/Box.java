@@ -9,10 +9,6 @@ public class Box<T> {
     public final T original;
     private T value;
 
-    public Box() {
-        this(null);
-    }
-
     public Box(T value) {
         this.original = value;
         this.value = value;

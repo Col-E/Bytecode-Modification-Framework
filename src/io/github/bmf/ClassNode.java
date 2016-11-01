@@ -252,10 +252,10 @@ public class ClassNode implements AttributeOwner {
     @Override
     public List<Attribute> getAttributes() {
         List<Attribute> attributes = Lists.newArrayList();
-        if (sourceFile != null) attributes.add(sourceFile);
-        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
-        if (innerClasses != null) attributes.add(innerClasses);
         if (signature != null) attributes.add(signature);
+        if (sourceFile != null) attributes.add(sourceFile);
+        if (innerClasses != null) attributes.add(innerClasses);
+        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
         if (runtimeInvisibleAnnotations != null) attributes.add(runtimeInvisibleAnnotations);
         if (runtimeVisibleAnnotations != null) attributes.add(runtimeVisibleAnnotations);
         if (runtimeVisibleParamAnnotations != null) attributes.add(runtimeVisibleParamAnnotations);

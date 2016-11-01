@@ -20,7 +20,7 @@ import io.github.bmf.util.ImmutableBox;
 public class Mapping {
 
     private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
-    private final Map<ClassMapping, ClassMapping> parents = new HashMap<ClassMapping, ClassMapping>();
+    private final Map<ClassMapping, List<ClassMapping>> parents = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<ClassMapping, List<ClassMapping>> children = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<String, MemberMapping> descToMember = new HashMap<String, MemberMapping>();
@@ -36,15 +36,19 @@ public class Mapping {
         String name = ConstUtil.getName(node);
         ClassMapping cm = new ClassMapping(name);
         mappings.put(name, cm);
+        return cm;
+    }
+
+    public void addMemberMappings(ClassNode node) {
+        ClassMapping cm = getMapping(ConstUtil.getName(node));
         for (MethodNode mn : node.methods) {
             cm.addMember(this, new MethodMapping(new Box<String>(ConstUtil.getUTF8String(node, mn.name)),
                     Type.method(this, ConstUtil.getUTF8String(node, mn.desc))));
         }
         for (FieldNode fn : node.fields) {
             cm.addMember(this, new MemberMapping(new Box<String>(ConstUtil.getUTF8String(node, fn.name)),
-                    Type.method(this, ConstUtil.getUTF8String(node, fn.desc))));
+                    Type.variable(this, ConstUtil.getUTF8String(node, fn.desc))));
         }
-        return cm;
     }
 
     /**
@@ -66,10 +70,11 @@ public class Mapping {
         ClassMapping cm = new ClassMapping(name);
         mappings.put(name, cm);
         for (Method m : c.getMethods()) {
-            if (!onlyPublic || (m.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC) {
-                cm.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
-                        Type.method(this, Type.getMethodDescriptor(m))));
-            }
+            // if (!onlyPublic || (m.getModifiers() & Modifier.PUBLIC) ==
+            // Modifier.PUBLIC) {
+            cm.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
+                    Type.method(this, Type.getMethodDescriptor(m))));
+            // }
         }
         if (fields) {
             for (Field f : c.getFields()) {
@@ -118,7 +123,11 @@ public class Mapping {
         // but not mapped create it on the fly.
         if (name.startsWith("java")) return getClassNameOrCreate(name);
         // We have a problem...
-        return null;
+        else {
+            ClassMapping cm = new ClassMapping(new ImmutableBox<String>(name));
+            addMapping(cm);
+            return cm.name;
+        }
     }
 
     /**
@@ -127,7 +136,7 @@ public class Mapping {
      * @param mapping
      */
     public void addMapping(ClassMapping mapping) {
-        mappings.put(mapping.original, mapping);
+        mappings.put(mapping.name.original, mapping);
     }
 
     /**
@@ -225,15 +234,37 @@ public class Mapping {
     // ------------------------------------------- //
     // ------------------------------------------- //
 
+    /**
+     * Returns the first <i>(the only for non-interfaces)</i> parent of a given
+     * ClassMapping.
+     * 
+     * @param child
+     * @return
+     */
     public ClassMapping getParent(ClassMapping child) {
+        if (!hasParents(child)) return null;
+        return parents.get(child).get(0);
+    }
+
+    /**
+     * Returns a list of parents <i>(only interfaces have multiple parents)</i>
+     * of a given ClassMapping.
+     * 
+     * @param child
+     * @return
+     */
+    public List<ClassMapping> getParents(ClassMapping child) {
         return parents.get(child);
     }
 
-    public void setParent(ClassMapping child, ClassMapping parent) {
-        parents.put(child, parent);
+    public void addParent(ClassMapping child, ClassMapping interfacee) {
+        if (!hasInterfaces(child)) {
+            parents.put(child, new ArrayList<ClassMapping>());
+        }
+        parents.get(child).add(interfacee);
     }
 
-    public boolean hasParent(ClassMapping child) {
+    public boolean hasParents(ClassMapping child) {
         return parents.containsKey(child);
     }
 
@@ -271,5 +302,33 @@ public class Mapping {
 
     public boolean hasChildren(ClassMapping parent) {
         return children.containsKey(parent);
+    }
+
+    // ------------------------------------------- //
+    // ------------------------------------------- //
+
+    public MemberMapping getMemberMapping(ClassMapping owner, String name, String desc) {
+        // Fail
+        if (owner == null) return null;
+        // Check given class
+        MemberMapping m = owner.getMemberMapping(name, desc);
+        if (m != null) return m;
+        // Check parents
+        if (parents.containsKey(owner)) {
+            for (ClassMapping parentMapping : parents.get(owner)) {
+                MemberMapping mp = getMemberMapping(parentMapping, name, desc);
+                if (mp != null) return mp;
+            }
+        }
+        // Check interfaces
+        if (interfaces.containsKey(owner)) {
+            for (ClassMapping interfaceMapping : interfaces.get(owner)) {
+                MemberMapping mi = getMemberMapping(interfaceMapping, name, desc);
+                if (mi != null) return mi;
+            }
+        }
+        // Fugg
+        return null;
+
     }
 }

@@ -6,20 +6,20 @@ import java.util.List;
 import io.github.bmf.util.Box;
 
 public class ClassMapping {
-    public final String original;
     public final Box<String> name;
     private final List<MemberMapping> members = new ArrayList<MemberMapping>();
 
     public ClassMapping(String name) {
-        this.original = name;
-        this.name = new Box<String>(name);
+        this(new Box<String>(name));
+    }
+
+    public ClassMapping(Box<String> name) {
+        this.name = name;
     }
 
     public MemberMapping getMemberMapping(String name, String desc) {
-        for (MemberMapping data : members) {
-            // TODO: Determine if using the original values is the best
-            // practice.
-            if (data.name.original.equals(name) && data.desc.original.equals(desc)) { return data; }
+        for (MemberMapping mm : members) {
+            if (mm.name.original.equals(name) && mm.desc.original.equals(desc)) { return mm; }
         }
         return null;
     }

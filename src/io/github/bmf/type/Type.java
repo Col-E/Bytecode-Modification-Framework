@@ -162,7 +162,8 @@ public abstract class Type {
     }
 
     private static Type type(Mapping mapping, String desc, int i, int len) {
-        return new ClassType(mapping.getClassName(desc.substring(i + 1, (i + len) - 1)));
+        String name = desc.substring(i + 1, (i + len) - 1);
+        return new ClassType(mapping.getClassName(name));
     }
 
     /**
