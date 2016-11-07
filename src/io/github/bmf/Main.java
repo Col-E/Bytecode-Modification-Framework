@@ -13,7 +13,7 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Main {
-    private static final String IN_FILE = "tests/Testing.jar", OUT_FILE = "tests/TestOut.jar";
+    private static final String IN_FILE = "tests/Opt.jar", OUT_FILE = "tests/1.10.2-OptiFine_HD_U_D2.jar";
 
     public static void main(String[] args) {
         long l = System.currentTimeMillis();
@@ -24,30 +24,25 @@ public class Main {
     private static void all(String file) {
         try {
             JarReader read = new JarReader(new File(file), true, true);
-           // read.getMapping().getClassName("com/example/test/Edible").setValue("dank/memes/WeedJokeHere");
-           // read.getMapping().getClassName("com/example/test/Apple").setValue("keep/the/doctors/Away");
-           // read.getMapping().getClassName("com/example/test/Fruit").setValue("not/a/Vegetable");
+            // read.getMapping().getClassName("com/example/test/Edible").setValue("dank/memes/WeedJokeHere");
+            // read.getMapping().getClassName("com/example/test/Apple").setValue("keep/the/doctors/Away");
+            // read.getMapping().getClassName("com/example/test/Fruit").setValue("not/a/Vegetable");
             int classIndex = 100;
-            for (String name : read.getClassEntries().keySet()){
+            for (String name : read.getClassEntries().keySet()) {
                 ClassMapping cm = read.getMapping().getMapping(name);
-                if (cm.name.getValue().contains("Main")){
+                if (cm.name.getValue().contains("Main")) 
                     continue;
-                }
                 String obName = "AAA/" + getCapName(classIndex);
-                 cm.name.setValue(obName);
-
-                
+                cm.name.setValue(obName);
                 int memberIndex = 100;
-                for (MemberMapping mm : cm.getMembers()){
-                    if (mm.name.getValue().equals(mm.original) && !mm.original.contains("<")){
+                for (MemberMapping mm : cm.getMembers()) {
+                    if (mm.name.getValue().equals(mm.original) && !mm.original.contains("<")) {
                         mm.name.setValue(getLowName(memberIndex));
                         memberIndex++;
                     }
                 }
-                
                 classIndex++;
             }
-
             read.saveTo(new File(OUT_FILE));
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,14 +50,13 @@ public class Main {
     }
 
     private static String getLowName(int i) {
-        // TODO Auto-generated method stub
         return getString("abcdefghijklmnopqrstuvwxyz", i, 24);
     }
+
     private static String getCapName(int i) {
-        // TODO Auto-generated method stub
         return getString("ABCDEFGHIJKLMNOPQRSTUVWXYZ", i, 24);
     }
-    
+
     public static String getString(String alpha, int i, int n) {
         char[] charz = alpha.toCharArray();
         if (n < 2) {
@@ -85,16 +79,5 @@ public class Main {
             array[--n2] = '-';
         }
         return new String(array, n2, 33 - n2);
-    }
-
-    private static ClassNode one(String file, String entry) {
-        try {
-            Map<String, byte[]> entries = JarUtil.readJarClasses(new File(file));
-            ClassNode cn = ClassReader.getNode(entries.get(entry));
-            return cn;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

@@ -70,15 +70,14 @@ public class Mapping {
         ClassMapping cm = new ClassMapping(name);
         mappings.put(name, cm);
         for (Method m : c.getMethods()) {
-            // if (!onlyPublic || (m.getModifiers() & Modifier.PUBLIC) ==
-            // Modifier.PUBLIC) {
+            if (!onlyPublic || (m.getModifiers() & Modifier.PRIVATE) != Modifier.PRIVATE) {
             cm.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
                     Type.method(this, Type.getMethodDescriptor(m))));
-            // }
+             }
         }
         if (fields) {
             for (Field f : c.getFields()) {
-                if (!onlyPublic || (f.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC) {
+                if (!onlyPublic || (f.getModifiers() & Modifier.PRIVATE) != Modifier.PRIVATE) {
                     cm.addMember(this, new MemberMapping(new ImmutableBox<String>(f.getName()),
                             Type.variable(this, Type.getDescriptorForClass(f.getType()))));
                 }
@@ -117,6 +116,18 @@ public class Mapping {
      * @return
      */
     public Box<String> getClassName(String name) {
+        return getClassName(name, false);
+    }
+
+    /**
+     * Retrieves the Boxed name of a class.
+     * 
+     * @param name
+     * @param throwIfNotFound
+     *            RuntimeExcepton thrown if the class coult not be found.
+     * @return
+     */
+    public Box<String> getClassName(String name, boolean throwIfNotFound) {
         // Return if cached
         if (hasMapping(name)) return mappings.get(name).name;
         // If the class is in the default classpath
@@ -124,6 +135,7 @@ public class Mapping {
         if (name.startsWith("java")) return getClassNameOrCreate(name);
         // We have a problem...
         else {
+            if (throwIfNotFound) throw new RuntimeException(name);
             ClassMapping cm = new ClassMapping(new ImmutableBox<String>(name));
             addMapping(cm);
             return cm.name;

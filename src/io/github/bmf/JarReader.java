@@ -15,6 +15,7 @@ import io.github.bmf.consts.ConstInvokeDynamic;
 import io.github.bmf.consts.ConstMethod;
 import io.github.bmf.consts.ConstNameType;
 import io.github.bmf.consts.Constant;
+import io.github.bmf.consts.ConstantType;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
 import io.github.bmf.type.Type;
@@ -30,7 +31,6 @@ public class JarReader {
     public static final int PASS_FINISH_CLASSES = 1;
     public static final int PASS_LINK_HIERARCHY = 2;
     public static final int PASS_UPDATE_CONSTANTS = 3;
-
 
     private final Mapping mapping;
     private final File file;
@@ -130,17 +130,15 @@ public class JarReader {
                     ClassMapping im = mapping.getMapping(interfaceName);
                     mapping.addInterface(cm, im);
                     mapping.addChild(im, cm);
-
                 }
             } else if (pass == PASS_UPDATE_CONSTANTS) {
-                String className = ConstUtil.getName(node);
                 ConstClass cc = (ConstClass) node.getConst(node.classIndex);
                 ConstClass ccs = (ConstClass) node.getConst(node.superIndex);
-                node.setConst(cc.getValue(),
-                        new ConstName(mapping.getClassName(ConstUtil.getUTF8String(node, cc.getValue()))));
-                node.setConst(ccs.getValue(),
-                        new ConstName(mapping.getClassName(ConstUtil.getUTF8String(node, ccs.getValue()))));
+                String className = ConstUtil.getName(node);
+                String superName = ConstUtil.getUTF8String(node, ccs.getValue());
                 ClassMapping cm = mapping.getMapping(className);
+                node.setConst(cc.getValue(), new ConstName(cm.name));
+                node.setConst(ccs.getValue(), new ConstName(mapping.getClassName(superName)));
                 if (node.innerClasses != null) {
                     for (InnerClass i : node.innerClasses.classes) {
                         // TODO: Inner classes are not updated correctly
@@ -150,6 +148,12 @@ public class JarReader {
                     String name = ConstUtil.getUTF8String(node, mn.name);
                     String desc = ConstUtil.getUTF8String(node, mn.desc);
                     MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
+                    // In RARE cases usually due to obfuscation the class name
+                    // and method name can point to the same value.
+                    if (mn.name == cc.getValue()) {
+                        node.addConst(new ConstName(cm.name));
+                        cc.setValue(node.constants.size());
+                    }
                     node.setConst(mn.name, new ConstName(mm.name));
                     node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
                     if (mn.code != null) {
@@ -180,10 +184,19 @@ public class JarReader {
                 for (FieldNode fn : node.fields) {
                     String name = ConstUtil.getUTF8String(node, fn.name);
                     String desc = ConstUtil.getUTF8String(node, fn.desc);
+                    // In RARE cases usually due to obfuscation the class name
+                    // and field name can point to the same value.
+                    if (fn.name == cc.getValue()) {
+                        node.addConst(new ConstName(cm.name));
+                        cc.setValue(node.constants.size());
+                    }
                     node.setConst(fn.name, new ConstName(name));
                     node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
                 }
-                for (Constant<?> c : node.constants) {
+                // Temporary, will be removed when method opcode reading is
+                // complete
+                for (int i = 0; i < node.constants.size(); i++) {
+                    Constant<?> c = node.constants.get(i);
                     if (c != null) {
                         boolean dynamic = false;
                         int classI = -1, nt = -1;
@@ -214,23 +227,25 @@ public class JarReader {
                             // but it works when I have class constants I can't
                             // yet access for things like opcodes.
                             int nameI = ((ConstClass) c).getValue();
-                            if (node.getConst(nameI) instanceof ConstName) continue;
-                            name = ConstUtil.getUTF8String(node, nameI);
-                            // For some brilliant reason the following is
-                            // considered a "legitimate" class name:
-                            //
-                            // [Lcom/example/Name;
-                            // Happens mostly with enums, encountered in
-                            // minecraft.jar testing.
-                            // This is a poor fix but it's the only way
-                            // logically that I can think of getting around it,
-                            if (name.startsWith("[")) {
-                                name = name.replace("[", "");
-                                if (name.endsWith(";")) {
-                                    name = name.substring(1, name.length() - 1);
+                            if (!(node.getConst(nameI) instanceof ConstName)) {
+                                name = ConstUtil.getUTF8String(node, nameI);
+                                // For some brilliant reason the following is
+                                // considered a "legitimate" class name:
+                                //
+                                // [Lcom/example/Name;
+                                // Happens mostly with enums, encountered in
+                                // minecraft.jar testing.
+                                // This is a poor fix but it's the only way
+                                // logically that I can think of getting around
+                                // it,
+                                if (name.startsWith("[")) {
+                                    name = name.replace("[", "");
+                                    if (name.endsWith(";")) {
+                                        name = name.substring(1, name.length() - 1);
+                                    }
                                 }
+                                node.setConst(nameI, new ConstName(mapping.getClassName(name)));
                             }
-                            node.setConst(nameI, new ConstName(mapping.getClassName(name)));
                             break;
                         default:
                             break;
@@ -246,15 +261,23 @@ public class JarReader {
                         }
                         MemberMapping method = mapping.getMemberMapping(owner, name, desc);
                         if (method == null) {
-                            if (methodOwner.length() < 16) System.out
-                                    .println("2: " + className + " " + methodOwner + "      " + name + " " + desc);
-                            continue;
+                            // if (methodOwner.length() < 16)
+                            // System.out.println("2: " + className + " " +
+                            // methodOwner + " " + name + " " + desc);
+                            throw new RuntimeException(className + "   -> " + owner.name.original + ":" + name + desc);
+                        }
+                        // In RARE cases usually due to obfuscation the class
+                        // name and method name can point to the same value.
+                        if (cnt.getNameIndex() == cc.getValue()) {
+                            node.addConst(new ConstName(cm.name));
+                            cc.setValue(node.constants.size());
                         }
                         node.setConst(cnt.getNameIndex(), new ConstName(method.name));
                         node.setConst(cnt.getDescIndex(), new ConstMemberDesc(method.desc));
                     }
                 }
             }
+
         }
     }
 
