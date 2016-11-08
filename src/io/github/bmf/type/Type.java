@@ -1,5 +1,6 @@
 package io.github.bmf.type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -205,5 +206,13 @@ public abstract class Type {
             s += getDescriptorForClass(c);
         s += ')';
         return s + getDescriptorForClass(m.getReturnType());
+    }
+    
+    public static String getConstructorDescriptor(Constructor<?> m) {
+        String s = "(";
+        for (final Class<?> c : m.getParameterTypes())
+            s += getDescriptorForClass(c);
+        s += ')';
+        return s + "V";
     }
 }

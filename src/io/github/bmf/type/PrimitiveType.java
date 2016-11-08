@@ -14,4 +14,28 @@ public class PrimitiveType extends Type {
         return desc;
     }
 
+    public static PrimitiveType getFromChar(char ch) {
+        switch (ch) {
+        case 'B':
+            return BYTE;
+        case 'C':
+            return CHAR;
+        case 'D':
+            return DOUBLE;
+        case 'F':
+            return FLOAT;
+        case 'I':
+            return INT;
+        case 'J':
+            return LONG;
+        case 'S':
+            return SHORT;
+        case 'Z':
+            return BOOLEAN;
+        case 'V':
+            return VOID;
+        }
+        return null;
+    }
+
 }

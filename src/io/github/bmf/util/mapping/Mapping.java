@@ -1,8 +1,7 @@
 package io.github.bmf.util.mapping;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +17,6 @@ import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 
 public class Mapping {
-
     private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
     private final Map<ClassMapping, List<ClassMapping>> parents = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
@@ -39,6 +37,13 @@ public class Mapping {
         return cm;
     }
 
+    /**
+     * Adds MemberMappings to the ClassMappings associated with the given
+     * classnode. The additions are based off of the values inside the given
+     * node.
+     * 
+     * @param node
+     */
     public void addMemberMappings(ClassNode node) {
         ClassMapping cm = getMapping(ConstUtil.getName(node));
         for (MethodNode mn : node.methods) {
@@ -53,37 +58,56 @@ public class Mapping {
 
     /**
      * Generates a ClassMapping from a class loaded into the classpath. The
-     * generated ClassMapping is automatically added to the mappings map.
+     * generated ClassMapping is automatically added to the mappings map and the
+     * parent/child hierarchy is created.
      * 
      * @param name
      *            Class name
-     * @param onlyPublic
-     *            Only makes mappings for public members
-     * @param fields
-     *            Whether to make MemberMappings for fields
      * @return
      * @throws ClassNotFoundException
      */
-    public ClassMapping makeMappingFromRuntime(String name, boolean onlyPublic, boolean fields)
-            throws ClassNotFoundException {
-        Class<?> c = Class.forName(name.replace("/", "."));
-        ClassMapping cm = new ClassMapping(name);
-        mappings.put(name, cm);
-        for (Method m : c.getMethods()) {
-            if (!onlyPublic || (m.getModifiers() & Modifier.PRIVATE) != Modifier.PRIVATE) {
-            cm.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
+    public ClassMapping makeMappingFromRuntime(String name) {
+        Class<?> clazz = null;
+        try {
+            clazz = Class.forName(name.replace("/", "."));
+        } catch (ClassNotFoundException e) {
+            // rip
+            return null;
+        }
+        // Create mapping object and add it to the map
+        ClassMapping classMapping = new ClassMapping(name);
+        mappings.put(name, classMapping);
+        // Get the parent if it has one and map that.
+        // Then create set the hierarchy structure
+        if (clazz != Object.class && clazz.getSuperclass() != null) {
+            String parentName = clazz.getSuperclass().getName().replace(".", "/");
+            ClassMapping parentMapping = mappings.containsKey(parentName) ? mappings.get(parentName)
+                    : makeMappingFromRuntime(parentName);
+            addParent(classMapping, parentMapping);
+            addChild(parentMapping, classMapping);
+        }
+        // Get the interfaces and map those as well.
+        // Then create set the hierarchy structure
+        for (Class<?> interfaceClass : clazz.getInterfaces()) {
+            String interfaceNAme = interfaceClass.getName().replace(".", "/");
+            ClassMapping interfaceMapping = mappings.containsKey(interfaceNAme) ? mappings.get(interfaceNAme)
+                    : makeMappingFromRuntime(interfaceNAme);
+            addInterface(classMapping, interfaceMapping);
+            addChild(interfaceMapping, classMapping);
+        }
+        // Create member mappings for the constructors
+        for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+            classMapping.addMember(this, new MethodMapping(new ImmutableBox<String>("<init>"),
+                    Type.method(this, Type.getConstructorDescriptor(constructor))));
+        }
+        // Create member mappings for the methods
+        for (Method m : clazz.getDeclaredMethods()) {
+            classMapping.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
                     Type.method(this, Type.getMethodDescriptor(m))));
-             }
         }
-        if (fields) {
-            for (Field f : c.getFields()) {
-                if (!onlyPublic || (f.getModifiers() & Modifier.PRIVATE) != Modifier.PRIVATE) {
-                    cm.addMember(this, new MemberMapping(new ImmutableBox<String>(f.getName()),
-                            Type.variable(this, Type.getDescriptorForClass(f.getType()))));
-                }
-            }
-        }
-        return cm;
+        // Field member mappings are ignored because as of right now you can't
+        // extend a field. That would be kinda cool though, but also evil.
+        return classMapping;
     }
 
     /**
@@ -96,15 +120,14 @@ public class Mapping {
      * @return
      */
     public Box<String> getClassNameOrCreate(String name) {
+        // Get existing mapping if possible
         if (hasMapping(name)) {
             return mappings.get(name).name;
         } else {
-            try {
-                ClassMapping cm = makeMappingFromRuntime(name, false, false);
-                if (cm != null) return cm.name;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // Attempt to load the mapping from the classpath
+            ClassMapping cm = makeMappingFromRuntime(name);
+            if (cm != null) return cm.name;
+            // Well, can't say we didn't try.
             throw new RuntimeException("Requested unmapped class: " + name);
         }
     }
@@ -128,7 +151,7 @@ public class Mapping {
      * @return
      */
     public Box<String> getClassName(String name, boolean throwIfNotFound) {
-        // Return if cached
+        // Return if mapping already exists
         if (hasMapping(name)) return mappings.get(name).name;
         // If the class is in the default classpath
         // but not mapped create it on the fly.
@@ -198,6 +221,14 @@ public class Mapping {
         return null;
     }
 
+    /**
+     * Retrieves a list of MemberDescriptors given a class's name and the member
+     * descriptor and name.
+     * 
+     * @param className
+     * @param desc
+     * @return
+     */
     public List<MemberDescriptor> getDescs(String className, String desc) {
         List<MemberDescriptor> list = new ArrayList<MemberDescriptor>();
         ClassMapping cm = getMapping(className);
@@ -211,6 +242,18 @@ public class Mapping {
         return list;
     }
 
+    /**
+     * Checks if a member of the given name and desc are found within mappings
+     * for the class with the given name.
+     * 
+     * To cut down on execution time you could just use getDesc(String, String,
+     * String) and check if the local is null.
+     * 
+     * @param className
+     * @param name
+     * @param desc
+     * @return
+     */
     public boolean hasDesc(String className, String name, String desc) {
         if (hasMapping(className)) {
             ClassMapping cm = getMapping(className);
@@ -269,13 +312,25 @@ public class Mapping {
         return parents.get(child);
     }
 
-    public void addParent(ClassMapping child, ClassMapping interfacee) {
+    /**
+     * Maps a parent to the given child mapping.
+     * 
+     * @param child
+     * @param parent
+     */
+    public void addParent(ClassMapping child, ClassMapping parent) {
         if (!hasInterfaces(child)) {
             parents.put(child, new ArrayList<ClassMapping>());
         }
-        parents.get(child).add(interfacee);
+        parents.get(child).add(parent);
     }
 
+    /**
+     * Checks if a given class has parents.
+     * 
+     * @param child
+     * @return
+     */
     public boolean hasParents(ClassMapping child) {
         return parents.containsKey(child);
     }
@@ -283,10 +338,22 @@ public class Mapping {
     // ------------------------------------------- //
     // ------------------------------------------- //
 
+    /**
+     * Returns a list of interfaces of a given ClassMapping.
+     * 
+     * @param child
+     * @return
+     */
     public List<ClassMapping> getInterfaces(ClassMapping child) {
         return interfaces.get(child);
     }
 
+    /**
+     * Maps an interface to the given child mapping.
+     * 
+     * @param child
+     * @param interfacee
+     */
     public void addInterface(ClassMapping child, ClassMapping interfacee) {
         if (!hasInterfaces(child)) {
             interfaces.put(child, new ArrayList<ClassMapping>());
@@ -294,6 +361,12 @@ public class Mapping {
         interfaces.get(child).add(interfacee);
     }
 
+    /**
+     * Checks if a given class has interfaces.
+     * 
+     * @param child
+     * @return
+     */
     public boolean hasInterfaces(ClassMapping child) {
         return interfaces.containsKey(child);
     }
@@ -301,10 +374,22 @@ public class Mapping {
     // ------------------------------------------- //
     // ------------------------------------------- //
 
+    /**
+     * Returns a list of classes that extend the given class <i>(parent)</i>.
+     * 
+     * @param parent
+     * @return
+     */
     public List<ClassMapping> getChildren(ClassMapping parent) {
         return children.get(parent);
     }
 
+    /**
+     * Adds a child link to the given parent mapping.
+     * 
+     * @param parent
+     * @param child
+     */
     public void addChild(ClassMapping parent, ClassMapping child) {
         if (!hasChildren(parent)) {
             children.put(parent, new ArrayList<ClassMapping>());
@@ -312,6 +397,12 @@ public class Mapping {
         children.get(parent).add(child);
     }
 
+    /**
+     * Checks if a given class has children.
+     * 
+     * @param parent
+     * @return
+     */
     public boolean hasChildren(ClassMapping parent) {
         return children.containsKey(parent);
     }
@@ -319,28 +410,52 @@ public class Mapping {
     // ------------------------------------------- //
     // ------------------------------------------- //
 
+    /**
+     * Retrieves a MemberMapping from a given ClassMapping. If one cannot be
+     * found the parents/interfaces of the given class are searched.
+     * 
+     * @param owner
+     * @param name
+     * @param desc
+     * @return
+     */
     public MemberMapping getMemberMapping(ClassMapping owner, String name, String desc) {
+        return getMemberMapping(owner, name, desc, true);
+    }
+
+    /**
+     * Retrieves a MemberMapping from a given ClassMapping. If one cannot be
+     * found the parents/interfaces of the given class can be searched.
+     * 
+     * @param owner
+     * @param name
+     * @param desc
+     * @param recursive
+     *            Search parents and interfaces recursively
+     * @return
+     */
+    public MemberMapping getMemberMapping(ClassMapping owner, String name, String desc, boolean recursive) {
         // Fail
         if (owner == null) return null;
-        // Check given class
+        // Check given class.
+        // If no recursion is allowed the value will be returned even if null.
         MemberMapping m = owner.getMemberMapping(name, desc);
-        if (m != null) return m;
+        if (m != null || !recursive) return m;
         // Check parents
         if (parents.containsKey(owner)) {
             for (ClassMapping parentMapping : parents.get(owner)) {
-                MemberMapping mp = getMemberMapping(parentMapping, name, desc);
+                MemberMapping mp = getMemberMapping(parentMapping, name, desc, true);
                 if (mp != null) return mp;
             }
         }
         // Check interfaces
         if (interfaces.containsKey(owner)) {
             for (ClassMapping interfaceMapping : interfaces.get(owner)) {
-                MemberMapping mi = getMemberMapping(interfaceMapping, name, desc);
+                MemberMapping mi = getMemberMapping(interfaceMapping, name, desc, true);
                 if (mi != null) return mi;
             }
         }
-        // Fugg
+        // Poop
         return null;
-
     }
 }
