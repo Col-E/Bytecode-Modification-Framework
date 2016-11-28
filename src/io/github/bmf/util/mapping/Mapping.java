@@ -1,5 +1,9 @@
 package io.github.bmf.util.mapping;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -188,6 +192,15 @@ public class Mapping {
     }
 
     /**
+     * Retrieves a ClassMapping from the mappings map based on a given class.
+     * 
+     * @param node
+     */
+    public ClassMapping getMapping(ClassNode node) {
+        return getMapping(ConstUtil.getName(node));
+    }
+
+    /**
      * Checks if a mappings map has a given entry.
      * 
      * @param name
@@ -195,6 +208,15 @@ public class Mapping {
      */
     public boolean hasMapping(String name) {
         return mappings.containsKey(name);
+    }
+
+    /**
+     * Returns the mappings map.
+     * 
+     * @return
+     */
+    public Map<String, ClassMapping> getMappings() {
+        return mappings;
     }
 
     // ------------------------------------------- //
@@ -458,4 +480,27 @@ public class Mapping {
         // Poop
         return null;
     }
+
+    // ------------------------------------------- //
+    // ------------------------------------------- //
+
+    public void writeToFile(File out) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(out));
+        for (ClassMapping cm : this.mappings.values()) {
+            if (cm.name.original.equals(cm.name.getValue())) {
+                continue;
+            }
+            bw.write("CLASS " + cm.name.original + " " + cm.name.getValue() + "\n");
+            for (MemberMapping mm : cm.getMembers()) {
+                if (mm.name.original.equals(mm.name.getValue())) {
+                    continue;
+                }
+                String prefix = (mm.desc.toDesc().contains("(") ? "\tMETHOD " : "\tFIELD ");
+                bw.write(prefix + mm.name.original + " " + mm.desc.original + " " + mm.name.getValue() + " "
+                        + mm.desc.toDesc() + "\n");
+            }
+        }
+        bw.close();
+    }
+
 }

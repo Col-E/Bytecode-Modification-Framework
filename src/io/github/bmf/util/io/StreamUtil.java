@@ -2,7 +2,6 @@ package io.github.bmf.util.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.IOException;
 
 public class StreamUtil {
     /**
