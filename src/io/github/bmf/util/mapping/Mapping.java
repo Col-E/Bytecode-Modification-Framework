@@ -299,7 +299,7 @@ public class Mapping {
      * @return
      */
     public MemberMapping getMemberInstance(MemberMapping mm) {
-        String key = mm.original + mm.desc.original;
+        String key = mm.name.original + mm.desc.original;
         if (descToMember.containsKey(key)) {
             return descToMember.get(key);
         } else {

@@ -1,6 +1,11 @@
 package io.github.bmf;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -365,19 +370,77 @@ public class JarReader {
                     }
                 }
             }
-
         }
 
     }
 
     /**
-     * Saves the currently stored information to a given file.
+     * Saves the ClassNode objects to a given jar destination.
      * 
      * @param fileOut
      */
-    public void saveTo(File fileOut) {
+    public void saveJarTo(File fileOut) {
         JarUtil.writeJar(file, fileOut, classEntries, fileEntries);
+    }
 
+    /**
+     * Saves the Mapping objects to a given file destination.
+     * 
+     * @param fileOut
+     * @throws IOException
+     */
+    public void saveMappingsTo(File fileOut) throws IOException {
+        saveMappingsTo(fileOut, false);
+    }
+
+    /**
+     * Saves the Mapping objects to a given file destination.
+     * 
+     * @param fileOut
+     * @param exclude
+     *            Exclude classes/members not renamed
+     * @throws IOException
+     */
+    public void saveMappingsTo(File fileOut, boolean exclude) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(fileOut));
+        for (String name : classEntries.keySet()) {
+            ClassMapping cm = mapping.getMappings().get(name);
+            boolean include = !cm.name.getValue().equals(cm.name.original);
+            String c = "CLASS " + cm.name.original + " " + cm.name.getValue() + "\n";
+            List<MemberMapping> s = new ArrayList<MemberMapping>(cm.getMembers());
+            s.sort(new Comparator<MemberMapping>() {
+                @Override
+                public int compare(MemberMapping m1, MemberMapping m2) {
+                    boolean b1 = m1 instanceof MethodMapping;
+                    boolean b2 = m2 instanceof MethodMapping;
+                    if (b1 != b2) {
+                        if (b1) {
+                            return 1;
+                        } else {
+                            return -1;
+                        }
+                    }
+                    return m1.name.original.compareTo(m2.name.original);
+                }
+
+            });
+            List<String> m = new ArrayList<String>(s.size());
+            for (MemberMapping mm : s) {
+                boolean method = mm instanceof MethodMapping;
+                if (!exclude || (exclude && !mm.name.getValue().equals(mm.name.original))) {
+                    m.add("\t" + (method ? "METHOD" : "FIELD") + " " + mm.name.original + " " + mm.name.getValue() + " "
+                            + mm.desc.original + "\n");
+                    include = true;
+                }
+            }
+            if (!exclude || (exclude && include)) {
+                bw.write(c);
+                for (String sm : m) {
+                    bw.write(sm);
+                }
+            }
+        }
+        bw.close();
     }
 
     public File getFile() {

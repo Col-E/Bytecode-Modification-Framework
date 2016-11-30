@@ -36,14 +36,14 @@ public class Main {
                 cm.name.setValue(obName);
                 int memberIndex = 100;
                 for (MemberMapping mm : cm.getMembers()) {
-                    if (mm.name.getValue().equals(mm.original) && !mm.original.contains("<")) {
+                    if (mm.name.getValue().equals(mm.name.original) && !mm.name.original.contains("<")) {
                         mm.name.setValue(getLowName(memberIndex));
                         memberIndex++;
                     }
                 }
                 classIndex++;
             }
-            read.saveTo(new File(OUT_FILE));
+            read.saveJarTo(new File(OUT_FILE));
         } catch (Exception e) {
             e.printStackTrace();
         }

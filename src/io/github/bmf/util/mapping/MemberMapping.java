@@ -4,7 +4,6 @@ import io.github.bmf.type.descriptors.MemberDescriptor;
 import io.github.bmf.util.Box;
 
 public class MemberMapping {
-    public final String original;
     public final Box<String> name;
     public final MemberDescriptor desc;
 
@@ -13,7 +12,6 @@ public class MemberMapping {
     }
 
     public MemberMapping(Box<String> name, MemberDescriptor desc) {
-        this.original = name.original;
         this.name = name;
         this.desc = desc;
     }
