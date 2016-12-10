@@ -13,6 +13,11 @@ public enum AttributeType {
     //@formatter:off
     CONSTANT_VALUE("ConstantValue"),
     CODE("Code"),
+    // Something really odd is occurring
+    // Some classes call it a StackMap
+    // Others call it a StackMapTable
+    //
+    //STACK_MAP_TABLE("StackMap"),
     STACK_MAP_TABLE("StackMapTable"),
     EXCEPTIONS("Exceptions"),
     INNER_CLASSES("InnerClasses"),

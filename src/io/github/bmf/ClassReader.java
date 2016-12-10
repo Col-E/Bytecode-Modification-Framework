@@ -111,7 +111,11 @@ public class ClassReader {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
         String name = owner.getConst(nameIndex).getValue().toString();
+        
         AttributeType attributeType = AttributeType.fromName(name);
+        if (attributeType == null){
+            System.out.println(name);
+        }
         switch (attributeType) {
         case ANNOTATION_DEFAULT: {
             return new AttributeAnnotationDefault(nameIndex, readElementValue(owner, is));

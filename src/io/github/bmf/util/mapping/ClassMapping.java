@@ -40,6 +40,21 @@ public class ClassMapping {
     }
 
     /**
+     * Returns a list of members matching the given name. Compares to a member's
+     * original name rather than current name.
+     * 
+     * @param name
+     * @return
+     */
+    public List<MemberMapping> getMembersByOriginalName(String name) {
+        List<MemberMapping> list = new ArrayList<MemberMapping>();
+        for (MemberMapping mm : members) {
+            if (mm.name.original.equals(name)) list.add(mm);
+        }
+        return list;
+    }
+
+    /**
      * Returns a list of members matching the given name.
      * 
      * @param name
@@ -48,9 +63,8 @@ public class ClassMapping {
     public List<MemberMapping> getMembersByName(String name) {
         List<MemberMapping> list = new ArrayList<MemberMapping>();
         for (MemberMapping mm : members) {
-            if (mm.name.original.equals(name)) list.add(mm);
+            if (mm.name.getValue().equals(name)) list.add(mm);
         }
         return list;
     }
-
 }
