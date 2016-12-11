@@ -5,16 +5,15 @@ import java.util.List;
 
 import io.github.bmf.util.Box;
 
-public class ClassMapping {
-    public final Box<String> name;
+public class ClassMapping extends AbstractMapping{
     private final List<MemberMapping> members = new ArrayList<MemberMapping>();
 
     public ClassMapping(String name) {
-        this(new Box<String>(name));
+       super(name);
     }
 
     public ClassMapping(Box<String> name) {
-        this.name = name;
+       super(name);
     }
 
     public MemberMapping getMemberMapping(String name, String desc) {
@@ -36,7 +35,7 @@ public class ClassMapping {
      * @param mm
      */
     public void addMember(Mapping mapping, MemberMapping mm) {
-        members.add(mapping.getMemberInstance(mm));
+        members.add(mapping.getMemberInstance(this, mm));
     }
 
     /**

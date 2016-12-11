@@ -14,7 +14,11 @@ public class MethodMapping extends MemberMapping {
     }
     
     public void addVariable(Mapping mapping, MemberMapping mm) {
-        variables.add(mapping.getMemberInstance(mm));
+        variables.add(mm);
+    }
+    
+    public List<MemberMapping> getVariables(){
+        return variables;
     }
 
 }

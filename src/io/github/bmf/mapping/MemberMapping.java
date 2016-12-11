@@ -3,8 +3,7 @@ package io.github.bmf.mapping;
 import io.github.bmf.type.descriptors.MemberDescriptor;
 import io.github.bmf.util.Box;
 
-public class MemberMapping {
-    public final Box<String> name;
+public class MemberMapping extends AbstractMapping {
     public final MemberDescriptor desc;
 
     public MemberMapping(String name, MemberDescriptor desc) {
@@ -12,7 +11,7 @@ public class MemberMapping {
     }
 
     public MemberMapping(Box<String> name, MemberDescriptor desc) {
-        this.name = name;
+        super(name);
         this.desc = desc;
     }
 }

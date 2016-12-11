@@ -114,7 +114,7 @@ public class ClassReader {
         
         AttributeType attributeType = AttributeType.fromName(name);
         if (attributeType == null){
-            System.out.println(name);
+            throw new RuntimeException("Unknown attribute: " + name);
         }
         switch (attributeType) {
         case ANNOTATION_DEFAULT: {
