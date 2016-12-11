@@ -25,7 +25,8 @@ public class Mapping {
     private final Map<ClassMapping, List<ClassMapping>> parents = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
     private final Map<ClassMapping, List<ClassMapping>> children = new HashMap<ClassMapping, List<ClassMapping>>();
-    private final Map<String, MemberMapping> descToMember = new HashMap<String, MemberMapping>();
+    private final List<ClassMapping> inited = new ArrayList<ClassMapping>();
+    private final List<String> failedLoads = new ArrayList<String>();
 
     /**
      * Generates a ClassMapping from a given ClassNode. The generated
@@ -48,8 +49,24 @@ public class Mapping {
      * 
      * @param node
      */
-    public void addMemberMappings(ClassNode node) {
+    public void addMemberMappings(Map<String, ClassNode> nodes, ClassNode node) {
         ClassMapping cm = getMapping(ConstUtil.getName(node));
+        if (cm == null) { throw new RuntimeException(ConstUtil.getName(node) + " aaaaaaa"); }
+        // Skip if already done.
+        if (inited.contains(cm)) return;
+        // Makes sure superclasses have had their members mapped first.
+        List<ClassMapping> supers = new ArrayList<ClassMapping>();
+        if (hasParents(cm)) supers.addAll(parents.get(cm));
+        if (hasInterfaces(cm)) supers.addAll(interfaces.get(cm));
+        for (ClassMapping parent : supers) {
+            if (inited.contains(parent)) {
+                ClassNode parentNode = nodes.get(parent.name.original);
+                if (parentNode != null) {
+                    addMemberMappings(nodes, parentNode);
+                }
+            }
+        }
+        // Adding the members
         for (MethodNode mn : node.methods) {
             cm.addMember(this, new MethodMapping(new Box<String>(ConstUtil.getUTF8String(node, mn.name)),
                     Type.method(this, ConstUtil.getUTF8String(node, mn.desc))));
@@ -58,6 +75,7 @@ public class Mapping {
             cm.addMember(this, new MemberMapping(new Box<String>(ConstUtil.getUTF8String(node, fn.name)),
                     Type.variable(this, ConstUtil.getUTF8String(node, fn.desc))));
         }
+        inited.add(cm);
     }
 
     /**
@@ -68,13 +86,15 @@ public class Mapping {
      * @param name
      *            Class name
      * @return
-     * @throws ClassNotFoundException
      */
     public ClassMapping makeMappingFromRuntime(String name) {
+        // If it didn't work before it probably won't work now.
+        if (failedLoads.contains(name)) return null;
         Class<?> clazz = null;
         try {
             clazz = Class.forName(name.replace("/", "."));
         } catch (ClassNotFoundException e) {
+            failedLoads.add(name);
             // rip
             return null;
         }
@@ -87,8 +107,10 @@ public class Mapping {
             String parentName = clazz.getSuperclass().getName().replace(".", "/");
             ClassMapping parentMapping = mappings.containsKey(parentName) ? mappings.get(parentName)
                     : makeMappingFromRuntime(parentName);
-            addParent(classMapping, parentMapping);
-            addChild(parentMapping, classMapping);
+            if (parentMapping != null) {
+                addParent(classMapping, parentMapping);
+                addChild(parentMapping, classMapping);
+            }
         }
         // Get the interfaces and map those as well.
         // Then create set the hierarchy structure
@@ -96,8 +118,10 @@ public class Mapping {
             String interfaceNAme = interfaceClass.getName().replace(".", "/");
             ClassMapping interfaceMapping = mappings.containsKey(interfaceNAme) ? mappings.get(interfaceNAme)
                     : makeMappingFromRuntime(interfaceNAme);
-            addInterface(classMapping, interfaceMapping);
-            addChild(interfaceMapping, classMapping);
+            if (interfaceMapping != null) {
+                addInterface(classMapping, interfaceMapping);
+                addChild(interfaceMapping, classMapping);
+            }
         }
         // Create member mappings for the constructors
         for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
@@ -125,7 +149,7 @@ public class Mapping {
      */
     public Box<String> getClassNameOrCreate(String name) {
         // Get existing mapping if possible
-        if (hasMapping(name)) {
+        if (hasClass(name)) {
             return mappings.get(name).name;
         } else {
             // Attempt to load the mapping from the classpath
@@ -156,7 +180,7 @@ public class Mapping {
      */
     public Box<String> getClassName(String name, boolean throwIfNotFound) {
         // Return if mapping already exists
-        if (hasMapping(name)) return mappings.get(name).name;
+        if (hasClass(name)) return mappings.get(name).name;
         // If the class is in the default classpath
         // but not mapped create it on the fly.
         if (name.startsWith("java")) return getClassNameOrCreate(name);
@@ -206,7 +230,7 @@ public class Mapping {
      * @param name
      * @return
      */
-    public boolean hasMapping(String name) {
+    public boolean hasClass(String name) {
         return mappings.containsKey(name);
     }
 
@@ -277,7 +301,7 @@ public class Mapping {
      * @return
      */
     public boolean hasDesc(String className, String name, String desc) {
-        if (hasMapping(className)) {
+        if (hasClass(className)) {
             ClassMapping cm = getMapping(className);
             for (MemberMapping mm : cm.getMembers()) {
                 if (mm.desc.original.equals(desc) && mm.name.original.equals(name)) { return true; }
@@ -289,23 +313,56 @@ public class Mapping {
     // ------------------------------------------- //
     // ------------------------------------------- //
 
+    // private final Map<String, MemberMapping> descToMember = new
+    // HashMap<String, MemberMapping>();
+
     /**
-     * Checks if the given MemberMapping type can be replaced with a stored
-     * instance. If no stored instance exists it becomes the stored instance.
-     * This is used for synchronizing method modifications across the class
-     * hierarchy.
+     * Checks if a superclass has a member matching the given one. If so it will
+     * return that one. Else it will return the parameter.
      * 
      * @param mm
      * @return
      */
-    public MemberMapping getMemberInstance(MemberMapping mm) {
-        String key = mm.name.original + mm.desc.original;
-        if (descToMember.containsKey(key)) {
-            return descToMember.get(key);
-        } else {
-            descToMember.put(key, mm);
+    public MemberMapping getMemberInstance(ClassMapping owner, MemberMapping mm) {
+        if (hasParents(owner)) {
+            for (ClassMapping parent : parents.get(owner)) {
+                MemberMapping mp = getMatch(parent, mm);
+                if (mp != null) { return mp; }
+            }
+        }
+        if (hasInterfaces(owner)) {
+            for (ClassMapping parent : interfaces.get(owner)) {
+                MemberMapping mi = getMatch(parent, mm);
+                if (mi != null) { return mi; }
+            }
         }
         return mm;
+    }
+
+    /**
+     * Iterative search for a member matching the details of the given one.
+     * 
+     * @param owner
+     * @param mm
+     * @return
+     */
+    private MemberMapping getMatch(ClassMapping owner, MemberMapping mm) {
+        for (MemberMapping m : owner.getMembers()) {
+            if (m.desc.original.equals(mm.desc.original) && m.name.equals(mm.name.original)) { return m; }
+        }
+        if (hasParents(owner)) {
+            for (ClassMapping parent : parents.get(owner)) {
+                MemberMapping mp = getMatch(parent, mm);
+                if (mp != null) { return mp; }
+            }
+        }
+        if (hasInterfaces(owner)) {
+            for (ClassMapping inter : interfaces.get(owner)) {
+                MemberMapping mi = getMatch(inter, mm);
+                if (mi != null) { return mi; }
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------- //
@@ -341,7 +398,7 @@ public class Mapping {
      * @param parent
      */
     public void addParent(ClassMapping child, ClassMapping parent) {
-        if (!hasInterfaces(child)) {
+        if (!hasParents(child)) {
             parents.put(child, new ArrayList<ClassMapping>());
         }
         parents.get(child).add(parent);

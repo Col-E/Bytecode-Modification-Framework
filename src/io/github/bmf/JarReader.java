@@ -34,8 +34,8 @@ import io.github.bmf.util.io.JarUtil;
 
 public class JarReader {
     public static final int PASS_MAKE_CLASSES = 0;
-    public static final int PASS_FINISH_CLASSES = 1;
-    public static final int PASS_LINK_HIERARCHY = 2;
+    public static final int PASS_LINK_HIERARCHY = 1;
+    public static final int PASS_FINISH_CLASSES = 2;
     public static final int PASS_SPLIT_NAME_DESC = 3;
     public static final int PASS_UPDATE_CONSTANTS = 4;
 
@@ -111,8 +111,8 @@ public class JarReader {
      */
     public void genMappings() {
         genMappings(PASS_MAKE_CLASSES);
-        genMappings(PASS_FINISH_CLASSES);
         genMappings(PASS_LINK_HIERARCHY);
+        genMappings(PASS_FINISH_CLASSES);
         genMappings(PASS_SPLIT_NAME_DESC);
         genMappings(PASS_UPDATE_CONSTANTS);
     }
@@ -125,6 +125,40 @@ public class JarReader {
             if (pass == PASS_MAKE_CLASSES) {
                 // Create and add ClassMapping values from the loaded nodes.
                 mapping.addMapping(mapping.makeMappingFromNode(node));
+            } else if (pass == PASS_LINK_HIERARCHY) {
+                // Mapping hierarchy. Useful for searching for members in
+                // parent/interface classes later on.
+                String className = ConstUtil.getName(node);
+                String superName = ConstUtil.getSuperName(node);
+                // Ensure the classes exist.
+                // Attempt to load them if they do not.
+                if (!mapping.hasClass(className)) {
+                    ClassMapping temp = mapping.makeMappingFromRuntime(className);
+                    if (temp != null) mapping.addMapping(temp);
+                }
+                if (!mapping.hasClass(superName)) {
+                    ClassMapping temp = mapping.makeMappingFromRuntime(superName);
+                    if (temp != null) mapping.addMapping(temp);
+                }
+                ClassMapping cm = mapping.getMapping(className);
+                ClassMapping sm = mapping.getMapping(superName);
+                if (cm != null && sm != null) {
+                    mapping.addParent(cm, sm);
+                    mapping.addChild(sm, cm);
+                    for (int i : node.interfaceIndices) {
+                        String interfaceName = ConstUtil.getClassName(node, i);
+                        // Ensure interface exists
+                        if (!mapping.hasClass(interfaceName)) {
+                            ClassMapping temp = mapping.makeMappingFromRuntime(interfaceName);
+                            if (temp != null) mapping.addMapping(temp);
+                        }
+                        ClassMapping im = mapping.getMapping(interfaceName);
+                        if (im != null) {
+                            mapping.addInterface(cm, im);
+                            mapping.addChild(im, cm);
+                        }
+                    }
+                }
             } else if (pass == PASS_FINISH_CLASSES) {
                 // Add the members to the MappedClass associated with the
                 // classnode.
@@ -132,22 +166,7 @@ public class JarReader {
                 // references classes not in the mapping it would die. Lazily
                 // loading them would be too much work since in the end they all
                 // need to be loaded anyways.
-                mapping.addMemberMappings(node);
-            } else if (pass == PASS_LINK_HIERARCHY) {
-                // Mapping hierarchy. Useful for searching for members in
-                // parent/interface classes later on.
-                String className = ConstUtil.getName(node);
-                String superName = ConstUtil.getSuperName(node);
-                ClassMapping cm = mapping.getMapping(className);
-                ClassMapping sm = mapping.getMapping(superName);
-                mapping.addParent(cm, sm);
-                mapping.addChild(sm, cm);
-                for (int i : node.interfaceIndices) {
-                    String interfaceName = ConstUtil.getClassName(node, i);
-                    ClassMapping im = mapping.getMapping(interfaceName);
-                    mapping.addInterface(cm, im);
-                    mapping.addChild(im, cm);
-                }
+                mapping.addMemberMappings(classEntries,node);
             } else if (pass == PASS_SPLIT_NAME_DESC) {
                 // This step makes sure a UTF isn't used in too many different
                 // contexts.
@@ -250,7 +269,8 @@ public class JarReader {
                     MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
                     node.setConst(mn.name, new ConstName(mm.name));
                     node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
-                    if (mn.code != null) {
+                    // TODO: Re-enable this later. Totally pointless for now.
+                    if (mn.code != null && false) {
                         if (mn.code.variables != null) {
                             List<Local> locals = mn.code.variables.variableTable.locals;
                             for (Local local : locals) {
@@ -268,8 +288,12 @@ public class JarReader {
                                 List<LocalVariableType> types = mn.code.variableTypes.localTypes;
                                 for (LocalVariableType type : types) {
                                     String lname = ConstUtil.getUTF8String(node, type.name);
-                                    String ldesc = ConstUtil.getUTF8String(node, type.signature);
-                                    // System.out.println(lname + ":" + ldesc);
+                                    String ldesc = ((ConstUTF8)node.getConst(type.signature)).getValue();
+                                    // Resolve case:
+                                    // Requested unmapped class: java/util/Map$Entry<Ljava/lang/String
+                                    MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
+                                    node.setConst(type.name, new ConstName(var.name));
+                                    node.setConst(type.signature, new ConstMemberDesc(var.desc));
                                 }
                             }
                         }
@@ -284,7 +308,7 @@ public class JarReader {
                     node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
                 }
 
-                // Temporary, will be removed when method opcode reading is
+                // Temporary, will be removed when method opcode and variable_type reading is
                 // complete
                 for (int i = 0; i < node.constants.size(); i++) {
                     Constant<?> constant = node.constants.get(i);
