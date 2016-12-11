@@ -22,15 +22,15 @@ import io.github.bmf.consts.Constant;
 import io.github.bmf.consts.ConstantType;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
+import io.github.bmf.mapping.ClassMapping;
+import io.github.bmf.mapping.Mapping;
+import io.github.bmf.mapping.MemberMapping;
+import io.github.bmf.mapping.MethodMapping;
 import io.github.bmf.type.PrimitiveType;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.io.JarUtil;
-import io.github.bmf.util.mapping.ClassMapping;
-import io.github.bmf.util.mapping.Mapping;
-import io.github.bmf.util.mapping.MemberMapping;
-import io.github.bmf.util.mapping.MethodMapping;
 
 public class JarReader {
     public static final int PASS_MAKE_CLASSES = 0;

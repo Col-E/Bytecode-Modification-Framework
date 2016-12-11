@@ -2,11 +2,11 @@ package io.github.bmf;
 
 import io.github.bmf.consts.Constant;
 import io.github.bmf.consts.mapping.ConstName;
+import io.github.bmf.mapping.ClassMapping;
+import io.github.bmf.mapping.MemberMapping;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.io.JarUtil;
-import io.github.bmf.util.mapping.ClassMapping;
-import io.github.bmf.util.mapping.MemberMapping;
 
 import java.io.File;
 import java.util.Map;

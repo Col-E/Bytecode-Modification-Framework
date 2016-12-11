@@ -1,4 +1,4 @@
-package io.github.bmf.util.mapping;
+package io.github.bmf.mapping;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -1,4 +1,4 @@
-package io.github.bmf.util.mapping;
+package io.github.bmf.mapping;
 
 import io.github.bmf.type.descriptors.MemberDescriptor;
 import io.github.bmf.util.Box;
