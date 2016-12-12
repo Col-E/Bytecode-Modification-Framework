@@ -166,7 +166,7 @@ public class JarReader {
                 // references classes not in the mapping it would die. Lazily
                 // loading them would be too much work since in the end they all
                 // need to be loaded anyways.
-                mapping.addMemberMappings(classEntries,node);
+                mapping.addMemberMappings(classEntries, node);
             } else if (pass == PASS_SPLIT_NAME_DESC) {
                 // This step makes sure a UTF isn't used in too many different
                 // contexts.
@@ -267,7 +267,17 @@ public class JarReader {
                     String name = ConstUtil.getUTF8String(node, mn.name);
                     String desc = ConstUtil.getUTF8String(node, mn.desc);
                     MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
-                    node.setConst(mn.name, new ConstName(mm.name));
+                    // Check if the member points to a value already mapped to a
+                    // name.
+                    // If so, add a constant and update the member to point to
+                    // the new constant.
+                    ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(mn.name);
+                    if (memberUTF8 instanceof ConstName) {
+                        node.addConst(new ConstName(mm.name));
+                        mn.name = node.constants.size();
+                    } else {
+                        node.setConst(mn.name, new ConstName(mm.name));
+                    }
                     node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
                     // TODO: Re-enable this later. Totally pointless for now.
                     if (mn.code != null && false) {
@@ -288,9 +298,10 @@ public class JarReader {
                                 List<LocalVariableType> types = mn.code.variableTypes.localTypes;
                                 for (LocalVariableType type : types) {
                                     String lname = ConstUtil.getUTF8String(node, type.name);
-                                    String ldesc = ((ConstUTF8)node.getConst(type.signature)).getValue();
+                                    String ldesc = ((ConstUTF8) node.getConst(type.signature)).getValue();
                                     // Resolve case:
-                                    // Requested unmapped class: java/util/Map$Entry<Ljava/lang/String
+                                    // Requested unmapped class:
+                                    // java/util/Map$Entry<Ljava/lang/String
                                     MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
                                     node.setConst(type.name, new ConstName(var.name));
                                     node.setConst(type.signature, new ConstMemberDesc(var.desc));
@@ -304,11 +315,23 @@ public class JarReader {
                 for (FieldNode fn : node.fields) {
                     String name = ConstUtil.getUTF8String(node, fn.name);
                     String desc = ConstUtil.getUTF8String(node, fn.desc);
-                    node.setConst(fn.name, new ConstName(name));
+                    MemberMapping mf = cm.getMemberMapping(name, desc);
+                    // Check if the member points to a value already mapped to a
+                    // name.
+                    // If so, add a constant and update the member to point to
+                    // the new constant.
+                    ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(fn.name);
+                    if (memberUTF8 instanceof ConstName) {
+                        node.addConst(new ConstName(mf.name));
+                        fn.name = node.constants.size();
+                    } else {
+                        node.setConst(fn.name, new ConstName(mf.name));
+                    }
                     node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
                 }
 
-                // Temporary, will be removed when method opcode and variable_type reading is
+                // Temporary, will be removed when method opcode and
+                // variable_type reading is
                 // complete
                 for (int i = 0; i < node.constants.size(); i++) {
                     Constant<?> constant = node.constants.get(i);
@@ -380,16 +403,27 @@ public class JarReader {
                         continue;
                     }
                     MemberMapping member = mapping.getMemberMapping(ownerMap, name, desc);
+                    ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(cnt.getNameIndex());
                     if (member == null) {
                         // The exact metod can't be found but the owner is in
                         // the mappings. It's most likely extending a library
                         // method that does have a mapping (Like the java/lang
                         // package)
-                        node.setConst(cnt.getNameIndex(), new ConstName(new ImmutableBox<String>(name)));
+                        if (memberUTF8 instanceof ConstName) {
+                            node.addConst(new ConstName(new ImmutableBox<String>(name)));
+                            cnt.setNameIndex(node.constants.size());
+                        } else {
+                            node.setConst(cnt.getNameIndex(), new ConstName(new ImmutableBox<String>(name)));
+                        }
                         node.setConst(cnt.getDescIndex(), new ConstMemberDesc(
                                 desc.contains("(") ? Type.method(mapping, desc) : Type.variable(mapping, desc)));
                     } else {
-                        node.setConst(cnt.getNameIndex(), new ConstName(member.name));
+                        if (memberUTF8 instanceof ConstName) {
+                            node.addConst(new ConstName(member.name));
+                            cnt.setNameIndex(node.constants.size());
+                        } else {
+                            node.setConst(cnt.getNameIndex(), new ConstName(member.name));
+                        }
                         node.setConst(cnt.getDescIndex(), new ConstMemberDesc(member.desc));
                     }
                 }

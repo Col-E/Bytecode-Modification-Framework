@@ -27,14 +27,14 @@ public class Main {
             // read.getMapping().getClassName("com/example/test/Edible").setValue("dank/memes/WeedJokeHere");
             // read.getMapping().getClassName("com/example/test/Apple").setValue("keep/the/doctors/Away");
             // read.getMapping().getClassName("com/example/test/Fruit").setValue("not/a/Vegetable");
-            int classIndex = 100;
+            int classIndex = 1;
             for (String name : read.getClassEntries().keySet()) {
                 ClassMapping cm = read.getMapping().getMapping(name);
                 if (cm.name.getValue().contains("Main")) 
                     continue;
                 String obName = "AAA/" + getCapName(classIndex);
                 cm.name.setValue(obName);
-                int memberIndex = 100;
+                int memberIndex = 1;
                 for (MemberMapping mm : cm.getMembers()) {
                     if (mm.name.getValue().equals(mm.name.original) && !mm.name.original.contains("<")) {
                         mm.name.setValue(getLowName(memberIndex));

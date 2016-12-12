@@ -6,6 +6,10 @@ public class ConstNameType extends Constant<Integer> {
         super(ConstantType.NAME_TYPE, (nameIndex << 16) | descIndex);
     }
 
+    public void setNameIndex(int nameIndex) {
+        setValue(((nameIndex << 16) | getDescIndex()));
+    }
+
     public int getNameIndex() {
         return (getValue().intValue() >> 16) & 0xffff;
     }
