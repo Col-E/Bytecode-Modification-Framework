@@ -111,11 +111,9 @@ public class ClassReader {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
         String name = owner.getConst(nameIndex).getValue().toString();
-        
+
         AttributeType attributeType = AttributeType.fromName(name);
-        if (attributeType == null){
-            throw new RuntimeException("Unknown attribute: " + name);
-        }
+        if (attributeType == null) { throw new RuntimeException("Unknown attribute: " + name); }
         switch (attributeType) {
         case ANNOTATION_DEFAULT: {
             return new AttributeAnnotationDefault(nameIndex, readElementValue(owner, is));
@@ -618,24 +616,59 @@ public class ClassReader {
         case Opcode.I2S:
             return OpcodeInst.I2S;
         case Opcode.LCMP:
+            return OpcodeInst.LCMP;
         case Opcode.FCMPL:
+            return OpcodeInst.FCMPL;
         case Opcode.FCMPG:
+            return OpcodeInst.FCMPG;
         case Opcode.DCMPL:
+            return OpcodeInst.DCMPL;
         case Opcode.DCMPG:
+            return OpcodeInst.DCMPG;
+        case Opcode.IRETURN:
+            return OpcodeInst.IRETURN;
+        case Opcode.LRETURN:
+            return OpcodeInst.LRETURN;
+        case Opcode.FRETURN:
+            return OpcodeInst.FRETURN;
+        case Opcode.DRETURN:
+            return OpcodeInst.DRETURN;
+        case Opcode.ARETURN:
+            return OpcodeInst.ARETURN;
+        case Opcode.RETURN:
+            return OpcodeInst.RETURN;
         case Opcode.IFEQ:
+            return new IFEQ(is.readShort());
         case Opcode.IFNE:
+            return new IFNE(is.readShort());
         case Opcode.IFLT:
+            return new IFLT(is.readShort());
         case Opcode.IFGE:
+            return new IFGE(is.readShort());
         case Opcode.IFGT:
+            return new IFGT(is.readShort());
         case Opcode.IFLE:
+            return new IFLE(is.readShort());
         case Opcode.IF_ICMPEQ:
+            return new IF_ICMPEQ(is.readShort());
         case Opcode.IF_ICMPNE:
+            return new IF_ICMPNE(is.readShort());
         case Opcode.IF_ICMPLT:
+            return new IF_ICMPLT(is.readShort());
         case Opcode.IF_ICMPGE:
+            return new IF_ICMPGE(is.readShort());
         case Opcode.IF_ICMPGT:
+            return new IF_ICMPGT(is.readShort());
         case Opcode.IF_ICMPLE:
+            return new IF_ICMPLE(is.readShort());
         case Opcode.IF_ACMPEQ:
+            return new IF_ACMPEQ(is.readShort());
         case Opcode.IF_ACMPNE:
+            return new IF_ACMPNE(is.readShort());
+        case Opcode.IFNULL:
+            return new IFNULL(is.readShort());
+        case Opcode.IFNONNULL:
+            return new IFNONNULL(is.readShort());
         case Opcode.GOTO:
         case Opcode.GOTO_W:
         case Opcode.JSR:
@@ -643,12 +676,6 @@ public class ClassReader {
         case Opcode.RET:
         case Opcode.TABLESWITCH:
         case Opcode.LOOKUPSWITCH:
-        case Opcode.IRETURN:
-        case Opcode.LRETURN:
-        case Opcode.FRETURN:
-        case Opcode.DRETURN:
-        case Opcode.ARETURN:
-        case Opcode.RETURN:
         case Opcode.GETSTATIC:
         case Opcode.PUTSTATIC:
         case Opcode.GETFIELD:
@@ -667,8 +694,6 @@ public class ClassReader {
         case Opcode.MONITORENTER:
         case Opcode.MONITOREXIT:
         case Opcode.MULTIANEWARRAY:
-        case Opcode.IFNULL:
-        case Opcode.IFNONNULL:
         case Opcode.BREAKPOINT:
         case Opcode.IMPDEP1:
         case Opcode.IMPDEP2:

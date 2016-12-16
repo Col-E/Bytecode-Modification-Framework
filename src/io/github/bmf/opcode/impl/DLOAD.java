@@ -1,5 +1,6 @@
 package io.github.bmf.opcode.impl;
 
+import io.github.bmf.opcode.AbstractLOAD;
 import io.github.bmf.opcode.Opcode;
 
 public class DLOAD extends AbstractLOAD {

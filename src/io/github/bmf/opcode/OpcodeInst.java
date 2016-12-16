@@ -85,6 +85,12 @@ public class OpcodeInst {
     public static final DUP_X2 DUP_X2 = new DUP_X2();
     public static final DUP2_X1 DUP2_X1 = new DUP2_X1();
     public static final DUP2_X2 DUP2_X2 = new DUP2_X2();
+    // Stack - Compare
+    public static final DCMPG DCMPG= new DCMPG();
+    public static final DCMPL DCMPL= new DCMPL();
+    public static final FCMPG FCMPG= new FCMPG();
+    public static final FCMPL FCMPL= new FCMPL();
+    public static final LCMP LCMP= new LCMP();
     // Const
     public static final ACONST_NULL ACONST_NULL = new ACONST_NULL();
     public static final ICONST ICONST_M1 = new ICONST(-1);
@@ -143,4 +149,11 @@ public class OpcodeInst {
     public static final LSTORE LSTORE_1 = new LSTORE(1);
     public static final LSTORE LSTORE_2 = new LSTORE(2);
     public static final LSTORE LSTORE_3 = new LSTORE(3);
+    // Return
+    public static final RETURN RETURN = new RETURN();
+    public static final ARETURN ARETURN = new ARETURN();
+    public static final IRETURN IRETURN = new IRETURN();
+    public static final LRETURN LRETURN = new LRETURN();
+    public static final FRETURN FRETURN = new FRETURN();
+    public static final DRETURN DRETURN = new DRETURN();
 }

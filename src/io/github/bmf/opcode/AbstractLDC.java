@@ -1,13 +1,11 @@
-package io.github.bmf.opcode.impl;
+package io.github.bmf.opcode;
 
 import io.github.bmf.ClassNode;
 import io.github.bmf.consts.ConstString;
 import io.github.bmf.consts.ConstUTF8;
 import io.github.bmf.consts.ConstantType;
-import io.github.bmf.opcode.OpcodeType;
-import io.github.bmf.opcode.SingleValueOpcode;
 
-public abstract class AbstractLDC extends SingleValueOpcode<Integer> {
+public abstract class AbstractLDC extends SingleValueOpcode<Integer>  {
     public AbstractLDC(int opcode, int size, int index) {
         super(OpcodeType.CONST_POOL, opcode, size, index);
     }
@@ -22,7 +20,7 @@ public abstract class AbstractLDC extends SingleValueOpcode<Integer> {
     public ConstantType getValueType(ClassNode node) {
         return node.getConst(value).type;
     }
-
+    
     /**
      * Get the referenced value.
      * 

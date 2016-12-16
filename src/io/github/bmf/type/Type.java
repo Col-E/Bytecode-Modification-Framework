@@ -8,6 +8,7 @@ import java.util.List;
 import io.github.bmf.mapping.Mapping;
 import io.github.bmf.type.descriptors.MethodDescriptor;
 import io.github.bmf.type.descriptors.VariableDescriptor;
+import io.github.bmf.util.ImmutableBox;
 
 public abstract class Type {
     public static final PrimitiveType BYTE = new PrimitiveType(Sort.BYTE, "B");
@@ -19,6 +20,8 @@ public abstract class Type {
     public static final PrimitiveType SHORT = new PrimitiveType(Sort.SHORT, "S");
     public static final PrimitiveType BOOLEAN = new PrimitiveType(Sort.BOOLEAN, "Z");
     public static final PrimitiveType VOID = new PrimitiveType(Sort.VOID, "V");
+    public static final ClassType OBJECT = new ClassType(new ImmutableBox<String>("Ljava/lang/Object;"));
+
     public final int sort;
 
     public Type(int sort) {
@@ -207,7 +210,7 @@ public abstract class Type {
         s += ')';
         return s + getDescriptorForClass(m.getReturnType());
     }
-    
+
     public static String getConstructorDescriptor(Constructor<?> m) {
         String s = "(";
         for (final Class<?> c : m.getParameterTypes())
