@@ -27,7 +27,7 @@ public class ClassReader {
 
     public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
         DataInputStream is = StreamUtil.fromBytes(data);
-        if (is.readInt() != 0xCAFEBABE) { throw new InvalidClassException(); }
+        if (is.readInt() != 0xCAFEBABE) { throw new InvalidClassException("Does not start with 0xCAFEBABE"); }
         // Create the node
         ClassNode node = new ClassNode();
         // Read version information
@@ -81,7 +81,7 @@ public class ClassReader {
         return node;
     }
 
-    private static FieldNode readField(ClassNode owner, DataInputStream is) throws IOException {
+    private static FieldNode readField(ClassNode owner, DataInputStream is) throws IOException, InvalidClassException {
         FieldNode field = new FieldNode(owner);
         field.access = is.readUnsignedShort();
         field.name = is.readUnsignedShort();
@@ -94,7 +94,7 @@ public class ClassReader {
         return field;
     }
 
-    private static MethodNode readMethod(ClassNode owner, DataInputStream is) throws IOException {
+    private static MethodNode readMethod(ClassNode owner, DataInputStream is) throws IOException, InvalidClassException {
         MethodNode method = new MethodNode(owner);
         method.access = is.readUnsignedShort();
         method.name = is.readUnsignedShort();
@@ -107,13 +107,13 @@ public class ClassReader {
         return method;
     }
 
-    private static Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException {
+    private static Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException, InvalidClassException {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
         String name = owner.getConst(nameIndex).getValue().toString();
 
         AttributeType attributeType = AttributeType.fromName(name);
-        if (attributeType == null) { throw new RuntimeException("Unknown attribute: " + name); }
+        if (attributeType == null) { throw new InvalidClassException("Unknown attribute: " + name); }
         switch (attributeType) {
         case ANNOTATION_DEFAULT: {
             return new AttributeAnnotationDefault(nameIndex, readElementValue(owner, is));
@@ -128,7 +128,7 @@ public class ClassReader {
                 for (int a = 0; a < args; a++) {
                     bsm.addArgument(is.readUnsignedShort());
                 }
-                bsMethods.set(i, bsm);
+                bsMethods.add(bsm);
             }
             return new AttributeBootstrapMethods(nameIndex, bsMethods);
         }

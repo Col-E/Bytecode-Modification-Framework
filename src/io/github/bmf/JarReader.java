@@ -9,6 +9,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import io.github.bmf.attribute.method.Local;
 import io.github.bmf.attribute.method.LocalVariableType;
 import io.github.bmf.consts.ConstClass;
@@ -22,12 +24,14 @@ import io.github.bmf.consts.Constant;
 import io.github.bmf.consts.ConstantType;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
+import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.mapping.ClassMapping;
 import io.github.bmf.mapping.Mapping;
 import io.github.bmf.mapping.MemberMapping;
 import io.github.bmf.mapping.MethodMapping;
 import io.github.bmf.type.PrimitiveType;
 import io.github.bmf.type.Type;
+import io.github.bmf.util.Access;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.io.JarUtil;
@@ -41,7 +45,9 @@ public class JarReader {
 
     private final Mapping mapping;
     private final File file;
+    private List<File> libraries = new ArrayList<File>();
     private Map<String, ClassNode> classEntries;
+    private Map<String, ClassNode> libClassEntries;
     private Map<String, byte[]> fileEntries;
 
     /**
@@ -94,14 +100,32 @@ public class JarReader {
      */
     public void read() {
         try {
+            // Library classes
+            libClassEntries = new HashMap<String, ClassNode>();
+            for (File lib : libraries) {
+                Map<String, byte[]> libClassEntryBytes = JarUtil.readJarClasses(lib);
+                for (String className : libClassEntryBytes.keySet()) {
+                    try {
+                        ClassNode cn = ClassReader.getNode(libClassEntryBytes.get(className));
+                        libClassEntries.put(className, cn);
+                    } catch (InvalidClassException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            // Main classes
             Map<String, byte[]> classEntryBytes = JarUtil.readJarClasses(file);
             fileEntries = JarUtil.readJarNonClasses(file);
             classEntries = new HashMap<String, ClassNode>();
             for (String className : classEntryBytes.keySet()) {
-                ClassNode cn = ClassReader.getNode(classEntryBytes.get(className));
-                classEntries.put(className, cn);
+                try {
+                    ClassNode cn = ClassReader.getNode(classEntryBytes.get(className));
+                    classEntries.put(className, cn);
+                } catch (InvalidClassException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -121,10 +145,19 @@ public class JarReader {
      * Sets up part of the mapping based on the pass used.
      */
     public void genMappings(int pass) {
-        for (ClassNode node : classEntries.values()) {
+        List<String> names = new ArrayList<String>();
+        names.addAll(classEntries.keySet());
+        if (pass == PASS_MAKE_CLASSES || pass == PASS_LINK_HIERARCHY || pass == PASS_FINISH_CLASSES) {
+            // The libs are not needed for the other steps
+            names.addAll(libClassEntries.keySet());
+        }
+        for (String nodeName : names) {
+            boolean isLibrary = libClassEntries.containsKey(nodeName);
+            ClassNode node = isLibrary ? libClassEntries.get(nodeName) : classEntries.get(nodeName);
+            //
             if (pass == PASS_MAKE_CLASSES) {
                 // Create and add ClassMapping values from the loaded nodes.
-                mapping.addMapping(mapping.makeMappingFromNode(node));
+                mapping.addMapping(mapping.makeMappingFromNode(node, isLibrary));
             } else if (pass == PASS_LINK_HIERARCHY) {
                 // Mapping hierarchy. Useful for searching for members in
                 // parent/interface classes later on.
@@ -142,9 +175,11 @@ public class JarReader {
                 }
                 ClassMapping cm = mapping.getMapping(className);
                 ClassMapping sm = mapping.getMapping(superName);
-                if (cm != null && sm != null) {
-                    mapping.addParent(cm, sm);
-                    mapping.addChild(sm, cm);
+                if (cm != null) {
+                    if (sm != null) {
+                        mapping.addParent(cm, sm);
+                        mapping.addChild(sm, cm);
+                    }
                     for (int i : node.interfaceIndices) {
                         String interfaceName = ConstUtil.getClassName(node, i);
                         // Ensure interface exists
@@ -166,7 +201,7 @@ public class JarReader {
                 // references classes not in the mapping it would die. Lazily
                 // loading them would be too much work since in the end they all
                 // need to be loaded anyways.
-                mapping.addMemberMappings(classEntries, node);
+                mapping.addMemberMappings(classEntries, node, isLibrary);
             } else if (pass == PASS_SPLIT_NAME_DESC) {
                 // This step makes sure a UTF isn't used in too many different
                 // contexts.
@@ -267,6 +302,8 @@ public class JarReader {
                     String name = ConstUtil.getUTF8String(node, mn.name);
                     String desc = ConstUtil.getUTF8String(node, mn.desc);
                     MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
+                    // This should never happen
+                    if (mm == null) continue;
                     // Check if the member points to a value already mapped to a
                     // name.
                     // If so, add a constant and update the member to point to
@@ -499,6 +536,15 @@ public class JarReader {
             }
         }
         bw.close();
+    }
+
+    /**
+     * Adds a given file to the dependencies.
+     * 
+     * @param file
+     */
+    public void addLibrary(File file) {
+        libraries.add(file);
     }
 
     public File getFile() {

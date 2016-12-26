@@ -46,11 +46,11 @@ public class ConstUtil {
      * Gets a name from a ConstClass at index i in a given node's constant pool.
      * 
      * @param node
-     * @param i
+     * @param classIndex
      * @return
      */
-    public static String getClassName(ClassNode node, int i) {
-        return ((ConstUTF8) node.getConst(((ConstClass) node.getConst(i)).getValue())).getValue();
+    public static String getClassName(ClassNode node, int classIndex) {
+        return ((ConstUTF8) node.getConst(((ConstClass) node.getConst(classIndex)).getValue())).getValue();
     }
 
     /**

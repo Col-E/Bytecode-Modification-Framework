@@ -21,7 +21,6 @@ public abstract class Type {
     public static final PrimitiveType BOOLEAN = new PrimitiveType(Sort.BOOLEAN, "Z");
     public static final PrimitiveType VOID = new PrimitiveType(Sort.VOID, "V");
     public static final ClassType OBJECT = new ClassType(new ImmutableBox<String>("Ljava/lang/Object;"));
-
     public final int sort;
 
     public Type(int sort) {
@@ -162,7 +161,8 @@ public abstract class Type {
             return readPrim(desc.charAt(0));
         } else if (desc.charAt(0) == '[') { return readArray(mapping, desc, 1); }
 
-        return new ClassType(mapping.getClassName(desc.substring(1, desc.length() - 1)));
+        String name = desc.substring(1, desc.length() - 1);
+        return new ClassType(mapping.getClassName(name));
     }
 
     private static Type type(Mapping mapping, String desc, int i, int len) {

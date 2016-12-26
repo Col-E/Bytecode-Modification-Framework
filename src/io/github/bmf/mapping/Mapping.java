@@ -29,15 +29,23 @@ public class Mapping {
     private final List<String> failedLoads = new ArrayList<String>();
 
     /**
+     * Boolean for an ugly hack allowing mapping to ignore any class name not
+     * mapped. Do not use unless you are sure it won't break anything regarding
+     * class hierarchy.
+     */
+    private boolean ignoreUnloaded;
+
+    /**
      * Generates a ClassMapping from a given ClassNode. The generated
      * ClassMapping is automatically added to the mappings map.
      * 
      * @param node
+     * @param isLibrary
      * @return
      */
-    public ClassMapping makeMappingFromNode(ClassNode node) {
+    public ClassMapping makeMappingFromNode(ClassNode node, boolean isLibrary) {
         String name = ConstUtil.getName(node);
-        ClassMapping cm = new ClassMapping(name);
+        ClassMapping cm = isLibrary ? new ClassMapping(new ImmutableBox<String>(name)) : new ClassMapping(name);
         mappings.put(name, cm);
         return cm;
     }
@@ -48,10 +56,11 @@ public class Mapping {
      * node.
      * 
      * @param node
+     * @param isLibrary
      */
-    public void addMemberMappings(Map<String, ClassNode> nodes, ClassNode node) {
+    public void addMemberMappings(Map<String, ClassNode> nodes, ClassNode node, boolean isLibrary) {
         ClassMapping cm = getMapping(ConstUtil.getName(node));
-        if (cm == null) { throw new RuntimeException(ConstUtil.getName(node) + " aaaaaaa"); }
+        if (cm == null) { throw new RuntimeException("Could not find the mapping for: " + ConstUtil.getName(node)); }
         // Skip if already done.
         if (inited.contains(cm)) return;
         // Makes sure superclasses have had their members mapped first.
@@ -62,18 +71,20 @@ public class Mapping {
             if (inited.contains(parent)) {
                 ClassNode parentNode = nodes.get(parent.name.original);
                 if (parentNode != null) {
-                    addMemberMappings(nodes, parentNode);
+                    addMemberMappings(nodes, parentNode, isLibrary);
                 }
             }
         }
         // Adding the members
         for (MethodNode mn : node.methods) {
-            cm.addMember(this, new MethodMapping(new Box<String>(ConstUtil.getUTF8String(node, mn.name)),
-                    Type.method(this, ConstUtil.getUTF8String(node, mn.desc))));
+            String namee = ConstUtil.getUTF8String(node, mn.name);
+            Box<String> box = isLibrary ? new ImmutableBox<String>(namee) : new Box<String>(namee);
+            cm.addMember(this, new MethodMapping(box, Type.method(this, ConstUtil.getUTF8String(node, mn.desc))));
         }
         for (FieldNode fn : node.fields) {
-            cm.addMember(this, new MemberMapping(new Box<String>(ConstUtil.getUTF8String(node, fn.name)),
-                    Type.variable(this, ConstUtil.getUTF8String(node, fn.desc))));
+            String namee = ConstUtil.getUTF8String(node, fn.name);
+            Box<String> box = isLibrary ? new ImmutableBox<String>(namee) : new Box<String>(namee);
+            cm.addMember(this, new MemberMapping(box, Type.variable(this, ConstUtil.getUTF8String(node, fn.desc))));
         }
         inited.add(cm);
     }
@@ -167,6 +178,12 @@ public class Mapping {
      * @return
      */
     public Box<String> getClassName(String name) {
+        if (ignoreUnloaded) {
+            try {
+                return getClassName(name, false);
+            } catch (Exception e) {}
+            if (!hasClass(name)) { return new ImmutableBox<String>(name); }
+        }
         return getClassName(name, false);
     }
 
@@ -313,9 +330,6 @@ public class Mapping {
     // ------------------------------------------- //
     // ------------------------------------------- //
 
-    // private final Map<String, MemberMapping> descToMember = new
-    // HashMap<String, MemberMapping>();
-
     /**
      * Checks if a superclass has a member matching the given one. If so it will
      * return that one. Else it will return the parameter.
@@ -327,13 +341,17 @@ public class Mapping {
         if (hasParents(owner)) {
             for (ClassMapping parent : parents.get(owner)) {
                 MemberMapping mp = getMatch(parent, mm);
-                if (mp != null) { return mp; }
+                if (mp != null) {
+                    return mp;
+                }
             }
         }
         if (hasInterfaces(owner)) {
             for (ClassMapping parent : interfaces.get(owner)) {
                 MemberMapping mi = getMatch(parent, mm);
-                if (mi != null) { return mi; }
+                if (mi != null) {
+                    return mi;
+                }
             }
         }
         return mm;
@@ -347,9 +365,6 @@ public class Mapping {
      * @return
      */
     private MemberMapping getMatch(ClassMapping owner, MemberMapping mm) {
-        for (MemberMapping m : owner.getMembers()) {
-            if (m.desc.original.equals(mm.desc.original) && m.name.equals(mm.name.original)) { return m; }
-        }
         if (hasParents(owner)) {
             for (ClassMapping parent : parents.get(owner)) {
                 MemberMapping mp = getMatch(parent, mm);
@@ -361,6 +376,9 @@ public class Mapping {
                 MemberMapping mi = getMatch(inter, mm);
                 if (mi != null) { return mi; }
             }
+        }
+        for (MemberMapping m : owner.getMembers()) {
+            if (m.desc.original.equals(mm.desc.original) && m.name.original.equals(mm.name.original)) { return m; }
         }
         return null;
     }
@@ -558,6 +576,22 @@ public class Mapping {
             }
         }
         bw.close();
+    }
+
+    // ------------------------------------------- //
+    // ------------------------------------------- //
+
+    /**
+     * {@linkplain #ignoreUnloaded}
+     * 
+     * @return
+     */
+    public boolean doIgnoreUnloadedTypes() {
+        return ignoreUnloaded;
+    }
+
+    public void setIgnoreUnloadedTypes(boolean ignoreUnloaded) {
+        this.ignoreUnloaded = ignoreUnloaded;
     }
 
 }
