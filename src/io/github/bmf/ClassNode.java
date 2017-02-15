@@ -80,7 +80,7 @@ public class ClassNode implements AttributeOwner {
      */
     public AttributeSourceFile sourceFile;
     /**
-     * Attribute: The method this <i>(anonymouse)</i> class resides in.
+     * Attribute: The method this <i>(anonymous)</i> class resides in.
      */
     public AttributeEnclosingMethod enclosingMethod;
     /**
@@ -202,7 +202,6 @@ public class ClassNode implements AttributeOwner {
         } else {
             ((ArrayList<MethodNode>) methods).ensureCapacity(size);
         }
-
     }
 
     @Override
@@ -296,4 +295,5 @@ public class ClassNode implements AttributeOwner {
         out += "  }\n";
         return out;
     }
+
 }

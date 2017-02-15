@@ -1,7 +1,9 @@
 package io.github.bmf;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.github.bmf.attribute.clazz.InnerClass;
 import io.github.bmf.attribute.method.Local;
 import io.github.bmf.attribute.method.LocalVariableType;
 import io.github.bmf.consts.ConstClass;
@@ -36,6 +39,9 @@ import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.io.JarUtil;
 
+/**
+ * Helper for loaded programs packaged in JAR files.
+ */
 public class JarReader {
     public static final int PASS_MAKE_CLASSES = 0;
     public static final int PASS_LINK_HIERARCHY = 1;
@@ -479,6 +485,39 @@ public class JarReader {
     }
 
     /**
+     * TODO: Make an automated system to do this automatically.
+     */
+    @Deprecated
+    public void updateInners() {
+        for (String className : classEntries.keySet()) {
+            ClassNode cn = classEntries.get(className);
+            if (cn.innerClasses == null) {
+                continue;
+            }
+            String outerName = ConstUtil.getName(cn);
+            for (InnerClass ic : cn.innerClasses.classes) {
+                ConstClass cc2 = (ConstClass) cn.getConst(ic.innerClassIndex);
+                ConstName cname = (ConstName) cn.getConst(cc2.getValue());
+                ClassNode cnInner = classEntries.get(cname.name.original);
+                if (cnInner == null) {
+                    continue;
+                }
+                ConstClass cc = (ConstClass) cnInner.getConst(cnInner.classIndex);
+                ConstUTF8 utf = (ConstUTF8) cnInner.getConst(cc.getValue());
+                if (utf instanceof ConstName) {
+                    ConstName name = (ConstName) utf;
+                    String mappedName = name.name.getValue();
+                    if (mappedName.contains("/")) {
+                        mappedName = mappedName.substring(mappedName.lastIndexOf("/") + 1);
+                    }
+                    String newInnerName = outerName + "$" + mappedName;
+                    name.name.setValue(newInnerName);
+                }
+            }
+        }
+    }
+
+    /**
      * Saves the Mapping objects to a given file destination.
      * 
      * @param fileOut
@@ -486,6 +525,41 @@ public class JarReader {
      */
     public void saveMappingsTo(File fileOut) throws IOException {
         saveMappingsTo(fileOut, false);
+    }
+
+    /**
+     * Loads mappings from the given file.
+     * 
+     * @param fileIn
+     */
+    public void loadMappingsFrom(File fileIn) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileIn))) {
+            ClassMapping cm=null;
+            String in = null;
+            while ((in = br.readLine()) != null) {
+                if (in.startsWith("CLASS ")) {
+                    String[] args = in.split(" ");
+                    String orig = args[1];
+                    String rename = args.length > 2 ? args[2] : null;
+                    cm = this.mapping.getMapping(this.classEntries.get(orig));
+                    if (cm != null && rename != null){
+                        cm.name.setValue(rename);
+                    }
+                } else if (cm != null){
+                    String tr = in.trim();
+                    String[] args = tr.split(" ");
+                    if (tr.startsWith("FIELD ") || tr.startsWith("METHOD ")) {
+                        String orig = args[1];
+                        String rename = args[2];
+                        String desc = args[3];
+                        MemberMapping mm = cm.getMemberMapping(orig, desc);
+                        if (mm != null){
+                            mm.name.setValue(rename);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

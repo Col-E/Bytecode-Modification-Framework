@@ -5,17 +5,24 @@ import java.util.List;
 
 import io.github.bmf.util.Box;
 
-public class ClassMapping extends AbstractMapping{
+public class ClassMapping extends AbstractMapping {
     private final List<MemberMapping> members = new ArrayList<MemberMapping>();
 
     public ClassMapping(String name) {
-       super(name);
+        super(name);
     }
 
     public ClassMapping(Box<String> name) {
-       super(name);
+        super(name);
     }
 
+    /**
+     * Gets a member's mapping by the original name and descriptor.
+     * 
+     * @param name
+     * @param desc
+     * @return
+     */
     public MemberMapping getMemberMapping(String name, String desc) {
         for (MemberMapping mm : members) {
             if (mm.name.original.equals(name) && mm.desc.original.equals(desc)) { return mm; }

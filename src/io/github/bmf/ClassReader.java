@@ -24,7 +24,10 @@ import java.util.List;
 
 @SuppressWarnings("rawtypes")
 public class ClassReader {
-
+    // TODO: Modify the structure of ClassNode a little to "optimize" reading.
+    // Bytes will be read from the start to start + length but not decoded unless accessed by a getter.
+    // This should make reading much faster and will reduce  the amount of objects being created.
+    // Of course there should be options to just load everything in the first run regardless.
     public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
         DataInputStream is = StreamUtil.fromBytes(data);
         if (is.readInt() != 0xCAFEBABE) { throw new InvalidClassException("Does not start with 0xCAFEBABE"); }
