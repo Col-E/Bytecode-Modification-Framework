@@ -10,11 +10,16 @@ public class ICONST extends SingleValueOpcode<Integer> {
     }
 
     private static int opFromValue(int value) {
-        if (value == 0) return Opcode.ICONST_0;
-        else if (value == 1) return Opcode.ICONST_1;
-        else if (value == 2) return Opcode.ICONST_2;
-        else if (value == 3) return Opcode.ICONST_3;
-        else if (value == 4) return Opcode.ICONST_4;
+        if (value == 0)
+            return Opcode.ICONST_0;
+        else if (value == 1)
+            return Opcode.ICONST_1;
+        else if (value == 2)
+            return Opcode.ICONST_2;
+        else if (value == 3)
+            return Opcode.ICONST_3;
+        else if (value == 4)
+            return Opcode.ICONST_4;
         else return Opcode.ICONST_5;
     }
 }

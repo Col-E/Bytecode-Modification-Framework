@@ -94,7 +94,9 @@ public class JarUtil {
             @Override
             public void accept(ZipEntry entry) {
                 String name = entry.getName();
-                if (entry.isDirectory() || !filter.matches(name)) { return; }
+                if (entry.isDirectory() || !filter.matches(name)) {
+                    return;
+                }
                 names.add(filter.filterName(name));
             }
         });
@@ -119,7 +121,9 @@ public class JarUtil {
             @Override
             public void accept(ZipEntry entry) {
                 String name = entry.getName();
-                if (entry.isDirectory() || !filter.matches(name)) { return; }
+                if (entry.isDirectory() || !filter.matches(name)) {
+                    return;
+                }
                 try {
                     entries.put(filter.filterName(name), IOUtils.toByteArray(zip.getInputStream(entry)));
                 } catch (IOException e) {

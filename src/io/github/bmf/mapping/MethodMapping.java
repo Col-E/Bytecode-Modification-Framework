@@ -12,12 +12,12 @@ public class MethodMapping extends MemberMapping {
     public MethodMapping(Box<String> name, MemberDescriptor desc) {
         super(name, desc);
     }
-    
+
     public void addVariable(Mapping mapping, MemberMapping mm) {
         variables.add(mm);
     }
-    
-    public List<MemberMapping> getVariables(){
+
+    public List<MemberMapping> getVariables() {
         return variables;
     }
 

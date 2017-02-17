@@ -64,8 +64,10 @@ public class ConstUtil {
     public static <T extends Constant> List<T> getConstants(ClassNode cn, ConstantType type) {
         List<Constant> list = new ArrayList<Constant>();
         for (Constant c : cn.constants) {
-            if (c == null) continue;
-            if (c.type == type) list.add(c);
+            if (c == null)
+                continue;
+            if (c.type == type)
+                list.add(c);
         }
         return (List<T>) list;
     }

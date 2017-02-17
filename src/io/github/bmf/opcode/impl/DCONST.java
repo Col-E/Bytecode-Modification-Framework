@@ -10,7 +10,8 @@ public class DCONST extends SingleValueOpcode<Double> {
     }
 
     private static int opFromValue(int value) {
-        if (value == 0) return Opcode.DCONST_0;
+        if (value == 0)
+            return Opcode.DCONST_0;
         else return Opcode.DCONST_1;
     }
 }

@@ -10,8 +10,10 @@ public class FCONST extends SingleValueOpcode<Float> {
     }
 
     private static int opFromValue(int value) {
-        if (value == 0) return Opcode.FCONST_0;
-        if (value == 1) return Opcode.FCONST_1;
+        if (value == 0)
+            return Opcode.FCONST_0;
+        if (value == 1)
+            return Opcode.FCONST_1;
         else return Opcode.FCONST_2;
     }
 }

@@ -16,15 +16,7 @@ import java.util.Set;
 import io.github.bmf.attribute.clazz.InnerClass;
 import io.github.bmf.attribute.method.Local;
 import io.github.bmf.attribute.method.LocalVariableType;
-import io.github.bmf.consts.ConstClass;
-import io.github.bmf.consts.ConstField;
-import io.github.bmf.consts.ConstInterfaceMethod;
-import io.github.bmf.consts.ConstInvokeDynamic;
-import io.github.bmf.consts.ConstMethod;
-import io.github.bmf.consts.ConstNameType;
-import io.github.bmf.consts.ConstUTF8;
-import io.github.bmf.consts.Constant;
-import io.github.bmf.consts.ConstantType;
+import io.github.bmf.consts.*;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
 import io.github.bmf.exception.InvalidClassException;
@@ -51,9 +43,7 @@ public class JarReader {
 
     private final Mapping mapping;
     private final File file;
-    private List<File> libraries = new ArrayList<File>();
     private Map<String, ClassNode> classEntries;
-    private Map<String, ClassNode> libClassEntries;
     private Map<String, byte[]> fileEntries;
 
     /**
@@ -89,8 +79,9 @@ public class JarReader {
      *            Also create mappings on init.
      */
     public JarReader(File file, boolean read, boolean genMappings) {
-        if ((file == null) || !file
-                .exists()) { throw new IllegalArgumentException("Invalid file given: " + file.getAbsolutePath()); }
+        if ((file == null) || !file.exists()) {
+            throw new IllegalArgumentException("Invalid file given: " + file.getAbsolutePath());
+        }
         this.file = file;
         this.mapping = new Mapping();
         if (read) {
@@ -106,19 +97,6 @@ public class JarReader {
      */
     public void read() {
         try {
-            // Library classes
-            libClassEntries = new HashMap<String, ClassNode>();
-            for (File lib : libraries) {
-                Map<String, byte[]> libClassEntryBytes = JarUtil.readJarClasses(lib);
-                for (String className : libClassEntryBytes.keySet()) {
-                    try {
-                        ClassNode cn = ClassReader.getNode(libClassEntryBytes.get(className));
-                        libClassEntries.put(className, cn);
-                    } catch (InvalidClassException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
             // Main classes
             Map<String, byte[]> classEntryBytes = JarUtil.readJarClasses(file);
             fileEntries = JarUtil.readJarNonClasses(file);
@@ -151,52 +129,42 @@ public class JarReader {
      * Sets up part of the mapping based on the pass used.
      */
     public void genMappings(int pass) {
-        List<String> names = new ArrayList<String>();
-        names.addAll(classEntries.keySet());
-        if (pass == PASS_MAKE_CLASSES || pass == PASS_LINK_HIERARCHY || pass == PASS_FINISH_CLASSES) {
-            // The libs are not needed for the other steps
-            names.addAll(libClassEntries.keySet());
-        }
-        for (String nodeName : names) {
-            boolean isLibrary = libClassEntries.containsKey(nodeName);
-            ClassNode node = isLibrary ? libClassEntries.get(nodeName) : classEntries.get(nodeName);
-            //
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
             if (pass == PASS_MAKE_CLASSES) {
                 // Create and add ClassMapping values from the loaded nodes.
-                mapping.addMapping(mapping.makeMappingFromNode(node, isLibrary));
+                mapping.addMapping(mapping.makeMappingFromNode(node));
             } else if (pass == PASS_LINK_HIERARCHY) {
                 // Mapping hierarchy. Useful for searching for members in
                 // parent/interface classes later on.
                 String className = ConstUtil.getName(node);
                 String superName = ConstUtil.getSuperName(node);
-                // Ensure the classes exist.
-                // Attempt to load them if they do not.
-                if (!mapping.hasClass(className)) {
-                    ClassMapping temp = mapping.makeMappingFromRuntime(className);
-                    if (temp != null) mapping.addMapping(temp);
-                }
+                // Ensure the super class has mappings.
+                // Attempt to load it if it does not.
                 if (!mapping.hasClass(superName)) {
                     ClassMapping temp = mapping.makeMappingFromRuntime(superName);
-                    if (temp != null) mapping.addMapping(temp);
+                    if (temp != null)
+                        mapping.addMapping(temp);
                 }
-                ClassMapping cm = mapping.getMapping(className);
-                ClassMapping sm = mapping.getMapping(superName);
-                if (cm != null) {
-                    if (sm != null) {
-                        mapping.addParent(cm, sm);
-                        mapping.addChild(sm, cm);
+                ClassMapping classMapping = mapping.getMapping(className);
+                ClassMapping superMapping = mapping.getMapping(superName);
+                if (classMapping != null) {
+                    if (superMapping != null) {
+                        mapping.setParent(classMapping, superMapping);
+                        mapping.addChild(superMapping, classMapping);
                     }
                     for (int i : node.interfaceIndices) {
                         String interfaceName = ConstUtil.getClassName(node, i);
                         // Ensure interface exists
                         if (!mapping.hasClass(interfaceName)) {
                             ClassMapping temp = mapping.makeMappingFromRuntime(interfaceName);
-                            if (temp != null) mapping.addMapping(temp);
+                            if (temp != null)
+                                mapping.addMapping(temp);
                         }
                         ClassMapping im = mapping.getMapping(interfaceName);
                         if (im != null) {
-                            mapping.addInterface(cm, im);
-                            mapping.addChild(im, cm);
+                            mapping.addInterface(classMapping, im);
+                            mapping.addChild(im, classMapping);
                         }
                     }
                 }
@@ -207,7 +175,7 @@ public class JarReader {
                 // references classes not in the mapping it would die. Lazily
                 // loading them would be too much work since in the end they all
                 // need to be loaded anyways.
-                mapping.addMemberMappings(classEntries, node, isLibrary);
+                mapping.addMemberMappings(classEntries, node);
             } else if (pass == PASS_SPLIT_NAME_DESC) {
                 // This step makes sure a UTF isn't used in too many different
                 // contexts.
@@ -216,6 +184,8 @@ public class JarReader {
                 // This makes extra copy UTFs to be used in different contexts
                 // allowing for class renaming without breaking the other
                 // usages.
+                // In the future I'd like to be able to figure out a way
+                // that would allow this to not be needed.
 
                 // Map of constant pool indices to the type.
                 Map<Integer, PrimitiveType> prims = new HashMap<Integer, PrimitiveType>();
@@ -223,7 +193,8 @@ public class JarReader {
                     Constant<?> constant = node.getConst(i);
                     if (constant != null && constant.type == ConstantType.UTF8) {
                         String utfVal = ConstUtil.getUTF8String(node, i);
-                        if (utfVal.length() != 1) continue;
+                        if (utfVal.length() != 1)
+                            continue;
                         char ch = utfVal.charAt(0);
                         if (ch == 'B' || ch == 'D' || ch == 'F' || ch == 'I' || ch == 'J' || ch == 'C' || ch == 'S'
                                 || ch == 'V') {
@@ -244,8 +215,10 @@ public class JarReader {
                 // Iterate constants and serch for NameTypes
                 for (int i = 0; i < node.constants.size(); i++) {
                     Constant<?> constant = node.constants.get(i);
-                    if (constant == null) continue;
-                    if (constant.type != ConstantType.NAME_TYPE) continue;
+                    if (constant == null)
+                        continue;
+                    if (constant.type != ConstantType.NAME_TYPE)
+                        continue;
                     // NameType found, update the name index if it conflicts
                     // with a primitive or the class name.
                     ConstNameType cnt = (ConstNameType) constant;
@@ -285,11 +258,15 @@ public class JarReader {
                 // descriptors all pointing to the same string.
 
                 // Replacing class name & super name.
+                
+                
                 ConstClass cc = (ConstClass) node.getConst(node.classIndex);
                 ConstClass ccs = (ConstClass) node.getConst(node.superIndex);
                 String className = ConstUtil.getName(node);
                 String superName = ConstUtil.getUTF8String(node, ccs.getValue());
                 ClassMapping cm = mapping.getMapping(className);
+                // TODO: Update class signature
+                // TODO: Update field and method signatures
                 node.setConst(cc.getValue(), new ConstName(cm.name));
                 node.setConst(ccs.getValue(), new ConstName(mapping.getClassName(superName)));
                 if (node.innerClasses != null) {
@@ -309,7 +286,8 @@ public class JarReader {
                     String desc = ConstUtil.getUTF8String(node, mn.desc);
                     MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
                     // This should never happen
-                    if (mm == null) continue;
+                    if (mm == null)
+                        continue;
                     // Check if the member points to a value already mapped to a
                     // name.
                     // If so, add a constant and update the member to point to
@@ -322,8 +300,8 @@ public class JarReader {
                         node.setConst(mn.name, new ConstName(mm.name));
                     }
                     node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
-                    // TODO: Re-enable this later. Totally pointless for now.
-                    if (mn.code != null && false) {
+                    // TODO: Read the method's opcodes
+                    if (mn.code != null) {
                         if (mn.code.variables != null) {
                             List<Local> locals = mn.code.variables.variableTable.locals;
                             for (Local local : locals) {
@@ -345,9 +323,14 @@ public class JarReader {
                                     // Resolve case:
                                     // Requested unmapped class:
                                     // java/util/Map$Entry<Ljava/lang/String
-                                    MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
-                                    node.setConst(type.name, new ConstName(var.name));
-                                    node.setConst(type.signature, new ConstMemberDesc(var.desc));
+                                    
+                                    System.out.println("VARIABLE-GENERIC: " + lname + ":" + ldesc);
+                                    
+                                    // TODO: Do not use type, use signatures here
+                                    
+                                    //MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
+                                    // node.setConst(type.name, new ConstName(var.name));
+                                    // node.setConst(type.signature, new ConstMemberDesc(var.desc));
                                 }
                             }
                         }
@@ -358,6 +341,7 @@ public class JarReader {
                 for (FieldNode fn : node.fields) {
                     String name = ConstUtil.getUTF8String(node, fn.name);
                     String desc = ConstUtil.getUTF8String(node, fn.desc);
+
                     MemberMapping mf = cm.getMemberMapping(name, desc);
                     // Check if the member points to a value already mapped to a
                     // name.
@@ -371,104 +355,6 @@ public class JarReader {
                         node.setConst(fn.name, new ConstName(mf.name));
                     }
                     node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
-                }
-
-                // Temporary, will be removed when method opcode and
-                // variable_type reading is
-                // complete
-                for (int i = 0; i < node.constants.size(); i++) {
-                    Constant<?> constant = node.constants.get(i);
-                    if (constant == null) continue;
-                    boolean dynamic = false;
-                    int classIndex = -1, nameTypeIndex = -1;
-                    String owner = null, name = null, desc = null;
-                    switch (constant.type) {
-                    case INTERFACE_METHOD:
-                        ConstInterfaceMethod cim = (ConstInterfaceMethod) constant;
-                        classIndex = cim.getClassIndex();
-                        nameTypeIndex = cim.getNameTypeIndex();
-                        break;
-                    case INVOKEDYNAMIC:
-                        dynamic = true;
-                        ConstInvokeDynamic cid = (ConstInvokeDynamic) constant;
-                        nameTypeIndex = cid.getNameTypeIndex();
-                        break;
-                    case METHOD:
-                        ConstMethod cm2 = (ConstMethod) constant;
-                        classIndex = cm2.getClassIndex();
-                        nameTypeIndex = cm2.getNameTypeIndex();
-                        break;
-                    case FIELD:
-                        ConstField cf = (ConstField) constant;
-                        classIndex = cf.getClassIndex();
-                        nameTypeIndex = cf.getNameTypeIndex();
-                        break;
-                    case CLASS:
-                        // Sure this is all member based except for here,
-                        // but it works when I have class constants I can't
-                        // yet access for things like opcodes.
-                        int nameI = ((ConstClass) constant).getValue();
-                        if (!(node.getConst(nameI) instanceof ConstName)) {
-                            name = ConstUtil.getUTF8String(node, nameI);
-                            // For some brilliant reason the following is
-                            // considered a "legitimate" class name:
-                            //
-                            // [Lcom/example/Name;
-                            // Happens mostly with enums, encountered in
-                            // minecraft.jar testing.
-                            // This is a poor fix but it's the only way
-                            // logically that I can think of getting around
-                            // it,
-                            //
-                            // Please somebody figure out a better way.
-                            if (name.startsWith("[")) {
-                                name = name.replace("[", "");
-                                if (name.endsWith(";")) {
-                                    name = name.substring(1, name.length() - 1);
-                                }
-                            } else {
-                                node.setConst(nameI, new ConstName(mapping.getClassName(name)));
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                    }
-                    if (nameTypeIndex == -1) continue;
-                    owner = dynamic ? className : ConstUtil.getClassName(node, classIndex);
-                    ConstNameType cnt = (ConstNameType) node.getConst(nameTypeIndex);
-                    name = ConstUtil.getUTF8String(node, cnt.getNameIndex());
-                    desc = ConstUtil.getUTF8String(node, cnt.getDescIndex());
-                    ClassMapping ownerMap = mapping.getMapping(owner);
-                    if (ownerMap == null) {
-                        // If the owner can't be located it's probably a library
-                        // call.
-                        continue;
-                    }
-                    MemberMapping member = mapping.getMemberMapping(ownerMap, name, desc);
-                    ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(cnt.getNameIndex());
-                    if (member == null) {
-                        // The exact metod can't be found but the owner is in
-                        // the mappings. It's most likely extending a library
-                        // method that does have a mapping (Like the java/lang
-                        // package)
-                        if (memberUTF8 instanceof ConstName) {
-                            node.addConst(new ConstName(new ImmutableBox<String>(name)));
-                            cnt.setNameIndex(node.constants.size());
-                        } else {
-                            node.setConst(cnt.getNameIndex(), new ConstName(new ImmutableBox<String>(name)));
-                        }
-                        node.setConst(cnt.getDescIndex(), new ConstMemberDesc(
-                                desc.contains("(") ? Type.method(mapping, desc) : Type.variable(mapping, desc)));
-                    } else {
-                        if (memberUTF8 instanceof ConstName) {
-                            node.addConst(new ConstName(member.name));
-                            cnt.setNameIndex(node.constants.size());
-                        } else {
-                            node.setConst(cnt.getNameIndex(), new ConstName(member.name));
-                        }
-                        node.setConst(cnt.getDescIndex(), new ConstMemberDesc(member.desc));
-                    }
                 }
             }
         }
@@ -534,7 +420,7 @@ public class JarReader {
      */
     public void loadMappingsFrom(File fileIn) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(fileIn))) {
-            ClassMapping cm=null;
+            ClassMapping cm = null;
             String in = null;
             while ((in = br.readLine()) != null) {
                 if (in.startsWith("CLASS ")) {
@@ -542,10 +428,10 @@ public class JarReader {
                     String orig = args[1];
                     String rename = args.length > 2 ? args[2] : null;
                     cm = this.mapping.getMapping(this.classEntries.get(orig));
-                    if (cm != null && rename != null){
+                    if (cm != null && rename != null) {
                         cm.name.setValue(rename);
                     }
-                } else if (cm != null){
+                } else if (cm != null) {
                     String tr = in.trim();
                     String[] args = tr.split(" ");
                     if (tr.startsWith("FIELD ") || tr.startsWith("METHOD ")) {
@@ -553,7 +439,7 @@ public class JarReader {
                         String rename = args[2];
                         String desc = args[3];
                         MemberMapping mm = cm.getMemberMapping(orig, desc);
-                        if (mm != null){
+                        if (mm != null) {
                             mm.name.setValue(rename);
                         }
                     }
@@ -610,15 +496,6 @@ public class JarReader {
             }
         }
         bw.close();
-    }
-
-    /**
-     * Adds a given file to the dependencies.
-     * 
-     * @param file
-     */
-    public void addLibrary(File file) {
-        libraries.add(file);
     }
 
     public File getFile() {

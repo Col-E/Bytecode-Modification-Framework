@@ -25,12 +25,17 @@ import java.util.List;
 @SuppressWarnings("rawtypes")
 public class ClassReader {
     // TODO: Modify the structure of ClassNode a little to "optimize" reading.
-    // Bytes will be read from the start to start + length but not decoded unless accessed by a getter.
-    // This should make reading much faster and will reduce  the amount of objects being created.
-    // Of course there should be options to just load everything in the first run regardless.
+    // Bytes will be read from the start to start + length but not decoded
+    // unless accessed by a getter.
+    // This should make reading much faster and will reduce the amount of
+    // objects being created.
+    // Of course there should be options to just load everything in the first
+    // run regardless.
     public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
         DataInputStream is = StreamUtil.fromBytes(data);
-        if (is.readInt() != 0xCAFEBABE) { throw new InvalidClassException("Does not start with 0xCAFEBABE"); }
+        if (is.readInt() != 0xCAFEBABE) {
+            throw new InvalidClassException("Does not start with 0xCAFEBABE");
+        }
         // Create the node
         ClassNode node = new ClassNode();
         // Read version information
@@ -57,20 +62,17 @@ public class ClassReader {
         node.superIndex = is.readUnsignedShort();
         // Read interfaces
         int interfaceLength = is.readUnsignedShort();
-        node.setInterfaceCount(interfaceLength);
         for (int i = 0; i < interfaceLength; i++) {
             node.addInterfaceIndex(is.readUnsignedShort());
         }
         // Read fields
         int fieldLength = is.readUnsignedShort();
-        node.setFieldCount(fieldLength);
         for (int i = 0; i < fieldLength; i++) {
             FieldNode field = readField(node, is);
             node.addField(field);
         }
         // Read methods
         int methodLength = is.readUnsignedShort();
-        node.setMethodCount(methodLength);
         for (int i = 0; i < methodLength; i++) {
             MethodNode method = readMethod(node, is);
             node.addMethod(method);
@@ -97,7 +99,8 @@ public class ClassReader {
         return field;
     }
 
-    private static MethodNode readMethod(ClassNode owner, DataInputStream is) throws IOException, InvalidClassException {
+    private static MethodNode readMethod(ClassNode owner, DataInputStream is)
+            throws IOException, InvalidClassException {
         MethodNode method = new MethodNode(owner);
         method.access = is.readUnsignedShort();
         method.name = is.readUnsignedShort();
@@ -110,13 +113,16 @@ public class ClassReader {
         return method;
     }
 
-    private static Attribute readAttribute(ClassNode owner, DataInputStream is) throws IOException, InvalidClassException {
+    private static Attribute readAttribute(ClassNode owner, DataInputStream is)
+            throws IOException, InvalidClassException {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
         String name = owner.getConst(nameIndex).getValue().toString();
 
         AttributeType attributeType = AttributeType.fromName(name);
-        if (attributeType == null) { throw new InvalidClassException("Unknown attribute: " + name); }
+        if (attributeType == null) {
+            throw new InvalidClassException("Unknown attribute: " + name);
+        }
         switch (attributeType) {
         case ANNOTATION_DEFAULT: {
             return new AttributeAnnotationDefault(nameIndex, readElementValue(owner, is));
@@ -748,7 +754,9 @@ public class ClassReader {
     private static ElementValue readElementValue(ClassNode owner, DataInputStream is) throws IOException {
         char tag = (char) is.readUnsignedByte();
         ElementValueType type = ElementValueType.fromType(tag);
-        if (type == null) { throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TAG: " + tag); }
+        if (type == null) {
+            throw new RuntimeException("UNKNOWN ANNOTATION ELEMENT TAG: " + tag);
+        }
         switch (type) {
         case CONST_VALUE_INDEX_BYTE:
         case CONST_VALUE_INDEX_C:

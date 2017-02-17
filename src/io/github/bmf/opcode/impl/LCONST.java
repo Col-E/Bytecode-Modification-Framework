@@ -10,7 +10,8 @@ public class LCONST extends SingleValueOpcode<Long> {
     }
 
     private static int opFromValue(int value) {
-        if (value == 0) return Opcode.LCONST_0;
+        if (value == 0)
+            return Opcode.LCONST_0;
         else return Opcode.LCONST_1;
     }
 }

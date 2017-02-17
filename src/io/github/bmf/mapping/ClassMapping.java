@@ -25,7 +25,9 @@ public class ClassMapping extends AbstractMapping {
      */
     public MemberMapping getMemberMapping(String name, String desc) {
         for (MemberMapping mm : members) {
-            if (mm.name.original.equals(name) && mm.desc.original.equals(desc)) { return mm; }
+            if (mm.name.original.equals(name) && mm.desc.original.equals(desc)) {
+                return mm;
+            }
         }
         return null;
     }
@@ -55,7 +57,8 @@ public class ClassMapping extends AbstractMapping {
     public List<MemberMapping> getMembersByOriginalName(String name) {
         List<MemberMapping> list = new ArrayList<MemberMapping>();
         for (MemberMapping mm : members) {
-            if (mm.name.original.equals(name)) list.add(mm);
+            if (mm.name.original.equals(name))
+                list.add(mm);
         }
         return list;
     }
@@ -69,7 +72,8 @@ public class ClassMapping extends AbstractMapping {
     public List<MemberMapping> getMembersByName(String name) {
         List<MemberMapping> list = new ArrayList<MemberMapping>();
         for (MemberMapping mm : members) {
-            if (mm.name.getValue().equals(name)) list.add(mm);
+            if (mm.name.getValue().equals(name))
+                list.add(mm);
         }
         return list;
     }

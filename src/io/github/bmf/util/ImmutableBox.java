@@ -1,7 +1,7 @@
 package io.github.bmf.util;
 
 public class ImmutableBox<T> extends Box<T> {
-    
+
     public ImmutableBox(T value) {
         super(value);
     }

@@ -86,11 +86,11 @@ public class OpcodeInst {
     public static final DUP2_X1 DUP2_X1 = new DUP2_X1();
     public static final DUP2_X2 DUP2_X2 = new DUP2_X2();
     // Stack - Compare
-    public static final DCMPG DCMPG= new DCMPG();
-    public static final DCMPL DCMPL= new DCMPL();
-    public static final FCMPG FCMPG= new FCMPG();
-    public static final FCMPL FCMPL= new FCMPL();
-    public static final LCMP LCMP= new LCMP();
+    public static final DCMPG DCMPG = new DCMPG();
+    public static final DCMPL DCMPL = new DCMPL();
+    public static final FCMPG FCMPG = new FCMPG();
+    public static final FCMPL FCMPL = new FCMPL();
+    public static final LCMP LCMP = new LCMP();
     // Const
     public static final ACONST_NULL ACONST_NULL = new ACONST_NULL();
     public static final ICONST ICONST_M1 = new ICONST(-1);

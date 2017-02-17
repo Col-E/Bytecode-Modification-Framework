@@ -8,9 +8,10 @@ public class ConstMemberDesc extends ConstUTF8 {
 
     public ConstMemberDesc(MemberDescriptor desc) {
         super();
-        // For testing. 
+        // For testing.
         // TODO: Decide if this practice should be applied globally
-        if (desc == null) throw new RuntimeException("Cannot have a null value for ConstMemberDesc!");
+        if (desc == null)
+            throw new RuntimeException("Cannot have a null value for ConstMemberDesc!");
         this.desc = desc;
     }
 

@@ -13,7 +13,7 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Main {
-    private static final String IN_FILE = "tests/Opt.jar", OUT_FILE = "tests/1.10.2-OptiFine_HD_U_D2.jar";
+    private static final String IN_FILE = "tests/IN.jar", OUT_FILE = "tests/OUT.jar";
 
     public static void main(String[] args) {
         long l = System.currentTimeMillis();
@@ -30,7 +30,7 @@ public class Main {
             int classIndex = 1;
             for (String name : read.getClassEntries().keySet()) {
                 ClassMapping cm = read.getMapping().getMapping(name);
-                if (cm.name.getValue().contains("Main")) 
+                if (cm.name.getValue().contains("Main"))
                     continue;
                 String obName = "AAA/" + getCapName(classIndex);
                 cm.name.setValue(obName);

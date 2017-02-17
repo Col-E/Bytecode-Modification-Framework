@@ -103,15 +103,23 @@ public class ClassWriter {
                 ds.writeShort(me.type);
             }
             int numCodeAttribs = 0;
-            if (code.lines != null) numCodeAttribs++;
-            if (code.stackMap != null) numCodeAttribs++;
-            if (code.variables != null) numCodeAttribs++;
-            if (code.variableTypes != null) numCodeAttribs++;
+            if (code.lines != null)
+                numCodeAttribs++;
+            if (code.stackMap != null)
+                numCodeAttribs++;
+            if (code.variables != null)
+                numCodeAttribs++;
+            if (code.variableTypes != null)
+                numCodeAttribs++;
             ds.writeShort(numCodeAttribs);
-            if (code.lines != null) writeAttribute(ds, code.lines);
-            if (code.stackMap != null) writeAttribute(ds, code.stackMap);
-            if (code.variables != null) writeAttribute(ds, code.variables);
-            if (code.variableTypes != null) writeAttribute(ds, code.variableTypes);
+            if (code.lines != null)
+                writeAttribute(ds, code.lines);
+            if (code.stackMap != null)
+                writeAttribute(ds, code.stackMap);
+            if (code.variables != null)
+                writeAttribute(ds, code.variables);
+            if (code.variableTypes != null)
+                writeAttribute(ds, code.variableTypes);
             break;
         case CONSTANT_VALUE:
             AttributeConstantValue constVal = (AttributeConstantValue) attribute;

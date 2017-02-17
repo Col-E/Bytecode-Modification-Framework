@@ -19,9 +19,9 @@ public class ConstName extends ConstUTF8 {
     public String getValue() {
         return name.getValue();
     }
-    
+
     @Override
-    public void setValue(String value){
+    public void setValue(String value) {
         name.setValue(value);
     }
 }

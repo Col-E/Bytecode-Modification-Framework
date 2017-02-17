@@ -14,9 +14,9 @@ public class MemberMapping extends AbstractMapping {
         super(name);
         this.desc = desc;
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return name.getValue() + desc.toDesc();
     }
 }

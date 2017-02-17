@@ -34,7 +34,7 @@ public class ClassNode implements AttributeOwner {
      * A list of indices in the constant pool pointing to classes that are
      * implemented.
      */
-    public List<Integer> interfaceIndices;
+    public List<Integer> interfaceIndices = new ArrayList<>();;
     /**
      * The constant pool.
      */
@@ -42,11 +42,11 @@ public class ClassNode implements AttributeOwner {
     /**
      * Fields.
      */
-    public List<FieldNode> fields;
+    public List<FieldNode> fields = new ArrayList<>();
     /**
      * Methods.
      */
-    public List<MethodNode> methods;
+    public List<MethodNode> methods = new ArrayList<>();;
     /**
      * Attribute: If not-null, the class is deprecated.
      */
@@ -126,16 +126,12 @@ public class ClassNode implements AttributeOwner {
     }
 
     /**
-     * Sets or extends the constant pool to a given size.
+     * Sets and clears the constant pool to a given size.
      * 
      * @param size
      */
     public void setPoolSize(int size) {
-        if (constants == null) {
-            constants = new ArrayList<Constant>(size);
-        } else {
-            ((ArrayList<Constant>) constants).ensureCapacity(size);
-        }
+        constants = new ArrayList<Constant>(size);
     }
 
     /**
@@ -148,19 +144,6 @@ public class ClassNode implements AttributeOwner {
     }
 
     /**
-     * Sets or extends the size of the interface index list to a given size.
-     * 
-     * @param size
-     */
-    public void setInterfaceCount(int size) {
-        if (interfaceIndices == null) {
-            interfaceIndices = new ArrayList<Integer>(size);
-        } else {
-            ((ArrayList<Integer>) interfaceIndices).ensureCapacity(size);
-        }
-    }
-
-    /**
      * Adds a field to the class.
      *
      * @param field
@@ -170,38 +153,12 @@ public class ClassNode implements AttributeOwner {
     }
 
     /**
-     * Sets or extends the size of the field list to a given size.
-     * 
-     * @param size
-     */
-    public void setFieldCount(int size) {
-        if (fields == null) {
-            fields = new ArrayList<FieldNode>(size);
-        } else {
-            ((ArrayList<FieldNode>) fields).ensureCapacity(size);
-        }
-    }
-
-    /**
      * Adds a method to the class.
      *
      * @param method
      */
     public void addMethod(MethodNode method) {
         methods.add(method);
-    }
-
-    /**
-     * Sets or extends the size of the method list to a given size.
-     * 
-     * @param size
-     */
-    public void setMethodCount(int size) {
-        if (methods == null) {
-            methods = new ArrayList<MethodNode>(size);
-        } else {
-            ((ArrayList<MethodNode>) methods).ensureCapacity(size);
-        }
     }
 
     @Override
@@ -251,18 +208,30 @@ public class ClassNode implements AttributeOwner {
     @Override
     public List<Attribute> getAttributes() {
         List<Attribute> attributes = Lists.newArrayList();
-        if (signature != null) attributes.add(signature);
-        if (sourceFile != null) attributes.add(sourceFile);
-        if (innerClasses != null) attributes.add(innerClasses);
-        if (bootstrapMethods != null) attributes.add(bootstrapMethods);
-        if (runtimeInvisibleAnnotations != null) attributes.add(runtimeInvisibleAnnotations);
-        if (runtimeVisibleAnnotations != null) attributes.add(runtimeVisibleAnnotations);
-        if (runtimeVisibleParamAnnotations != null) attributes.add(runtimeVisibleParamAnnotations);
-        if (runtimeInvisibleParamAnnotations != null) attributes.add(runtimeInvisibleParamAnnotations);
-        if (deprecated != null) attributes.add(deprecated);
-        if (synthetic != null) attributes.add(synthetic);
-        if (enclosingMethod != null) attributes.add(enclosingMethod);
-        if (sourceDebug != null) attributes.add(sourceDebug);
+        if (signature != null)
+            attributes.add(signature);
+        if (sourceFile != null)
+            attributes.add(sourceFile);
+        if (innerClasses != null)
+            attributes.add(innerClasses);
+        if (bootstrapMethods != null)
+            attributes.add(bootstrapMethods);
+        if (runtimeInvisibleAnnotations != null)
+            attributes.add(runtimeInvisibleAnnotations);
+        if (runtimeVisibleAnnotations != null)
+            attributes.add(runtimeVisibleAnnotations);
+        if (runtimeVisibleParamAnnotations != null)
+            attributes.add(runtimeVisibleParamAnnotations);
+        if (runtimeInvisibleParamAnnotations != null)
+            attributes.add(runtimeInvisibleParamAnnotations);
+        if (deprecated != null)
+            attributes.add(deprecated);
+        if (synthetic != null)
+            attributes.add(synthetic);
+        if (enclosingMethod != null)
+            attributes.add(enclosingMethod);
+        if (sourceDebug != null)
+            attributes.add(sourceDebug);
         return attributes;
     }
 
