@@ -22,13 +22,13 @@ public class SigArgClass extends SigArg {
     @Override
     String toArg() {
         if (genericArgs == null) {
-            return "L" + className + ";";
+            return "L" + className.getValue() + ";";
         } else {
             StringBuilder combo = new StringBuilder();
             for (SigArg arg : genericArgs) {
                 combo.append(arg.toArg()) ;
             }
-            return "L" + className + "<" + combo.toString() + ">;";
+            return "L" + className.getValue() + "<" + combo.toString() + ">;";
         }
     }
 }
