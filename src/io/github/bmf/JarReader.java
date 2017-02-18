@@ -274,7 +274,13 @@ public class JarReader {
                 node.setConst(ccs.getValue(), new ConstName(mapping.getClassName(superName)));
                 if (node.innerClasses != null) {
                     /*
-                     * TODO: Inner classes are not updated correctly
+                     * TODO: Inner classes need to be synced to their owner. I'm
+                     * thinking having a ImmutableBoxBox (A box that can't
+                     * change that warps around another box). The inner name
+                     * will be able to be changed but it's prefix won't be a
+                     * package, but rather its parent. Plus if it's an anonymous
+                     * inner it may not be supposed to have a special inner name
+                     * at all.
                      * 
                      * for (InnerClass i : node.innerClasses.classes) {
                      * 
@@ -321,13 +327,13 @@ public class JarReader {
                                 node.setConst(local.name, new ConstName(var.name));
                                 node.setConst(local.desc, new ConstMemberDesc(var.desc));
                             }
-                            // TODO: Extra generics information.
                             if (mn.code.variableTypes != null) {
                                 List<LocalVariableType> types = mn.code.variableTypes.localTypes;
                                 for (LocalVariableType type : types) {
                                     String lname = ConstUtil.getUTF8String(node, type.name);
                                     String ldesc = ((ConstUTF8) node.getConst(type.signature)).getValue();
-                                    node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, ldesc)));
+                                    node.setConst(type.signature,
+                                            new ConstSignature(Signature.variable(mapping, ldesc)));
                                 }
                             }
                         }
@@ -354,7 +360,8 @@ public class JarReader {
                     node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
                     if (fn.signature != null) {
                         String fieldSig = ConstUtil.getUTF8String(node, fn.signature.signature);
-                        node.setConst(fn.signature.signature, new ConstSignature(Signature.variable(mapping, fieldSig)));
+                        node.setConst(fn.signature.signature,
+                                new ConstSignature(Signature.variable(mapping, fieldSig)));
                     }
                 }
             }

@@ -14,6 +14,14 @@ public abstract class Signature {
 
     public abstract String toSignature();
 
+    /**
+     * Reads a method's signature.
+     * 
+     * @param mapping
+     * @param sig
+     *            Method's signature.
+     * @return
+     */
     public static Signature method(Mapping mapping, String sig) {
         Map<String, Box<String>> genericLabelMap = null;
         // Independent generic
@@ -32,10 +40,18 @@ public abstract class Signature {
         String strArgs = sig.substring(1, argEndIndex);
         String strRet = sig.substring(argEndIndex + 1);
         List<SigArg> parameters = readSigArgs(mapping, strArgs);
-        SigArg retType = readSigClass(mapping, strRet);
+        SigArg retType = readSigElement(mapping, strRet);
         return new MethodSignature(genericLabelMap, parameters, retType);
     }
 
+    /**
+     * Reads a local variable or field's signature.
+     * 
+     * @param mapping
+     * @param sig
+     *            Variable or field's signature.
+     * @return
+     */
     public static Signature variable(Mapping mapping, String sig) {
         Map<String, Box<String>> genericLabelMap = null;
         // Independent generic
@@ -50,10 +66,18 @@ public abstract class Signature {
             }
             sig = sig.substring(end + 1);
         }
-        SigArg type = readSigClass(mapping, sig);
+        SigArg type = readSigElement(mapping, sig);
         return new TypeSignature(type, genericLabelMap);
     }
 
+    /**
+     * Reads a list of signature elements.
+     * 
+     * @param mapping
+     * @param argStr
+     *            Signature substring <i>(the list)</i>
+     * @return
+     */
     private static List<SigArg> readSigArgs(Mapping mapping, String argStr) {
         char[] carr = argStr.toCharArray();
         List<SigArg> parameters = new ArrayList<>();
@@ -84,7 +108,7 @@ public abstract class Signature {
                     } else {
                         type = type.substring(0, typeEndPos + 1);
                     }
-                    arg = readSigClass(mapping, type);
+                    arg = readSigElement(mapping, type);
                     i += type.length() - 1;
                 } else {
                     arg = (new SigArgPrimitive(Character.toString(c)));
@@ -103,7 +127,15 @@ public abstract class Signature {
         return parameters;
     }
 
-    private static SigArg readSigClass(Mapping mapping, String type) {
+    /**
+     * Reads an element from the given signature substring.
+     * 
+     * @param mapping
+     * @param type
+     *            Substring to read element from.
+     * @return
+     */
+    private static SigArg readSigElement(Mapping mapping, String type) {
         SigArg arg = null;
         int array = 0;
         while (type.charAt(array) == '[') {
@@ -118,7 +150,7 @@ public abstract class Signature {
         } else {
             char firstChar = type.charAt(array);
             if (firstChar == 'T') {
-                arg = new SigArgGeneric(type.substring(1+array, type.length() - 1));
+                arg = new SigArgGeneric(type.substring(1 + array, type.length() - 1));
             } else {
                 arg = new SigArgClass(mapping.getClassName(type.substring(1, type.length() - 1)), null);
             }
