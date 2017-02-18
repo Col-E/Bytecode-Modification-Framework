@@ -11,33 +11,8 @@ import io.github.bmf.util.Box;
 public abstract class Signature {
     protected Map<String, Box<String>> genericLabelMap;
     protected SigArg type;
-    
-    public abstract String toSignature();
 
-    public static void main(String[] args) {
-        // methods
-        //
-        // String in =
-        // "<V:Ljava/lang/Object;K:Ljava/lang/Object;>(TV;TK;Ljava/lang/String;)TV;";
-        // String in = "()Ljava/util/Map<Ljava/lang/String;Ljava/util/Map<Ljava/lang/Integer;Ljava/lang/Float;>;>;";
-        // String in = "<V:Ljava/lang/Object;K:Ljava/lang/Object;>(TV;TK;)TV;";
-        // String in = "<V:Ljava/lang/Object;>(TV;)TV;";
-        //
-        //
-        // fields/variables
-        //
-        // String in = "Ljava/util/Map<TT;TZ;>;";
-        String in = "<V:Ljava/lang/Object;K:Ljava/lang/Object;>(TV;TK;)TV;";
-        Mapping mapping = new Mapping();
-        System.out.println(in);
-        System.out.println("======================");
-        try {
-            System.out.println(method(mapping, in).toSignature());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("======================");
-    }
+    public abstract String toSignature();
 
     public static Signature method(Mapping mapping, String sig) {
         Map<String, Box<String>> genericLabelMap = null;
@@ -62,8 +37,21 @@ public abstract class Signature {
     }
 
     public static Signature variable(Mapping mapping, String sig) {
+        Map<String, Box<String>> genericLabelMap = null;
+        // Independent generic
+        if (sig.startsWith("<")) {
+            int end = sig.lastIndexOf(">");
+            genericLabelMap = new HashMap<>();
+            String sub = sig.substring(1, end - 1);
+            String split[] = sub.split(";");
+            for (String s : split) {
+                String split2[] = s.split(":");
+                genericLabelMap.put(split2[0], mapping.getClassName(split2[1].substring(1)));
+            }
+            sig = sig.substring(end + 1);
+        }
         SigArg type = readSigClass(mapping, sig);
-        return new TypeSignature(type);
+        return new TypeSignature(type, genericLabelMap);
     }
 
     private static List<SigArg> readSigArgs(Mapping mapping, String argStr) {
@@ -116,21 +104,30 @@ public abstract class Signature {
     }
 
     private static SigArg readSigClass(Mapping mapping, String type) {
+        SigArg arg = null;
+        int array = 0;
+        while (type.charAt(array) == '[') {
+            array++;
+        }
         if (type.contains("<")) {
             int aa = type.indexOf("<");
             int bb = type.lastIndexOf(">");
             String typeCopy = type.substring(1, aa) + type.substring(bb + 1, type.length() - 1);
             List<SigArg> args = readSigArgs(mapping, type.substring(aa + 1, bb));
-            return new SigArgClass(mapping.getClassName(typeCopy), args);
-
+            arg = new SigArgClass(mapping.getClassName(typeCopy), args);
         } else {
-            char firstChar = type.charAt(0);
+            char firstChar = type.charAt(array);
             if (firstChar == 'T') {
-                return new SigArgGeneric(type.substring(1, type.length() - 1));
+                arg = new SigArgGeneric(type.substring(1+array, type.length() - 1));
             } else {
-                return new SigArgClass(mapping.getClassName(type.substring(1, type.length() - 1)), null);
+                arg = new SigArgClass(mapping.getClassName(type.substring(1, type.length() - 1)), null);
             }
         }
+        while (array > 0) {
+            arg = new SigArgArray(arg);
+            array--;
+        }
+        return arg;
     }
 
 }

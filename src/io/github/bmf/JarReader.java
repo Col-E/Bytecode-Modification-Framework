@@ -19,11 +19,13 @@ import io.github.bmf.attribute.method.LocalVariableType;
 import io.github.bmf.consts.*;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
+import io.github.bmf.consts.mapping.ConstSignature;
 import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.mapping.ClassMapping;
 import io.github.bmf.mapping.Mapping;
 import io.github.bmf.mapping.MemberMapping;
 import io.github.bmf.mapping.MethodMapping;
+import io.github.bmf.signature.Signature;
 import io.github.bmf.type.PrimitiveType;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.Access;
@@ -258,15 +260,16 @@ public class JarReader {
                 // descriptors all pointing to the same string.
 
                 // Replacing class name & super name.
-                
-                
+
                 ConstClass cc = (ConstClass) node.getConst(node.classIndex);
                 ConstClass ccs = (ConstClass) node.getConst(node.superIndex);
                 String className = ConstUtil.getName(node);
                 String superName = ConstUtil.getUTF8String(node, ccs.getValue());
                 ClassMapping cm = mapping.getMapping(className);
-                // TODO: Update class signature
-                // TODO: Update field and method signatures
+                if (node.signature != null) {
+                    String classSig = ConstUtil.getUTF8String(node, node.signature.signature);
+                    node.setConst(node.signature.signature, new ConstSignature(Signature.variable(mapping, classSig)));
+                }
                 node.setConst(cc.getValue(), new ConstName(cm.name));
                 node.setConst(ccs.getValue(), new ConstName(mapping.getClassName(superName)));
                 if (node.innerClasses != null) {
@@ -300,6 +303,10 @@ public class JarReader {
                         node.setConst(mn.name, new ConstName(mm.name));
                     }
                     node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
+                    if (mn.signature != null) {
+                        String methodSig = ConstUtil.getUTF8String(node, mn.signature.signature);
+                        node.setConst(mn.signature.signature, new ConstSignature(Signature.method(mapping, methodSig)));
+                    }
                     // TODO: Read the method's opcodes
                     if (mn.code != null) {
                         if (mn.code.variables != null) {
@@ -320,17 +327,7 @@ public class JarReader {
                                 for (LocalVariableType type : types) {
                                     String lname = ConstUtil.getUTF8String(node, type.name);
                                     String ldesc = ((ConstUTF8) node.getConst(type.signature)).getValue();
-                                    // Resolve case:
-                                    // Requested unmapped class:
-                                    // java/util/Map$Entry<Ljava/lang/String
-                                    
-                                    System.out.println("VARIABLE-GENERIC: " + lname + ":" + ldesc);
-                                    
-                                    // TODO: Do not use type, use signatures here
-                                    
-                                    //MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
-                                    // node.setConst(type.name, new ConstName(var.name));
-                                    // node.setConst(type.signature, new ConstMemberDesc(var.desc));
+                                    node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, ldesc)));
                                 }
                             }
                         }
@@ -355,6 +352,10 @@ public class JarReader {
                         node.setConst(fn.name, new ConstName(mf.name));
                     }
                     node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
+                    if (fn.signature != null) {
+                        String fieldSig = ConstUtil.getUTF8String(node, fn.signature.signature);
+                        node.setConst(fn.signature.signature, new ConstSignature(Signature.variable(mapping, fieldSig)));
+                    }
                 }
             }
         }
