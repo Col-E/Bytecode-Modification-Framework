@@ -1,7 +1,6 @@
 package io.github.bmf.attribute;
 
-import com.google.common.collect.Maps;
-
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -62,7 +61,7 @@ public enum AttributeType {
      */
     private void register(AttributeType attribute) {
         if (nameMap == null) {
-            nameMap = Maps.newHashMap();
+            nameMap = new HashMap<>();
         }
         nameMap.put(name, attribute);
     }

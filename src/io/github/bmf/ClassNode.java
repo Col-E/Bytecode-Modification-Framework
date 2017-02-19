@@ -1,6 +1,5 @@
 package io.github.bmf;
 
-import com.google.common.collect.Lists;
 import io.github.bmf.attribute.*;
 import io.github.bmf.attribute.annotation.AttributeAnnotations;
 import io.github.bmf.attribute.annotation.AttributeParameterAnnotations;
@@ -207,7 +206,7 @@ public class ClassNode implements AttributeOwner {
 
     @Override
     public List<Attribute> getAttributes() {
-        List<Attribute> attributes = Lists.newArrayList();
+        List<Attribute> attributes =  new ArrayList<>();
         if (signature != null)
             attributes.add(signature);
         if (sourceFile != null)

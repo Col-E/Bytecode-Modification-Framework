@@ -1,7 +1,6 @@
 package io.github.bmf.attribute.annotation.element;
 
-import com.google.common.collect.Maps;
-
+import java.util.HashMap;
 import java.util.Map;
 
 public enum ElementValueType {
@@ -46,7 +45,7 @@ public enum ElementValueType {
      */
     private void register(ElementValueType type) {
         if (typeMap == null) {
-            typeMap = Maps.newHashMap();
+            typeMap = new HashMap<>();
         }
         typeMap.put(key, type);
     }

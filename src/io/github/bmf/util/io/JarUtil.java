@@ -1,16 +1,14 @@
 package io.github.bmf.util.io;
 
-import com.google.common.collect.Maps;
 import io.github.bmf.ClassNode;
 import io.github.bmf.ClassWriter;
 import io.github.bmf.util.ConstUtil;
-
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -115,7 +113,7 @@ public class JarUtil {
      * @throws IOException
      */
     public static Map<String, byte[]> readJar(File file, NameFilter filter) throws ZipException, IOException {
-        Map<String, byte[]> entries = Maps.newHashMap();
+        Map<String, byte[]> entries = new HashMap<>();
         ZipFile zip = new ZipFile(file);
         zip.stream().forEach(new Consumer<ZipEntry>() {
             @Override
@@ -125,7 +123,7 @@ public class JarUtil {
                     return;
                 }
                 try {
-                    entries.put(filter.filterName(name), IOUtils.toByteArray(zip.getInputStream(entry)));
+                    entries.put(filter.filterName(name), StreamUtil.fromStream(zip.getInputStream(entry)));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

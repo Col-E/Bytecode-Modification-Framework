@@ -1,6 +1,5 @@
 package io.github.bmf;
 
-import com.google.common.collect.Lists;
 import io.github.bmf.attribute.*;
 import io.github.bmf.attribute.annotation.*;
 import io.github.bmf.attribute.annotation.element.*;
@@ -145,7 +144,7 @@ public class ClassReader {
             int maxStack = is.readUnsignedShort();
             int maxLocals = is.readUnsignedShort();
             MethodCode codeData = readMethodCode(owner, is);
-            List<MethodException> exceptions = Lists.newArrayList();
+            List<MethodException> exceptions = new ArrayList<>();
             int exceptionLength = is.readUnsignedShort();
             for (int i = 0; i < exceptionLength; i++) {
                 MethodException mexeption = new MethodException();
@@ -159,7 +158,7 @@ public class ClassReader {
                 mexeption.type = catchType;
                 exceptions.add(mexeption);
             }
-            List<Attribute> attributes = Lists.newArrayList();
+            List<Attribute> attributes =  new ArrayList<>();
             int attributeLength = is.readUnsignedShort();
             for (int i = 0; i < attributeLength; i++) {
                 Attribute attribute = readAttribute(owner, is);
@@ -181,7 +180,7 @@ public class ClassReader {
         }
         case EXCEPTIONS: {
             int exceptionCount = is.readUnsignedShort();
-            List<Integer> exceptionIndices = Lists.newArrayList();
+            List<Integer> exceptionIndices =  new ArrayList<>();
             for (int i = 0; i < exceptionCount; i++) {
                 exceptionIndices.add(is.readUnsignedShort());
             }
@@ -189,7 +188,7 @@ public class ClassReader {
         }
         case INNER_CLASSES: {
             int classCount = is.readUnsignedShort();
-            List<InnerClass> classes = Lists.newArrayList();
+            List<InnerClass> classes =  new ArrayList<>();
             for (int i = 0; i < classCount; i++) {
                 int innerIndex = is.readUnsignedShort();
                 int outerIndex = is.readUnsignedShort();
@@ -224,7 +223,7 @@ public class ClassReader {
         }
         case LOCAL_VARIABLE_TYPE_TABLE: {
             int tableLength = is.readUnsignedShort();
-            List<LocalVariableType> localTypes = Lists.newArrayList();
+            List<LocalVariableType> localTypes =  new ArrayList<>();
             for (int i = 0; i < tableLength; i++) {
                 int lStart = is.readUnsignedShort();
                 int lLen = is.readUnsignedShort();
@@ -247,7 +246,7 @@ public class ClassReader {
             return new AttributeSignature(nameIndex, sig);
         }
         case SOURCE_DEBUG_EXTENSION: {
-            List<Integer> data = Lists.newArrayList();
+            List<Integer> data =  new ArrayList<>();
             for (int i = 0; i < length; i++) {
                 data.add(is.readUnsignedByte());
             }
@@ -782,14 +781,14 @@ public class ClassReader {
         switch (type) {
         case RUNTIME_INVISIBLE_ANNOTATIONS:
         case RUNTIME_VISIBLE_ANNOTATIONS:
-            List<Annotation> annotations = Lists.newArrayList();
+            List<Annotation> annotations =  new ArrayList<>();
             for (int i = 0; i < num; i++) {
                 annotations.add(readAnnotation(owner, is));
             }
             return new AttributeAnnotations(nameIndex, invisible, annotations);
         case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
         case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-            List<ParameterAnnotations> paramAnnotations = Lists.newArrayList();
+            List<ParameterAnnotations> paramAnnotations =  new ArrayList<>();
             for (int i = 0; i < num; i++) {
                 paramAnnotations.add(readParameterAnnotations(owner, is));
             }
@@ -803,7 +802,7 @@ public class ClassReader {
     private static Annotation readAnnotation(ClassNode owner, DataInputStream is) throws IOException {
         int typeIndex = is.readUnsignedShort();
         int num = is.readUnsignedShort();
-        List<ElementValuePair> valuePairs = Lists.newArrayList();
+        List<ElementValuePair> valuePairs =  new ArrayList<>();
         for (int i = 0; i < num; i++) {
             int nameIndex = is.readUnsignedShort();
             ElementValue value = readElementValue(owner, is);
@@ -856,7 +855,7 @@ public class ClassReader {
     private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is)
             throws IOException {
         int num = is.readUnsignedShort();
-        List<Annotation> annotations = Lists.newArrayList();
+        List<Annotation> annotations =  new ArrayList<>();
         for (int i = 0; i < num; i++) {
             annotations.add(readAnnotation(owner, is));
         }

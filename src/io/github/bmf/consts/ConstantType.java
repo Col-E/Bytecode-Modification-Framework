@@ -1,7 +1,6 @@
 package io.github.bmf.consts;
 
-import com.google.common.collect.Maps;
-
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -66,7 +65,7 @@ public enum ConstantType {
      */
     private void register(ConstantType type) {
         if (typeMap == null) {
-            typeMap = Maps.newHashMap();
+            typeMap = new HashMap<>();
         }
         typeMap.put(tag, type);
     }

@@ -1,10 +1,10 @@
 package io.github.bmf;
 
-import com.google.common.collect.Lists;
 import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.annotation.AttributeAnnotationDefault;
 import io.github.bmf.attribute.method.AttributeCode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +42,7 @@ public class MethodNode extends MemberNode {
 
     @Override
     public List<Attribute> getAttributes() {
-        List<Attribute> attributes = Lists.newArrayList();
+        List<Attribute> attributes = new ArrayList<>();
         if (code != null) {
             attributes.add(code);
         }

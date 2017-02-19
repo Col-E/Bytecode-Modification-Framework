@@ -1,4 +1,4 @@
-package io.github.bmf;
+package io.github.bmf.opcode.impl;
 
 import java.util.List;
 

@@ -1,9 +1,9 @@
 package io.github.bmf;
 
-import com.google.common.collect.Lists;
 import io.github.bmf.attribute.Attribute;
 import io.github.bmf.attribute.field.AttributeConstantValue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +35,7 @@ public class FieldNode extends MemberNode {
 
     @Override
     public List<Attribute> getAttributes() {
-        List<Attribute> attributes = Lists.newArrayList();
+        List<Attribute> attributes = new ArrayList<>();
         if (value != null)
             attributes.add(value);
         if (signature != null)
