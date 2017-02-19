@@ -13,7 +13,7 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Main {
-    private static final String IN_FILE = "tests/CFRRemapper.jar", OUT_FILE = "tests/OUT.jar";
+    private static final String IN_FILE = "tests/JRemapper.jar", OUT_FILE = "tests/OUT.jar";
 
     public static void main(String[] args) {
         long l = System.currentTimeMillis();
@@ -28,7 +28,6 @@ public class Main {
             // read.getMapping().getClassName("com/example/test/Apple").setValue("keep/the/doctors/Away");
             // read.getMapping().getClassName("com/example/test/Fruit").setValue("not/a/Vegetable");
             int classIndex = 1;
-            /*
             for (String name : read.getClassEntries().keySet()) {
                 ClassMapping cm = read.getMapping().getMapping(name);
                 if (cm.name.getValue().contains("Main"))
@@ -44,7 +43,6 @@ public class Main {
                 }
                 classIndex++;
             }
-            */
             read.saveJarTo(new File(OUT_FILE));
         } catch (Exception e) {
             e.printStackTrace();

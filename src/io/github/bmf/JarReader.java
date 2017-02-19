@@ -23,6 +23,10 @@ import io.github.bmf.mapping.ClassMapping;
 import io.github.bmf.mapping.Mapping;
 import io.github.bmf.mapping.MemberMapping;
 import io.github.bmf.mapping.MethodMapping;
+import io.github.bmf.opcode.AbstractClassPointer;
+import io.github.bmf.opcode.AbstractFieldOpcode;
+import io.github.bmf.opcode.AbstractMethodOpcode;
+import io.github.bmf.opcode.Opcode;
 import io.github.bmf.signature.Signature;
 import io.github.bmf.type.PrimitiveType;
 import io.github.bmf.type.Type;
@@ -314,6 +318,73 @@ public class JarReader {
                     }
                     // TODO: Read the method's opcodes
                     if (mn.code != null) {
+                        if (mn.code.opcodes != null && mn.code.opcodes.opcodes != null) {
+                            for (Opcode op : mn.code.opcodes.opcodes) {
+                                switch (op.opcode) {
+                                case Opcode.INVOKEINTERFACE:
+                                case Opcode.INVOKESPECIAL:
+                                case Opcode.INVOKESTATIC:
+                                case Opcode.INVOKEVIRTUAL: {
+                                    AbstractMethodOpcode amo = (AbstractMethodOpcode) op;
+                                    AbstractMethodConstant amc = (AbstractMethodConstant) node
+                                            .getConst(amo.methodIndex);
+                                    ConstClass ccMethOwner = (ConstClass) node.getConst(amc.getClassIndex());
+                                    ConstNameType cntMeth = (ConstNameType) node.getConst(amc.getNameTypeIndex());
+                                    String mOwner = ConstUtil.getUTF8String(node, ccMethOwner.getValue());
+                                    String mDesc = ConstUtil.getUTF8String(node, cntMeth.getDescIndex());
+                                    String mName = ConstUtil.getUTF8String(node, cntMeth.getNameIndex());
+                                    ClassMapping cmOwner = mapping.getMapping(mOwner);
+                                    if (cmOwner != null) {
+                                        node.setConst(ccMethOwner.getValue(), new ConstName(cmOwner.name));
+                                        MemberMapping mmMeth = cmOwner.getMemberMapping(mName, mDesc);
+                                        if (mmMeth != null) {
+                                            node.setConst(cntMeth.getNameIndex(), new ConstName(mmMeth.name));
+                                            node.setConst(cntMeth.getDescIndex(), new ConstMemberDesc(mmMeth.desc));
+                                        }
+                                    }
+                                    break;
+                                }
+                                case Opcode.PUTFIELD:
+                                case Opcode.PUTSTATIC:
+                                case Opcode.GETFIELD:
+                                case Opcode.GETSTATIC: {
+                                    AbstractFieldOpcode afo = (AbstractFieldOpcode) op;
+                                    ConstField cf = (ConstField) node.getConst(afo.fieldIndex);
+                                    ConstClass ccFldOwner = (ConstClass) node.getConst(cf.getClassIndex());
+                                    ConstNameType cntFld = (ConstNameType) node.getConst(cf.getNameTypeIndex());
+                                    String fOwner = ConstUtil.getUTF8String(node, ccFldOwner.getValue());
+                                    String fDesc = ConstUtil.getUTF8String(node, cntFld.getDescIndex());
+                                    String fName = ConstUtil.getUTF8String(node, cntFld.getNameIndex());
+                                    ClassMapping cmOwner = mapping.getMapping(fOwner);
+                                    if (cmOwner != null) {
+                                        node.setConst(ccFldOwner.getValue(), new ConstName(cmOwner.name));
+                                        MemberMapping mmField = cmOwner.getMemberMapping(fName, fDesc);
+                                        if (mmField != null) {
+                                            node.setConst(cntFld.getNameIndex(), new ConstName(mmField.name));
+                                            node.setConst(cntFld.getDescIndex(), new ConstMemberDesc(mmField.desc));
+                                        }
+                                    }
+                                    break;
+                                }
+                                case Opcode.ANEWARRAY:
+                                case Opcode.NEW:
+                                case Opcode.CHECKCAST:
+                                case Opcode.INSTANCEOF:
+                                case Opcode.MULTIANEWARRAY: {
+                                    AbstractClassPointer acp = (AbstractClassPointer) op;
+                                    ConstClass ccOpcodeClass = (ConstClass) node.getConst(acp.classIndex);
+                                    String opOwner = ConstUtil.getUTF8String(node, ccOpcodeClass.getValue());
+                                    ClassMapping cmOwner = mapping.getMapping(opOwner);
+                                    if (cmOwner != null) {
+                                        node.setConst(ccOpcodeClass.getValue(), new ConstName(cmOwner.name));
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                                }
+                            }
+                        }
                         if (mn.code.variables != null) {
                             List<Local> locals = mn.code.variables.variableTable.locals;
                             for (Local local : locals) {
