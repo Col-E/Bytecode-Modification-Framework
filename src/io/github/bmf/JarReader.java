@@ -11,8 +11,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import io.github.bmf.attribute.clazz.InnerClass;
 import io.github.bmf.attribute.method.Local;
 import io.github.bmf.attribute.method.LocalVariableType;
@@ -28,9 +26,7 @@ import io.github.bmf.mapping.MethodMapping;
 import io.github.bmf.signature.Signature;
 import io.github.bmf.type.PrimitiveType;
 import io.github.bmf.type.Type;
-import io.github.bmf.util.Access;
 import io.github.bmf.util.ConstUtil;
-import io.github.bmf.util.ImmutableBox;
 import io.github.bmf.util.io.JarUtil;
 
 /**
