@@ -5,6 +5,11 @@ import io.github.bmf.opcode.impl.*;
 public class OpcodeInst {
     // Other
     public static final NOP NOP = new NOP();
+    public static final MONITORENTER MONITORENTER = new MONITORENTER();
+    public static final MONITOREXIT MONITOREXIT = new MONITOREXIT();
+    public static final IMPDEP1 IMPDEP1 = new IMPDEP1();
+    public static final IMPDEP2 IMPDEP2 = new IMPDEP2();
+    public static final BREAKPOINT BREAKPOINT = new BREAKPOINT();
     // Math
     public static final IADD IADD = new IADD();
     public static final DADD DADD = new DADD();
@@ -43,6 +48,8 @@ public class OpcodeInst {
     public static final IXOR IXOR = new IXOR();
     public static final LXOR LXOR = new LXOR();
     // Array
+    public static final ARRAYLENGTH ARRAYLENGTH = new ARRAYLENGTH();
+    public static final ATHROW ATHROW = new ATHROW();
     public static final IALOAD IALOAD = new IALOAD();
     public static final LALOAD LALOAD = new LALOAD();
     public static final FALOAD FALOAD = new FALOAD();

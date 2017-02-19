@@ -295,8 +295,9 @@ public class JarReader {
                     String desc = ConstUtil.getUTF8String(node, mn.desc);
                     MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
                     // This should never happen
-                    if (mm == null)
-                        continue;
+                    if (mm == null){
+                        throw new RuntimeException("Method does not exist? " + className + "." + name);
+                    }
                     // Check if the member points to a value already mapped to a
                     // name.
                     // If so, add a constant and update the member to point to
@@ -330,7 +331,7 @@ public class JarReader {
                             if (mn.code.variableTypes != null) {
                                 List<LocalVariableType> types = mn.code.variableTypes.localTypes;
                                 for (LocalVariableType type : types) {
-                                    String lname = ConstUtil.getUTF8String(node, type.name);
+                                    //String lname = ConstUtil.getUTF8String(node, type.name);
                                     String ldesc = ((ConstUTF8) node.getConst(type.signature)).getValue();
                                     node.setConst(type.signature,
                                             new ConstSignature(Signature.variable(mapping, ldesc)));

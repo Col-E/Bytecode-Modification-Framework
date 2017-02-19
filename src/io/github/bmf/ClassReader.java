@@ -279,8 +279,8 @@ public class ClassReader {
         is.read(origOpcodeBytes);
         MethodCode codeData = new MethodCode(origOpcodeBytes);
 
-        boolean testing = false;
-        if (testing) {
+        boolean parseOpcodes = true;
+        if (parseOpcodes) {
             // Create opcode data
             codeData.opcodes = new ArrayList<Opcode>();
             DataInputStream opstr = StreamUtil.fromBytes(codeData.original);
@@ -680,33 +680,94 @@ public class ClassReader {
             return new IFNONNULL(is.readShort());
         case Opcode.GOTO:
         case Opcode.GOTO_W:
+            return new GOTO(code == Opcode.GOTO_W ? is.readInt() : is.readShort());
+        case Opcode.TABLESWITCH: {
+            // Documentation says 0-3 bytes of padding
+            // Testing says otherwise ;-;
+            int default_offset = is.readInt();
+            int low = is.readInt();
+            int high = is.readInt();
+            int dif = (high - low + 1);
+            List<Integer> offsets = new ArrayList<>(dif);
+            for (int i = 0; i < dif; i++) {
+                int x = is.readInt();
+                offsets.add(x);
+            }
+            return new TABLESWITCH(default_offset, low, high, offsets);
+        }
+        case Opcode.LOOKUPSWITCH: {
+            // Documentation says 0-3 bytes of padding
+            // Testing says otherwise ;-;
+            int default_offset = is.readInt();
+            int n = is.readInt();
+            List<LOOKUPSWITCH.OffsetPair> offsets = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                int key = is.readInt();
+                int offset = is.readInt();
+                offsets.add(new LOOKUPSWITCH.OffsetPair(key, offset));
+            }
+            return new LOOKUPSWITCH(default_offset, offsets);
+        }
+        case Opcode.GETSTATIC:
+            return new GETSTATIC(is.readUnsignedShort());
+        case Opcode.PUTSTATIC:
+            return new PUTSTATIC(is.readUnsignedShort());
+        case Opcode.GETFIELD:
+            return new GETFIELD(is.readUnsignedShort());
+        case Opcode.PUTFIELD:
+            return new PUTFIELD(is.readUnsignedShort());
+        case Opcode.INVOKEVIRTUAL:
+            return new INVOKEVIRTUAL(is.readUnsignedShort());
+        case Opcode.INVOKESTATIC:
+            return new INVOKESTATIC(is.readUnsignedShort());
+        case Opcode.INVOKESPECIAL:
+            return new INVOKESPECIAL(is.readUnsignedShort());
+        case Opcode.INVOKEINTERFACE:
+            return new INVOKEINTERFACE(is.readUnsignedShort(), is.readUnsignedByte(), is.readUnsignedByte());
+        case Opcode.NEW:
+            return new NEW(is.readUnsignedShort());
+        case Opcode.NEWARRAY:
+            return new NEWARRAY(is.readUnsignedShort());
+        case Opcode.ANEWARRAY:
+            return new ANEWARRAY(is.readUnsignedShort());
+        case Opcode.MULTIANEWARRAY:
+            return new MULTIANEWARRAY(is.readUnsignedShort(), is.readUnsignedByte());
+        case Opcode.ARRAYLENGTH:
+            return OpcodeInst.ARRAYLENGTH;
+        case Opcode.ATHROW:
+            return OpcodeInst.ATHROW;
+        case Opcode.CHECKCAST:
+            return new CHECKCAST(is.readUnsignedShort());
+        case Opcode.INSTANCEOF:
+            return new INSTANCEOF(is.readUnsignedShort());
+        case Opcode.MONITORENTER:
+            return OpcodeInst.MONITORENTER;
+        case Opcode.MONITOREXIT:
+            return OpcodeInst.MONITOREXIT;
+        case Opcode.BREAKPOINT:
+            return OpcodeInst.BREAKPOINT;
+        case Opcode.IMPDEP1:
+            return OpcodeInst.IMPDEP1;
+        case Opcode.IMPDEP2:
+            return OpcodeInst.IMPDEP2;
+        case Opcode.WIDE: {
+            int opcode = is.readUnsignedByte();
+            int varnum = is.readShort();
+            // TODO: Verify this is actually checks the next opcode correctly.
+            is.mark(2);
+            int next = is.readUnsignedByte();
+            is.reset();
+            if (next == Opcode.IINC) {
+                int n = is.readShort();
+                return new WIDE(opcode, varnum, n);
+            } else {
+                return new WIDE(opcode, varnum, null);
+            }
+        }
+        case Opcode.RET:
         case Opcode.JSR:
         case Opcode.JSR_W:
-        case Opcode.RET:
-        case Opcode.TABLESWITCH:
-        case Opcode.LOOKUPSWITCH:
-        case Opcode.GETSTATIC:
-        case Opcode.PUTSTATIC:
-        case Opcode.GETFIELD:
-        case Opcode.PUTFIELD:
-        case Opcode.INVOKEVIRTUAL:
-        case Opcode.INVOKESPECIAL:
-        case Opcode.INVOKESTATIC:
-        case Opcode.INVOKEINTERFACE:
-        case Opcode.NEW:
-        case Opcode.NEWARRAY:
-        case Opcode.ANEWARRAY:
-        case Opcode.ARRAYLENGTH:
-        case Opcode.ATHROW:
-        case Opcode.CHECKCAST:
-        case Opcode.INSTANCEOF:
-        case Opcode.MONITORENTER:
-        case Opcode.MONITOREXIT:
-        case Opcode.MULTIANEWARRAY:
-        case Opcode.BREAKPOINT:
-        case Opcode.IMPDEP1:
-        case Opcode.IMPDEP2:
-        case Opcode.WIDE:
+            throw new RuntimeException("Unsupported: Outdated (Pre-Java 7) Opcode. Get with the times.");
         }
         return null;
     }

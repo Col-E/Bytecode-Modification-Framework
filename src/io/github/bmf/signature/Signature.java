@@ -144,13 +144,16 @@ public abstract class Signature {
         if (type.contains("<")) {
             int aa = type.indexOf("<");
             int bb = type.lastIndexOf(">");
-            String typeCopy = type.substring(1, aa) + type.substring(bb + 1, type.length() - 1);
+            String typeCopy = type.substring(1, aa) + type.substring(bb + 1);
+            typeCopy = typeCopy.substring(0, typeCopy.indexOf(";"));
             List<SigArg> args = readSigArgs(mapping, type.substring(aa + 1, bb));
             arg = new SigArgClass(mapping.getClassName(typeCopy), args);
         } else {
             char firstChar = type.charAt(array);
             if (firstChar == 'T') {
                 arg = new SigArgGeneric(type.substring(1 + array, type.length() - 1));
+            } else if (type.length() == 1) {
+                arg = new SigArgPrimitive(type);
             } else {
                 arg = new SigArgClass(mapping.getClassName(type.substring(1, type.length() - 1)), null);
             }

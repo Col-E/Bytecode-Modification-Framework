@@ -4,12 +4,10 @@ import java.util.ArrayList;
 
 import io.github.bmf.opcode.Opcode;
 import io.github.bmf.util.Measurable;
+import io.github.bmf.util.MeasurableUtils;
 
 /**
- * A temporary garbage class containing the raw data of what should be a list of
- * method opcodes. <br>
- * Delete this and replace it with something better. Or refactor it to be not
- * shit.
+ * TODO refactor this to be more useful.
  *
  * @author Matt
  */
@@ -23,6 +21,9 @@ public class MethodCode implements Measurable {
 
     @Override
     public int getLength() {
+        if (opcodes != null) {
+            return MeasurableUtils.getLength(opcodes);
+        }
         return original.length;
     }
 }
