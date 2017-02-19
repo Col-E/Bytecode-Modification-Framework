@@ -26,16 +26,24 @@ public abstract class Signature {
         Map<String, Box<String>> genericLabelMap = null;
         // Independent generic
         if (sig.startsWith("<")) {
-            int end = sig.lastIndexOf(">");
+            int end = readToGenericClose(sig, 0);
             genericLabelMap = new HashMap<>();
-            String sub = sig.substring(1, end - 1);
-            String split[] = sub.split(";");
+            String sub = sig.substring(1, end);
+            String split[] = sub.split(";(?!>)");
             for (String s : split) {
                 String split2[] = s.split(":");
-                genericLabelMap.put(split2[0], mapping.getClassName(split2[1].substring(1)));
+
+                if (split2.length == 2) {
+                    String cn = split2[1];
+                    if (cn.length() > 1) {
+                        cn = cn.substring(1);
+                    }
+                    genericLabelMap.put(split2[0], mapping.getClassName(cn));
+                }
             }
             sig = sig.substring(end + 1);
         }
+
         int argEndIndex = sig.indexOf(')');
         String strArgs = sig.substring(1, argEndIndex);
         String strRet = sig.substring(argEndIndex + 1);
@@ -56,13 +64,15 @@ public abstract class Signature {
         Map<String, Box<String>> genericLabelMap = null;
         // Independent generic
         if (sig.startsWith("<")) {
-            int end = sig.lastIndexOf(">");
+            int end = readToGenericClose(sig, 0);
             genericLabelMap = new HashMap<>();
             String sub = sig.substring(1, end - 1);
             String split[] = sub.split(";");
             for (String s : split) {
                 String split2[] = s.split(":");
-                genericLabelMap.put(split2[0], mapping.getClassName(split2[1].substring(1)));
+                if (split2.length == 2) {
+                    genericLabelMap.put(split2[0], mapping.getClassName(split2[1].substring(1)));
+                }
             }
             sig = sig.substring(end + 1);
         }
@@ -143,7 +153,8 @@ public abstract class Signature {
         }
         if (type.contains("<")) {
             int aa = type.indexOf("<");
-            int bb = type.lastIndexOf(">");
+            int zz = readToGenericClose(type.substring(aa), 0);
+            int bb = aa + zz;
             String typeCopy = type.substring(1, aa) + type.substring(bb + 1);
             typeCopy = typeCopy.substring(0, typeCopy.indexOf(";"));
             List<SigArg> args = readSigArgs(mapping, type.substring(aa + 1, bb));
@@ -165,4 +176,32 @@ public abstract class Signature {
         return arg;
     }
 
+    /**
+     * Reads until the generic section ends.
+     * 
+     * @param sig
+     *            Input
+     * @param level
+     *            Initial level
+     * @return Position of closing '>'
+     */
+    private static int readToGenericClose(String sig, int level) {
+        int i = 0;
+        int last = 0;
+        char[] carr = sig.toCharArray();
+        while (i < carr.length) {
+            char c = carr[i];
+            if (c == '<') {
+                level += 1;
+            } else if (c == '>') {
+                level -= 1;
+                last = i;
+            }
+            if (level == 0) {
+                return i;
+            }
+            i++;
+        }
+        return last;
+    }
 }

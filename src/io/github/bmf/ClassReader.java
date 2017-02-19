@@ -11,8 +11,9 @@ import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.opcode.Opcode;
 import io.github.bmf.opcode.OpcodeInst;
 import io.github.bmf.opcode.impl.*;
+import io.github.bmf.util.ConstUtil;
+import io.github.bmf.util.IndexableDataStream;
 import io.github.bmf.util.io.StreamUtil;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class ClassReader {
     // Of course there should be options to just load everything in the first
     // run regardless.
     public static ClassNode getNode(byte[] data) throws InvalidClassException, IOException {
-        DataInputStream is = StreamUtil.fromBytes(data);
+        IndexableDataStream is = StreamUtil.fromBytes(data);
         if (is.readInt() != 0xCAFEBABE) {
             throw new InvalidClassException("Does not start with 0xCAFEBABE");
         }
@@ -85,7 +86,8 @@ public class ClassReader {
         return node;
     }
 
-    private static FieldNode readField(ClassNode owner, DataInputStream is) throws IOException, InvalidClassException {
+    private static FieldNode readField(ClassNode owner, IndexableDataStream is)
+            throws IOException, InvalidClassException {
         FieldNode field = new FieldNode(owner);
         field.access = is.readUnsignedShort();
         field.name = is.readUnsignedShort();
@@ -98,7 +100,7 @@ public class ClassReader {
         return field;
     }
 
-    private static MethodNode readMethod(ClassNode owner, DataInputStream is)
+    private static MethodNode readMethod(ClassNode owner, IndexableDataStream is)
             throws IOException, InvalidClassException {
         MethodNode method = new MethodNode(owner);
         method.access = is.readUnsignedShort();
@@ -112,7 +114,7 @@ public class ClassReader {
         return method;
     }
 
-    private static Attribute readAttribute(ClassNode owner, DataInputStream is)
+    private static Attribute readAttribute(ClassNode owner, IndexableDataStream is)
             throws IOException, InvalidClassException {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
@@ -158,7 +160,7 @@ public class ClassReader {
                 mexeption.type = catchType;
                 exceptions.add(mexeption);
             }
-            List<Attribute> attributes =  new ArrayList<>();
+            List<Attribute> attributes = new ArrayList<>();
             int attributeLength = is.readUnsignedShort();
             for (int i = 0; i < attributeLength; i++) {
                 Attribute attribute = readAttribute(owner, is);
@@ -180,7 +182,7 @@ public class ClassReader {
         }
         case EXCEPTIONS: {
             int exceptionCount = is.readUnsignedShort();
-            List<Integer> exceptionIndices =  new ArrayList<>();
+            List<Integer> exceptionIndices = new ArrayList<>();
             for (int i = 0; i < exceptionCount; i++) {
                 exceptionIndices.add(is.readUnsignedShort());
             }
@@ -188,7 +190,7 @@ public class ClassReader {
         }
         case INNER_CLASSES: {
             int classCount = is.readUnsignedShort();
-            List<InnerClass> classes =  new ArrayList<>();
+            List<InnerClass> classes = new ArrayList<>();
             for (int i = 0; i < classCount; i++) {
                 int innerIndex = is.readUnsignedShort();
                 int outerIndex = is.readUnsignedShort();
@@ -223,7 +225,7 @@ public class ClassReader {
         }
         case LOCAL_VARIABLE_TYPE_TABLE: {
             int tableLength = is.readUnsignedShort();
-            List<LocalVariableType> localTypes =  new ArrayList<>();
+            List<LocalVariableType> localTypes = new ArrayList<>();
             for (int i = 0; i < tableLength; i++) {
                 int lStart = is.readUnsignedShort();
                 int lLen = is.readUnsignedShort();
@@ -246,7 +248,7 @@ public class ClassReader {
             return new AttributeSignature(nameIndex, sig);
         }
         case SOURCE_DEBUG_EXTENSION: {
-            List<Integer> data =  new ArrayList<>();
+            List<Integer> data = new ArrayList<>();
             for (int i = 0; i < length; i++) {
                 data.add(is.readUnsignedByte());
             }
@@ -271,7 +273,7 @@ public class ClassReader {
         throw new RuntimeException("Unhandled attribute! " + attributeType);
     }
 
-    private static MethodCode readMethodCode(ClassNode owner, DataInputStream is) throws IOException {
+    private static MethodCode readMethodCode(ClassNode owner, IndexableDataStream is) throws IOException {
         int codeLength = is.readInt();
         // Store original opcode bytes
         byte[] origOpcodeBytes = new byte[codeLength];
@@ -282,19 +284,25 @@ public class ClassReader {
         if (parseOpcodes) {
             // Create opcode data
             codeData.opcodes = new ArrayList<Opcode>();
-            DataInputStream opstr = StreamUtil.fromBytes(codeData.original);
+            IndexableDataStream opstr = StreamUtil.fromBytes(codeData.original);
             // Is there a way to find the # of opcodes? Can't seem to figure one
             // out
             // aside from reading and knowing after the fact.
+
             while (opstr.available() > 0) {
-                codeData.opcodes.add(readOpcode(opstr));
+                try {
+                    Opcode op = readOpcode(opstr);
+                    codeData.opcodes.add(op);
+                } catch (Exception e) {
+                    System.err.println("Failed at: " + codeData.opcodes.size());
+                }
             }
             opstr.close();
         }
         return codeData;
     }
 
-    private static Opcode readOpcode(DataInputStream is) throws IOException {
+    private static Opcode readOpcode(IndexableDataStream is) throws IOException {
         int code = is.readUnsignedByte();
         switch (code) {
         case Opcode.NOP:
@@ -681,13 +689,12 @@ public class ClassReader {
         case Opcode.GOTO_W:
             return new GOTO(code == Opcode.GOTO_W ? is.readInt() : is.readShort());
         case Opcode.TABLESWITCH: {
-            // Documentation says 0-3 bytes of padding
-            // Testing says otherwise ;-;
+            is.skip((4 - (is.getIndex() % 4)) % 4);
             int default_offset = is.readInt();
             int low = is.readInt();
             int high = is.readInt();
             int dif = (high - low + 1);
-            List<Integer> offsets = new ArrayList<>(dif);
+            List<Integer> offsets = new ArrayList<>();
             for (int i = 0; i < dif; i++) {
                 int x = is.readInt();
                 offsets.add(x);
@@ -695,11 +702,10 @@ public class ClassReader {
             return new TABLESWITCH(default_offset, low, high, offsets);
         }
         case Opcode.LOOKUPSWITCH: {
-            // Documentation says 0-3 bytes of padding
-            // Testing says otherwise ;-;
+            is.skip((4 - (is.getIndex() % 4)) % 4);
             int default_offset = is.readInt();
             int n = is.readInt();
-            List<LOOKUPSWITCH.OffsetPair> offsets = new ArrayList<>(n);
+            List<LOOKUPSWITCH.OffsetPair> offsets = new ArrayList<>();
             for (int i = 0; i < n; i++) {
                 int key = is.readInt();
                 int offset = is.readInt();
@@ -753,9 +759,8 @@ public class ClassReader {
             int opcode = is.readUnsignedByte();
             int varnum = is.readShort();
             // TODO: Verify this is actually checks the next opcode correctly.
-            is.mark(2);
             int next = is.readUnsignedByte();
-            is.reset();
+            is.reset(1);
             if (next == Opcode.IINC) {
                 int n = is.readShort();
                 return new WIDE(opcode, varnum, n);
@@ -768,10 +773,12 @@ public class ClassReader {
         case Opcode.JSR_W:
             throw new RuntimeException("Unsupported: Outdated (Pre-Java 7) Opcode. Get with the times.");
         }
-        return null;
+        //(TODO: Figure out why this happens and why it's super rare)
+        System.out.println("UNKNOWN CODE: " + code + " ... Substituting with NOP");
+        return OpcodeInst.NOP;
     }
 
-    private static Attribute readAnnotations(ClassNode owner, AttributeType type, DataInputStream is, int nameIndex,
+    private static Attribute readAnnotations(ClassNode owner, AttributeType type, IndexableDataStream is, int nameIndex,
             int length) throws IOException {
         boolean param = (type == AttributeType.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS)
                 || (type == AttributeType.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS);
@@ -781,14 +788,14 @@ public class ClassReader {
         switch (type) {
         case RUNTIME_INVISIBLE_ANNOTATIONS:
         case RUNTIME_VISIBLE_ANNOTATIONS:
-            List<Annotation> annotations =  new ArrayList<>();
+            List<Annotation> annotations = new ArrayList<>();
             for (int i = 0; i < num; i++) {
                 annotations.add(readAnnotation(owner, is));
             }
             return new AttributeAnnotations(nameIndex, invisible, annotations);
         case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
         case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-            List<ParameterAnnotations> paramAnnotations =  new ArrayList<>();
+            List<ParameterAnnotations> paramAnnotations = new ArrayList<>();
             for (int i = 0; i < num; i++) {
                 paramAnnotations.add(readParameterAnnotations(owner, is));
             }
@@ -799,10 +806,10 @@ public class ClassReader {
         }
     }
 
-    private static Annotation readAnnotation(ClassNode owner, DataInputStream is) throws IOException {
+    private static Annotation readAnnotation(ClassNode owner, IndexableDataStream is) throws IOException {
         int typeIndex = is.readUnsignedShort();
         int num = is.readUnsignedShort();
-        List<ElementValuePair> valuePairs =  new ArrayList<>();
+        List<ElementValuePair> valuePairs = new ArrayList<>();
         for (int i = 0; i < num; i++) {
             int nameIndex = is.readUnsignedShort();
             ElementValue value = readElementValue(owner, is);
@@ -811,7 +818,7 @@ public class ClassReader {
         return new Annotation(typeIndex, valuePairs);
     }
 
-    private static ElementValue readElementValue(ClassNode owner, DataInputStream is) throws IOException {
+    private static ElementValue readElementValue(ClassNode owner, IndexableDataStream is) throws IOException {
         char tag = (char) is.readUnsignedByte();
         ElementValueType type = ElementValueType.fromType(tag);
         if (type == null) {
@@ -852,17 +859,17 @@ public class ClassReader {
         }
     }
 
-    private static ParameterAnnotations readParameterAnnotations(ClassNode owner, DataInputStream is)
+    private static ParameterAnnotations readParameterAnnotations(ClassNode owner, IndexableDataStream is)
             throws IOException {
         int num = is.readUnsignedShort();
-        List<Annotation> annotations =  new ArrayList<>();
+        List<Annotation> annotations = new ArrayList<>();
         for (int i = 0; i < num; i++) {
             annotations.add(readAnnotation(owner, is));
         }
         return new ParameterAnnotations(annotations);
     }
 
-    private static Constant readConst(ConstantType constType, DataInputStream is) throws IOException {
+    private static Constant readConst(ConstantType constType, IndexableDataStream is) throws IOException {
         // Braces in switches are ugly, but having variable name pass-through
         // sucks.
         switch (constType) {

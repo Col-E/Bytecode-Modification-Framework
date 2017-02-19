@@ -18,6 +18,7 @@ import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.ImmutableBox;
 
 public class Mapping {
+    private final boolean ignoreUnknowns = true;
     private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
     private final Map<ClassMapping, ClassMapping> parents = new HashMap<ClassMapping, ClassMapping>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
@@ -170,7 +171,13 @@ public class Mapping {
             if (cm != null)
                 return cm;
             // Well, can't say we didn't try.
-            throw new RuntimeException("Requested unmapped class: " + name);
+            if (ignoreUnknowns){
+                cm = new ClassMapping(new ImmutableBox<String>(name));
+                mappings.put(name, cm);
+                return cm;
+            }else {
+                throw new RuntimeException("Requested unmapped class: " + name);
+            }
         }
     }
 

@@ -21,9 +21,11 @@ public class MethodCode implements Measurable {
 
     @Override
     public int getLength() {
+        // TODO: What opcode is the wrong length?
+        /*
         if (opcodes != null) {
             return MeasurableUtils.getLength(opcodes);
-        }
+        }*/
         return original.length;
     }
 }

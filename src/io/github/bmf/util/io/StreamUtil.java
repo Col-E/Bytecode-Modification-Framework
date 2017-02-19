@@ -1,10 +1,10 @@
 package io.github.bmf.util.io;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import io.github.bmf.util.IndexableDataStream;
 
 public class StreamUtil {
     private final static int BUFF_SIZE = (int) Math.pow(128, 2);
@@ -15,9 +15,10 @@ public class StreamUtil {
      * @param data
      *            byte[] to convert to DataInputStream.
      * @return
+     * @throws Exception 
      */
-    public static DataInputStream fromBytes(byte[] data) {
-        return new DataInputStream(new ByteArrayInputStream(data));
+    public static IndexableDataStream fromBytes(byte[] data) {
+        return new IndexableDataStream(data);
     }
 
     /**
