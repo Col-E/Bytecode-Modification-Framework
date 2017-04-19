@@ -1,26 +1,34 @@
 # Bytecode Modification Framework
 
-BMF is an alternative to ASM, BCEL and other JVM bytecode modification frameworks.
-Its aim is to provide better means of accessing and modifying the class file with little hidden away behind abstraction.
+BMF is an alternative JVM bytecode modification framework that *(if desired)* will hide nothing about the class structure behind abstraction *(But in the future abstraction will certainly be an option)*.
 
-### So what's so special about it?
+### Features
 
-1. BMF provides direct access to the constant pool. 
-2. BMF makes renaming classes, fields, and methods incredibly simple.
+* Simplified renaming of classes, fields, and methods
+* Direct access to the constant pool. 
 
-For example with BMF renaming classes and methods is as easy as updating a single string and can each be done in 3 lines at the time of this commit. 
 
-Here is an example for renaming a single class *(+1 line for renaming a method as well)*:
+### Example: Renaming classes and members
+
+Renaming classes and their members is designed currently to function given a jar file.
+
+Here is an example for renaming a single class and one of its methods.
 ```java
 JarReader read = new JarReader(new File(IN_FILE), true, true);
 read.getMapping().getMapping("com/example/game/Edible").name.setValue("com/example/game/Consumable");
 read.getMapping().getMapping("com/example/game/Edible").getMemberMapping("isRotten", "()Z").name.setValue("hasDecayed");
 read.saveTo(new File(OUT_FILE));
 ```
-In the example program all the referenced to the class `Edible` are updated `Consumable` and the method `isRotten` is renamed through the entire class hierarchy and in all of its references.
+To rename each item takes only a single line of code. The affects of this change are instantaneous across the program since all class names link to a single instance. 
 
-### Sounds cool! Any idea when it might be ready?
+### What needs finishing
 
-No clue. 
+This library is still a heavy WIP and the main focus is remapping classes, so some basic functionality not-pertaining to remapping still needs to be completed. For example there is no way to edit opcodes in a method.
 
-We are finishing up basic functionality and adding a few neat features that will make this framework even more special.
+### Credits
+
+**[Matthew Dupraz](https://github.com/MatthewDupraz)** 
+* Wrote the original Readme
+* Box class + beginnings of the remapping system
+* Large portion of the `Type` classes
+* Squashing several bugs	
