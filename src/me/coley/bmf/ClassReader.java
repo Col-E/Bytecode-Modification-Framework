@@ -733,7 +733,7 @@ public class ClassReader {
         case Opcode.INVOKEINTERFACE:
             return new INVOKEINTERFACE(is.readUnsignedShort(), is.readUnsignedByte(), is.readUnsignedByte());
         case Opcode.INVOKEDYNAMIC:
-            INVOKEDYNAMIC indy = new INVOKEDYNAMIC(is.readUnsignedByte(), is.readUnsignedShort());
+            INVOKEDYNAMIC indy = new INVOKEDYNAMIC(is.readUnsignedShort());
             // Discard two bytes that are always 0.
             is.readUnsignedByte(); is.readUnsignedByte();
             return indy;
