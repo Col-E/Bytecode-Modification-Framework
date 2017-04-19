@@ -96,6 +96,24 @@ public class ClassNode implements AttributeOwner {
     public AttributeSourceDebugExtension sourceDebug;
 
     /**
+     * Return the class's name.
+     * 
+     * @return
+     */
+    public String getName() {
+        return ConstUtil.getClassName(this, classIndex);
+    }
+
+    /**
+     * Return the super class's name.
+     * 
+     * @return
+     */
+    public String getSuperName() {
+        return ConstUtil.getClassName(this, superIndex);
+    }
+
+    /**
      * Adds a constant to the constant pool.
      *
      * @param constant
@@ -206,7 +224,7 @@ public class ClassNode implements AttributeOwner {
 
     @Override
     public List<Attribute> getAttributes() {
-        List<Attribute> attributes =  new ArrayList<>();
+        List<Attribute> attributes = new ArrayList<>();
         if (signature != null)
             attributes.add(signature);
         if (sourceFile != null)
@@ -238,8 +256,8 @@ public class ClassNode implements AttributeOwner {
     public String toString() {
         String out = "  Version: " + major + "." + minor + "\n";
         out += "  Access: " + access + "\n";
-        out += "  Class Index: " + ConstUtil.getName(this) + "\n";
-        out += "  Super Index: " + ConstUtil.getSuperName(this) + "\n";
+        out += "  Class Index: " + getName() + "\n";
+        out += "  Super Index: " + getSuperName() + "\n";
         out += "  Interfaces { ";
         for (int index : interfaceIndices) {
             out += getConst(index + 1).toString() + ", ";

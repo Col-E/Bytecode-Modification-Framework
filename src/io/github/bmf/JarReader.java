@@ -18,7 +18,6 @@ import io.github.bmf.consts.*;
 import io.github.bmf.consts.mapping.ConstMemberDesc;
 import io.github.bmf.consts.mapping.ConstName;
 import io.github.bmf.consts.mapping.ConstSignature;
-import io.github.bmf.exception.InvalidClassException;
 import io.github.bmf.mapping.ClassMapping;
 import io.github.bmf.mapping.Mapping;
 import io.github.bmf.mapping.MemberMapping;
@@ -37,12 +36,6 @@ import io.github.bmf.util.io.JarUtil;
  * Helper for loaded programs packaged in JAR files.
  */
 public class JarReader {
-    public static final int PASS_MAKE_CLASSES = 0;
-    public static final int PASS_LINK_HIERARCHY = 1;
-    public static final int PASS_FINISH_CLASSES = 2;
-    public static final int PASS_SPLIT_NAME_DESC = 3;
-    public static final int PASS_UPDATE_CONSTANTS = 4;
-
     private final Mapping mapping;
     private final File file;
     private Map<String, ClassNode> classEntries;
@@ -108,7 +101,7 @@ public class JarReader {
                     ClassNode cn = ClassReader.getNode(classEntryBytes.get(className));
                     classEntries.put(className, cn);
                 } catch (Exception e) {
-                    System.err.println(className);
+                    System.err.println("Failed parsing node: " + className);
                     // e.printStackTrace();
                 }
             }
@@ -118,326 +111,369 @@ public class JarReader {
     }
 
     /**
-     * Sets up the mapping.
+     * Sets up the mappings.
      */
     public void genMappings() {
-        genMappings(PASS_MAKE_CLASSES);
-        genMappings(PASS_LINK_HIERARCHY);
-        genMappings(PASS_FINISH_CLASSES);
-        genMappings(PASS_SPLIT_NAME_DESC);
-        genMappings(PASS_UPDATE_CONSTANTS);
+        pass1MakeClasses();
+        pass2LinkHeirarchy();
+        pass3FinishClasses();
+        pass4SplitNameDescConsts();
+        pass5UpdateNameConsts();
+        pass6MatchInnerWithOuters();
     }
 
-    /**
-     * Sets up part of the mapping based on the pass used.
-     */
-    public void genMappings(int pass) {
+    private void pass1MakeClasses() {
         for (String nodeName : classEntries.keySet()) {
             ClassNode node = classEntries.get(nodeName);
-            if (pass == PASS_MAKE_CLASSES) {
-                // Create and add ClassMapping values from the loaded nodes.
-                mapping.addMapping(mapping.makeMappingFromNode(node));
-            } else if (pass == PASS_LINK_HIERARCHY) {
-                // Mapping hierarchy. Useful for searching for members in
-                // parent/interface classes later on.
-                String className = ConstUtil.getName(node);
-                String superName = ConstUtil.getSuperName(node);
-                // Ensure the super class has mappings.
-                // Attempt to load it if it does not.
-                if (!mapping.hasClass(superName)) {
-                    ClassMapping temp = mapping.makeMappingFromRuntime(superName);
-                    if (temp != null)
-                        mapping.addMapping(temp);
-                }
-                ClassMapping classMapping = mapping.getMapping(className);
-                ClassMapping superMapping = mapping.getMapping(superName);
-                if (classMapping != null) {
-                    if (superMapping != null) {
-                        mapping.setParent(classMapping, superMapping);
-                        mapping.addChild(superMapping, classMapping);
-                    }
-                    for (int i : node.interfaceIndices) {
-                        String interfaceName = ConstUtil.getClassName(node, i);
-                        // Ensure interface exists
-                        if (!mapping.hasClass(interfaceName)) {
-                            ClassMapping temp = mapping.makeMappingFromRuntime(interfaceName);
-                            if (temp != null)
-                                mapping.addMapping(temp);
-                        }
-                        ClassMapping im = mapping.getMapping(interfaceName);
-                        if (im != null) {
-                            mapping.addInterface(classMapping, im);
-                            mapping.addChild(im, classMapping);
-                        }
-                    }
-                }
-            } else if (pass == PASS_FINISH_CLASSES) {
-                // Add the members to the MappedClass associated with the
-                // classnode.
-                // Fun fact: This is done in a separate step because if members
-                // references classes not in the mapping it would die. Lazily
-                // loading them would be too much work since in the end they all
-                // need to be loaded anyways.
-                mapping.addMemberMappings(classEntries, node);
-            } else if (pass == PASS_SPLIT_NAME_DESC) {
-                // This step makes sure a UTF isn't used in too many different
-                // contexts.
-                // For example: UTF "I".
-                // It can be a class name, method name, descriptor, etc.
-                // This makes extra copy UTFs to be used in different contexts
-                // allowing for class renaming without breaking the other
-                // usages.
-                // In the future I'd like to be able to figure out a way
-                // that would allow this to not be needed.
+            // Create and add ClassMapping values from the loaded nodes.
+            mapping.addMapping(mapping.createMappingFromNode(node));
+        }
+    }
 
-                // Map of constant pool indices to the type.
-                Map<Integer, PrimitiveType> prims = new HashMap<Integer, PrimitiveType>();
-                for (int i = 1; i < node.constants.size(); i++) {
-                    Constant<?> constant = node.getConst(i);
-                    if (constant != null && constant.type == ConstantType.UTF8) {
-                        String utfVal = ConstUtil.getUTF8String(node, i);
-                        if (utfVal.length() != 1)
-                            continue;
-                        char ch = utfVal.charAt(0);
-                        if (ch == 'B' || ch == 'D' || ch == 'F' || ch == 'I' || ch == 'J' || ch == 'C' || ch == 'S'
-                                || ch == 'V') {
-                            prims.put(i, PrimitiveType.getFromChar(ch));
-                        }
-                    }
+    private void pass2LinkHeirarchy() {
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
+            // Mapping hierarchy. Useful for searching for members in
+            // parent/interface classes later on.
+            String className = node.getName();
+            String superName = node.getSuperName();
+            // Ensure the super class has mappings.
+            // Attempt to load it if it does not.
+            if (!mapping.hasClass(superName)) {
+                ClassMapping temp = mapping.createMappingFromRuntime(superName);
+                if (temp != null)
+                    mapping.addMapping(temp);
+            }
+            ClassMapping classMapping = mapping.getMapping(className);
+            ClassMapping superMapping = mapping.getMapping(superName);
+            if (classMapping != null) {
+                if (superMapping != null) {
+                    mapping.setParent(classMapping, superMapping);
+                    mapping.addChild(superMapping, classMapping);
                 }
-                // Creates new UTF copies for primitives for name usage.
-                Map<PrimitiveType, Integer> primToNameIndex = new HashMap<PrimitiveType, Integer>();
-                for (PrimitiveType pt : prims.values()) {
-                    node.addConst(new ConstUTF8(pt.desc));
-                    primToNameIndex.put(pt, node.constants.size());
-                }
-                // Another issue is if a UTF is used as a class and member name.
-                // Same concept of the primitive name issue.
-                String className = ConstUtil.getName(node);
-                int altClassName = -1;
-                // Iterate constants and serch for NameTypes
-                for (int i = 0; i < node.constants.size(); i++) {
-                    Constant<?> constant = node.constants.get(i);
-                    if (constant == null)
-                        continue;
-                    if (constant.type != ConstantType.NAME_TYPE)
-                        continue;
-                    // NameType found, update the name index if it conflicts
-                    // with a primitive or the class name.
-                    ConstNameType cnt = (ConstNameType) constant;
-                    if (prims.keySet().contains(cnt.getNameIndex())) {
-                        int newNameIndex = primToNameIndex.get(prims.get(cnt.getNameIndex()));
-                        node.constants.set(i, new ConstNameType(newNameIndex, cnt.getDescIndex()));
-                    } else if (ConstUtil.getUTF8String(node, cnt.getNameIndex()).equals(className)) {
-                        node.addConst(new ConstUTF8(className));
-                        altClassName = node.constants.size();
-                        node.constants.set(i, new ConstNameType(altClassName, cnt.getDescIndex()));
+                for (int i : node.interfaceIndices) {
+                    String interfaceName = ConstUtil.getClassName(node, i);
+                    // Ensure interface exists
+                    if (!mapping.hasClass(interfaceName)) {
+                        ClassMapping temp = mapping.createMappingFromRuntime(interfaceName);
+                        if (temp != null)
+                            mapping.addMapping(temp);
                     }
-                    // TODO: May end up having to check for interface/parent
-                    // name conflicts too.
-                }
-                // Updating name indices in methods if they conflict with
-                // primitives or the class name.
-                for (MethodNode mn : node.methods) {
-                    if (prims.keySet().contains(mn.name)) {
-                        mn.name = primToNameIndex.get(prims.get(mn.name));
-                    } else if (ConstUtil.getUTF8String(node, mn.name).equals(className)) {
-                        mn.name = altClassName;
-                    }
-                }
-                // Updating name indices in fields if they conflict with
-                // primitives or the class name.
-                for (FieldNode fn : node.fields) {
-                    if (prims.keySet().contains(fn.name)) {
-                        fn.name = primToNameIndex.get(prims.get(fn.name));
-                    } else if (ConstUtil.getUTF8String(node, fn.name).equals(className)) {
-                        fn.name = altClassName;
-                    }
-                }
-            } else if (pass == PASS_UPDATE_CONSTANTS) {
-                // This step is what really lets "rename once, applied
-                // everywhere" occur.
-                // UTF constants are updated with wrappers with boxed names /
-                // descriptors all pointing to the same string.
-
-                // Replacing class name & super name.
-
-                ConstClass cc = (ConstClass) node.getConst(node.classIndex);
-                ConstClass ccs = (ConstClass) node.getConst(node.superIndex);
-                String className = ConstUtil.getName(node);
-                String superName = ConstUtil.getUTF8String(node, ccs.getValue());
-                ClassMapping cm = mapping.getMapping(className);
-                if (node.signature != null) {
-                    String classSig = ConstUtil.getUTF8String(node, node.signature.signature);
-                    node.setConst(node.signature.signature, new ConstSignature(Signature.variable(mapping, classSig)));
-                }
-                node.setConst(cc.getValue(), new ConstName(cm.name));
-                node.setConst(ccs.getValue(), new ConstName(mapping.getClassName(superName)));
-                if (node.innerClasses != null) {
-                    /*
-                     * TODO: Inner classes need to be synced to their owner. I'm
-                     * thinking having a ImmutableBoxBox (A box that can't
-                     * change that warps around another box). The inner name
-                     * will be able to be changed but it's prefix won't be a
-                     * package, but rather its parent. Plus if it's an anonymous
-                     * inner it may not be supposed to have a special inner name
-                     * at all.
-                     * 
-                     * for (InnerClass i : node.innerClasses.classes) {
-                     * 
-                     * }
-                     */
-                }
-                // Methods are iterated and their names/descriptor UTF constnats
-                // are replaced.
-                // Local variable data is also replaced.
-                for (MethodNode mn : node.methods) {
-                    String name = ConstUtil.getUTF8String(node, mn.name);
-                    String desc = ConstUtil.getUTF8String(node, mn.desc);
-                    MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
-                    // This should never happen
-                    if (mm == null) {
-                        throw new RuntimeException("Method does not exist? " + className + "." + name);
-                    }
-                    // Check if the member points to a value already mapped to a
-                    // name.
-                    // If so, add a constant and update the member to point to
-                    // the new constant.
-                    ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(mn.name);
-                    if (memberUTF8 instanceof ConstName) {
-                        node.addConst(new ConstName(mm.name));
-                        mn.name = node.constants.size();
-                    } else {
-                        node.setConst(mn.name, new ConstName(mm.name));
-                    }
-                    node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
-                    if (mn.signature != null) {
-                        String methodSig = ConstUtil.getUTF8String(node, mn.signature.signature);
-                        node.setConst(mn.signature.signature, new ConstSignature(Signature.method(mapping, methodSig)));
-
-                    }
-                    // TODO: Read the method's opcodes
-                    if (mn.code != null) {
-                        if (mn.code.opcodes != null && mn.code.opcodes.opcodes != null) {
-                            for (Opcode op : mn.code.opcodes.opcodes) {
-                                switch (op.opcode) {
-                                case Opcode.INVOKEINTERFACE:
-                                case Opcode.INVOKESPECIAL:
-                                case Opcode.INVOKESTATIC:
-                                case Opcode.INVOKEVIRTUAL: {
-                                    AbstractMethodOpcode amo = (AbstractMethodOpcode) op;
-                                    AbstractMethodConstant amc = (AbstractMethodConstant) node
-                                            .getConst(amo.methodIndex);
-                                    ConstClass ccMethOwner = (ConstClass) node.getConst(amc.getClassIndex());
-                                    ConstNameType cntMeth = (ConstNameType) node.getConst(amc.getNameTypeIndex());
-                                    String mOwner = ConstUtil.getUTF8String(node, ccMethOwner.getValue());
-                                    String mDesc = ConstUtil.getUTF8String(node, cntMeth.getDescIndex());
-                                    String mName = ConstUtil.getUTF8String(node, cntMeth.getNameIndex());
-                                    ClassMapping cmOwner = mapping.getMapping(mOwner);
-                                    if (cmOwner != null) {
-                                        node.setConst(ccMethOwner.getValue(), new ConstName(cmOwner.name));
-                                        MemberMapping mmMeth = cmOwner.getMemberMapping(mName, mDesc);
-                                        if (mmMeth != null) {
-                                            node.setConst(cntMeth.getNameIndex(), new ConstName(mmMeth.name));
-                                            node.setConst(cntMeth.getDescIndex(), new ConstMemberDesc(mmMeth.desc));
-                                        }
-                                    }
-                                    break;
-                                }
-                                case Opcode.PUTFIELD:
-                                case Opcode.PUTSTATIC:
-                                case Opcode.GETFIELD:
-                                case Opcode.GETSTATIC: {
-                                    AbstractFieldOpcode afo = (AbstractFieldOpcode) op;
-                                    ConstField cf = (ConstField) node.getConst(afo.fieldIndex);
-                                    ConstClass ccFldOwner = (ConstClass) node.getConst(cf.getClassIndex());
-                                    ConstNameType cntFld = (ConstNameType) node.getConst(cf.getNameTypeIndex());
-                                    String fOwner = ConstUtil.getUTF8String(node, ccFldOwner.getValue());
-                                    String fDesc = ConstUtil.getUTF8String(node, cntFld.getDescIndex());
-                                    String fName = ConstUtil.getUTF8String(node, cntFld.getNameIndex());
-                                    ClassMapping cmOwner = mapping.getMapping(fOwner);
-                                    if (cmOwner != null) {
-                                        node.setConst(ccFldOwner.getValue(), new ConstName(cmOwner.name));
-                                        MemberMapping mmField = cmOwner.getMemberMapping(fName, fDesc);
-                                        if (mmField != null) {
-                                            node.setConst(cntFld.getNameIndex(), new ConstName(mmField.name));
-                                            node.setConst(cntFld.getDescIndex(), new ConstMemberDesc(mmField.desc));
-                                        }
-                                    }
-                                    break;
-                                }
-                                case Opcode.ANEWARRAY:
-                                case Opcode.NEW:
-                                case Opcode.CHECKCAST:
-                                case Opcode.INSTANCEOF:
-                                case Opcode.MULTIANEWARRAY: {
-                                    AbstractClassPointer acp = (AbstractClassPointer) op;
-                                    ConstClass ccOpcodeClass = (ConstClass) node.getConst(acp.classIndex);
-                                    String opOwner = ConstUtil.getUTF8String(node, ccOpcodeClass.getValue());
-                                    ClassMapping cmOwner = mapping.getMapping(opOwner);
-                                    if (cmOwner != null) {
-                                        node.setConst(ccOpcodeClass.getValue(), new ConstName(cmOwner.name));
-                                    }
-                                    break;
-                                }
-                                default:
-                                    break;
-                                }
-                            }
-                        }
-                        if (mn.code.variables != null) {
-                            List<Local> locals = mn.code.variables.variableTable.locals;
-                            for (Local local : locals) {
-                                // Values
-                                String lname = ConstUtil.getUTF8String(node, local.name);
-                                String ldesc = ConstUtil.getUTF8String(node, local.desc);
-                                // Replacing constants
-                                MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
-                                mm.addVariable(mapping, var);
-                                node.setConst(local.name, new ConstName(var.name));
-                                node.setConst(local.desc, new ConstMemberDesc(var.desc));
-                            }
-                            if (mn.code.variableTypes != null) {
-                                List<LocalVariableType> types = mn.code.variableTypes.localTypes;
-                                for (LocalVariableType type : types) {
-                                    // String lname =
-                                    // ConstUtil.getUTF8String(node, type.name);
-                                    String ldesc = ((ConstUTF8) node.getConst(type.signature)).getValue();
-                                    node.setConst(type.signature,
-                                            new ConstSignature(Signature.variable(mapping, ldesc)));
-                                }
-                            }
-                        }
-                    }
-                }
-                // Fields are iterated and their names/descriptor UTF constnats
-                // are replaced.
-                for (FieldNode fn : node.fields) {
-                    String name = ConstUtil.getUTF8String(node, fn.name);
-                    String desc = ConstUtil.getUTF8String(node, fn.desc);
-
-                    MemberMapping mf = cm.getMemberMapping(name, desc);
-                    // Check if the member points to a value already mapped to a
-                    // name.
-                    // If so, add a constant and update the member to point to
-                    // the new constant.
-                    ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(fn.name);
-                    if (memberUTF8 instanceof ConstName) {
-                        node.addConst(new ConstName(mf.name));
-                        fn.name = node.constants.size();
-                    } else {
-                        node.setConst(fn.name, new ConstName(mf.name));
-                    }
-                    node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
-                    if (fn.signature != null) {
-                        String fieldSig = ConstUtil.getUTF8String(node, fn.signature.signature);
-                        node.setConst(fn.signature.signature,
-                                new ConstSignature(Signature.variable(mapping, fieldSig)));
+                    ClassMapping im = mapping.getMapping(interfaceName);
+                    if (im != null) {
+                        mapping.addInterface(classMapping, im);
+                        mapping.addChild(im, classMapping);
                     }
                 }
             }
         }
+    }
 
+    private void pass3FinishClasses() {
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
+            // Add the members to the MappedClass associated with the
+            // classnode.
+            // Fun fact: This is done in a separate step because if members
+            // references classes not in the mapping it would die. Lazily
+            // loading them would be too much work since in the end they all
+            // need to be loaded anyways.
+            mapping.createMemberMappings(classEntries, node);
+        }
+    }
+
+    private void pass4SplitNameDescConsts() {
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
+            // This step makes sure a UTF isn't used in too many different
+            // contexts.
+            // For example: UTF "I".
+            // It can be a class name, method name, descriptor, etc.
+            // This makes extra copy UTFs to be used in different contexts
+            // allowing for class renaming without breaking the other
+            // usages.
+            // In the future I'd like to be able to figure out a way
+            // that would allow this to not be needed.
+
+            // Map of constant pool indices to the type.
+            Map<Integer, PrimitiveType> prims = new HashMap<Integer, PrimitiveType>();
+            for (int i = 1; i < node.constants.size(); i++) {
+                Constant<?> constant = node.getConst(i);
+                if (constant != null && constant.type == ConstantType.UTF8) {
+                    String utfVal = ConstUtil.getUTF8(node, i);
+                    if (utfVal.length() != 1)
+                        continue;
+                    char ch = utfVal.charAt(0);
+                    if (ch == 'B' || ch == 'D' || ch == 'F' || ch == 'I' || ch == 'J' || ch == 'C' || ch == 'S'
+                            || ch == 'V') {
+                        prims.put(i, PrimitiveType.getFromChar(ch));
+                    }
+                }
+            }
+            // Creates new UTF copies for primitives for name usage.
+            Map<PrimitiveType, Integer> primToNameIndex = new HashMap<PrimitiveType, Integer>();
+            for (PrimitiveType pt : prims.values()) {
+                node.addConst(new ConstUTF8(pt.desc));
+                primToNameIndex.put(pt, node.constants.size());
+            }
+            // Another issue is if a UTF is used as a class and member name.
+            // Same concept of the primitive name issue.
+            String className = node.getName();
+            int altClassName = -1;
+            // Iterate constants and serch for NameTypes
+            for (int i = 0; i < node.constants.size(); i++) {
+                Constant<?> constant = node.constants.get(i);
+                if (constant == null)
+                    continue;
+                if (constant.type != ConstantType.NAME_TYPE)
+                    continue;
+                // NameType found, update the name index if it conflicts
+                // with a primitive or the class name.
+                ConstNameType cnt = (ConstNameType) constant;
+                if (prims.keySet().contains(cnt.getNameIndex())) {
+                    int newNameIndex = primToNameIndex.get(prims.get(cnt.getNameIndex()));
+                    node.constants.set(i, new ConstNameType(newNameIndex, cnt.getDescIndex()));
+                } else if (ConstUtil.getUTF8(node, cnt.getNameIndex()).equals(className)) {
+                    node.addConst(new ConstUTF8(className));
+                    altClassName = node.constants.size();
+                    node.constants.set(i, new ConstNameType(altClassName, cnt.getDescIndex()));
+                }
+                // TODO: May end up having to check for interface/parent
+                // name conflicts too.
+            }
+            // Updating name indices in methods if they conflict with
+            // primitives or the class name.
+            for (MethodNode mn : node.methods) {
+                if (prims.keySet().contains(mn.name)) {
+                    mn.name = primToNameIndex.get(prims.get(mn.name));
+                } else if (ConstUtil.getUTF8(node, mn.name).equals(className)) {
+                    mn.name = altClassName;
+                }
+            }
+            // Updating name indices in fields if they conflict with
+            // primitives or the class name.
+            for (FieldNode fn : node.fields) {
+                if (prims.keySet().contains(fn.name)) {
+                    fn.name = primToNameIndex.get(prims.get(fn.name));
+                } else if (ConstUtil.getUTF8(node, fn.name).equals(className)) {
+                    fn.name = altClassName;
+                }
+            }
+        }
+    }
+
+    private void pass5UpdateNameConsts() {
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
+            // This step is what really lets "rename once, applied
+            // everywhere" occur.
+            // UTF constants are updated with wrappers with boxed names /
+            // descriptors all pointing to the same string.
+
+            // Replacing class name & super name.
+
+            ConstClass cc = (ConstClass) node.getConst(node.classIndex);
+            ConstClass ccs = (ConstClass) node.getConst(node.superIndex);
+            String className = node.getName();
+            String superName = ConstUtil.getUTF8(node, ccs.getValue());
+            ClassMapping cm = mapping.getMapping(className);
+            if (node.signature != null) {
+                String classSig = ConstUtil.getUTF8(node, node.signature.signature);
+                node.setConst(node.signature.signature, new ConstSignature(Signature.variable(mapping, classSig)));
+            }
+            node.setConst(cc.getValue(), new ConstName(cm.name));
+            node.setConst(ccs.getValue(), new ConstName(mapping.getClassName(superName)));
+            if (node.innerClasses != null) {
+                /*
+                 * TODO: Inner classes need to be synced to their owner. I'm
+                 * thinking having a ImmutableBoxBox (A box that can't change
+                 * that warps around another box). The inner name will be able
+                 * to be changed but it's prefix won't be a package, but rather
+                 * its parent. Plus if it's an anonymous inner it may not be
+                 * supposed to have a special inner name at all.
+                 * 
+                 * for (InnerClass i : node.innerClasses.classes) {
+                 * 
+                 * }
+                 */
+            }
+            // Methods are iterated and their names/descriptor UTF constnats
+            // are replaced.
+            // Local variable data is also replaced.
+            for (MethodNode mn : node.methods) {
+                String name = ConstUtil.getUTF8(node, mn.name);
+                String desc = ConstUtil.getUTF8(node, mn.desc);
+                MethodMapping mm = (MethodMapping) cm.getMemberMapping(name, desc);
+                // This should never happen
+                if (mm == null) {
+                    throw new RuntimeException("Method does not exist? " + className + "." + name);
+                }
+                // Check if the member points to a value already mapped to a
+                // name.
+                // If so, add a constant and update the member to point to
+                // the new constant.
+                ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(mn.name);
+                if (memberUTF8 instanceof ConstName) {
+                    node.addConst(new ConstName(mm.name));
+                    mn.name = node.constants.size();
+                } else {
+                    node.setConst(mn.name, new ConstName(mm.name));
+                }
+                node.setConst(mn.desc, new ConstMemberDesc(mm.desc));
+                if (mn.signature != null) {
+                    String methodSig = ConstUtil.getUTF8(node, mn.signature.signature);
+                    node.setConst(mn.signature.signature, new ConstSignature(Signature.method(mapping, methodSig)));
+
+                }
+                // TODO: Read the method's opcodes
+                if (mn.code != null) {
+                    if (mn.code.opcodes != null && mn.code.opcodes.opcodes != null) {
+                        for (Opcode op : mn.code.opcodes.opcodes) {
+                            switch (op.opcode) {
+                            case Opcode.INVOKEINTERFACE:
+                            case Opcode.INVOKESPECIAL:
+                            case Opcode.INVOKESTATIC:
+                            case Opcode.INVOKEVIRTUAL: {
+                                AbstractMethodOpcode amo = (AbstractMethodOpcode) op;
+                                AbstractMethodConstant amc = (AbstractMethodConstant) node.getConst(amo.methodIndex);
+                                ConstClass ccMethOwner = (ConstClass) node.getConst(amc.getClassIndex());
+                                ConstNameType cntMeth = (ConstNameType) node.getConst(amc.getNameTypeIndex());
+                                String mOwner = ConstUtil.getUTF8(node, ccMethOwner.getValue());
+                                String mDesc = ConstUtil.getUTF8(node, cntMeth.getDescIndex());
+                                String mName = ConstUtil.getUTF8(node, cntMeth.getNameIndex());
+                                ClassMapping cmOwner = mapping.getMapping(mOwner);
+                                if (cmOwner != null) {
+                                    node.setConst(ccMethOwner.getValue(), new ConstName(cmOwner.name));
+                                    MemberMapping mmMeth = cmOwner.getMemberMapping(mName, mDesc);
+                                    if (mmMeth != null) {
+                                        node.setConst(cntMeth.getNameIndex(), new ConstName(mmMeth.name));
+                                        node.setConst(cntMeth.getDescIndex(), new ConstMemberDesc(mmMeth.desc));
+                                    }
+                                }
+                                break;
+                            }
+                            case Opcode.PUTFIELD:
+                            case Opcode.PUTSTATIC:
+                            case Opcode.GETFIELD:
+                            case Opcode.GETSTATIC: {
+                                AbstractFieldOpcode afo = (AbstractFieldOpcode) op;
+                                ConstField cf = (ConstField) node.getConst(afo.fieldIndex);
+                                ConstClass ccFldOwner = (ConstClass) node.getConst(cf.getClassIndex());
+                                ConstNameType cntFld = (ConstNameType) node.getConst(cf.getNameTypeIndex());
+                                String fOwner = ConstUtil.getUTF8(node, ccFldOwner.getValue());
+                                String fDesc = ConstUtil.getUTF8(node, cntFld.getDescIndex());
+                                String fName = ConstUtil.getUTF8(node, cntFld.getNameIndex());
+                                ClassMapping cmOwner = mapping.getMapping(fOwner);
+                                if (cmOwner != null) {
+                                    node.setConst(ccFldOwner.getValue(), new ConstName(cmOwner.name));
+                                    MemberMapping mmField = cmOwner.getMemberMapping(fName, fDesc);
+                                    if (mmField != null) {
+                                        node.setConst(cntFld.getNameIndex(), new ConstName(mmField.name));
+                                        node.setConst(cntFld.getDescIndex(), new ConstMemberDesc(mmField.desc));
+                                    }
+                                }
+                                break;
+                            }
+                            case Opcode.ANEWARRAY:
+                            case Opcode.NEW:
+                            case Opcode.CHECKCAST:
+                            case Opcode.INSTANCEOF:
+                            case Opcode.MULTIANEWARRAY: {
+                                AbstractClassPointer acp = (AbstractClassPointer) op;
+                                ConstClass ccOpcodeClass = (ConstClass) node.getConst(acp.classIndex);
+                                String opOwner = ConstUtil.getUTF8(node, ccOpcodeClass.getValue());
+                                ClassMapping cmOwner = mapping.getMapping(opOwner);
+                                if (cmOwner != null) {
+                                    node.setConst(ccOpcodeClass.getValue(), new ConstName(cmOwner.name));
+                                }
+                                break;
+                            }
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    if (mn.code.variables != null) {
+                        List<Local> locals = mn.code.variables.variableTable.locals;
+                        for (Local local : locals) {
+                            // Values
+                            String lname = ConstUtil.getUTF8(node, local.name);
+                            String ldesc = ConstUtil.getUTF8(node, local.desc);
+                            // Replacing constants
+                            MemberMapping var = new MemberMapping(lname, Type.variable(mapping, ldesc));
+                            mm.addVariable(mapping, var);
+                            node.setConst(local.name, new ConstName(var.name));
+                            node.setConst(local.desc, new ConstMemberDesc(var.desc));
+                        }
+                        if (mn.code.variableTypes != null) {
+                            List<LocalVariableType> types = mn.code.variableTypes.localTypes;
+                            for (LocalVariableType type : types) {
+                                // String lname =
+                                // ConstUtil.getUTF8String(node, type.name);
+                                String ldesc = ((ConstUTF8) node.getConst(type.signature)).getValue();
+                                node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, ldesc)));
+                            }
+                        }
+                    }
+                }
+            }
+            // Fields are iterated and their names/descriptor UTF constnats
+            // are replaced.
+            for (FieldNode fn : node.fields) {
+                String name = ConstUtil.getUTF8(node, fn.name);
+                String desc = ConstUtil.getUTF8(node, fn.desc);
+
+                MemberMapping mf = cm.getMemberMapping(name, desc);
+                // Check if the member points to a value already mapped to a
+                // name.
+                // If so, add a constant and update the member to point to
+                // the new constant.
+                ConstUTF8 memberUTF8 = (ConstUTF8) node.getConst(fn.name);
+                if (memberUTF8 instanceof ConstName) {
+                    node.addConst(new ConstName(mf.name));
+                    fn.name = node.constants.size();
+                } else {
+                    node.setConst(fn.name, new ConstName(mf.name));
+                }
+                node.setConst(fn.desc, new ConstMemberDesc(mapping.getDesc(className, name, desc)));
+                if (fn.signature != null) {
+                    String fieldSig = ConstUtil.getUTF8(node, fn.signature.signature);
+                    node.setConst(fn.signature.signature, new ConstSignature(Signature.variable(mapping, fieldSig)));
+                }
+            }
+
+        }
+    }
+
+    private void pass6MatchInnerWithOuters() {
+        List<String> inners = new ArrayList<>();
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
+            if (node.innerClasses == null) {
+                continue;
+            }
+            for (InnerClass ic : node.innerClasses.classes) {
+                String innerName = ConstUtil.getUTF8(node, ic.innerName);
+                inners.add(innerName);
+
+            }
+        }
+        for (String nodeName : classEntries.keySet()) {
+            ClassNode node = classEntries.get(nodeName);
+            for (int i = 0; i < node.constants.size(); i++) {
+                Constant<?> c = node.constants.get(i);
+                if (c != null && c.type == ConstantType.UTF8) {
+                    String val = ((ConstUTF8) c).getValue();
+                    if (inners.contains(val)) {
+                        // TODO: Use ConstOuterLinkedName
+                        // - Replace ANY inner class reference with them, do not use  ConstName
+                        
+                        // node.constants.set(i, new ConstOuterLinkedName());
+                    }
+                }
+            }
+
+        }
     }
 
     /**
@@ -447,39 +483,6 @@ public class JarReader {
      */
     public void saveJarTo(File fileOut) {
         JarUtil.writeJar(file, fileOut, classEntries, fileEntries);
-    }
-
-    /**
-     * TODO: Make an automated system to do this automatically.
-     */
-    @Deprecated
-    public void updateInners() {
-        for (String className : classEntries.keySet()) {
-            ClassNode cn = classEntries.get(className);
-            if (cn.innerClasses == null) {
-                continue;
-            }
-            String outerName = ConstUtil.getName(cn);
-            for (InnerClass ic : cn.innerClasses.classes) {
-                ConstClass cc2 = (ConstClass) cn.getConst(ic.innerClassIndex);
-                ConstName cname = (ConstName) cn.getConst(cc2.getValue());
-                ClassNode cnInner = classEntries.get(cname.name.original);
-                if (cnInner == null) {
-                    continue;
-                }
-                ConstClass cc = (ConstClass) cnInner.getConst(cnInner.classIndex);
-                ConstUTF8 utf = (ConstUTF8) cnInner.getConst(cc.getValue());
-                if (utf instanceof ConstName) {
-                    ConstName name = (ConstName) utf;
-                    String mappedName = name.name.getValue();
-                    if (mappedName.contains("/")) {
-                        mappedName = mappedName.substring(mappedName.lastIndexOf("/") + 1);
-                    }
-                    String newInnerName = outerName + "$" + mappedName;
-                    name.name.setValue(newInnerName);
-                }
-            }
-        }
     }
 
     /**

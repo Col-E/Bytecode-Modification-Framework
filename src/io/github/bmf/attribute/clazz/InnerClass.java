@@ -3,9 +3,21 @@ package io.github.bmf.attribute.clazz;
 import io.github.bmf.util.Measurable;
 
 public class InnerClass implements Measurable {
+    /**
+     * Constant pool index of ConstClass of the inner class.
+     */
     public int innerClassIndex;
+    /**
+     * Constant pool index of ConstClass of the outer class.
+     */
     public int outerClassIndex;
+    /**
+     * Constant pool index of the UTF8 of the inner class's name.
+     */
     public int innerName;
+    /**
+     * Constant pool index of the 
+     */
     public int innerAccess;
 
     public InnerClass(int innerIndex, int outerIndex, int cInnerName, int innerAccess) {

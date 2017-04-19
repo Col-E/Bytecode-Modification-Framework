@@ -2,7 +2,6 @@ package io.github.bmf.util.io;
 
 import io.github.bmf.ClassNode;
 import io.github.bmf.ClassWriter;
-import io.github.bmf.util.ConstUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -161,7 +160,7 @@ public class JarUtil {
             Manifest manifest = getManifest(in);
             JarOutputStream jos = manifest != null ? new JarOutputStream(fos, manifest) : new JarOutputStream(fos);
             for (ClassNode node : nodes.values()) {
-                JarEntry entry = new JarEntry(ConstUtil.getName(node) + ".class");
+                JarEntry entry = new JarEntry(node.getName() + ".class");
                 entry.setTime(System.currentTimeMillis());
                 jos.putNextEntry(entry);
                 jos.write(ClassWriter.write(node));

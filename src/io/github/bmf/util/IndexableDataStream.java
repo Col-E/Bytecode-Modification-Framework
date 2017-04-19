@@ -36,5 +36,4 @@ public class IndexableDataStream extends DataInputStream {
             return pos;
         }
     }
-
 }

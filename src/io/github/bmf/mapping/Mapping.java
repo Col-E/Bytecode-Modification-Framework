@@ -19,12 +19,12 @@ import io.github.bmf.util.ImmutableBox;
 
 public class Mapping {
     private final boolean ignoreUnknowns = true;
-    private final Map<String, ClassMapping> mappings = new HashMap<String, ClassMapping>();
-    private final Map<ClassMapping, ClassMapping> parents = new HashMap<ClassMapping, ClassMapping>();
-    private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<ClassMapping, List<ClassMapping>>();
-    private final Map<ClassMapping, List<ClassMapping>> children = new HashMap<ClassMapping, List<ClassMapping>>();
-    private final List<ClassMapping> inited = new ArrayList<ClassMapping>();
-    private final List<String> failedLoads = new ArrayList<String>();
+    private final Map<String, ClassMapping> mappings = new HashMap<>();
+    private final Map<ClassMapping, ClassMapping> parents = new HashMap<>();
+    private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<>();
+    private final Map<ClassMapping, List<ClassMapping>> children = new HashMap<>();
+    private final List<ClassMapping> inited = new ArrayList<>();
+    private final List<String> failedLoads = new ArrayList<>();
 
     /**
      * Generates a ClassMapping from a given ClassNode. The generated
@@ -34,8 +34,8 @@ public class Mapping {
      * @param isLibrary
      * @return
      */
-    public ClassMapping makeMappingFromNode(ClassNode node) {
-        String name = ConstUtil.getName(node);
+    public ClassMapping createMappingFromNode(ClassNode node) {
+        String name = node.getName();
         ClassMapping cm = new ClassMapping(name);
         mappings.put(name, cm);
         return cm;
@@ -49,10 +49,10 @@ public class Mapping {
      * @param node
      * @param isLibrary
      */
-    public void addMemberMappings(Map<String, ClassNode> nodes, ClassNode node) {
-        ClassMapping cm = getMapping(ConstUtil.getName(node));
+    public void createMemberMappings(Map<String, ClassNode> nodes, ClassNode node) {
+        ClassMapping cm = getMapping(node.getName());
         if (cm == null) {
-            throw new RuntimeException("Could not find the mapping for: " + ConstUtil.getName(node));
+            throw new RuntimeException("Could not find the mapping for: " + node.getName());
         }
         // Skip if already done.
         if (inited.contains(cm))
@@ -67,20 +67,20 @@ public class Mapping {
             if (inited.contains(parent)) {
                 ClassNode parentNode = nodes.get(parent.name.original);
                 if (parentNode != null) {
-                    addMemberMappings(nodes, parentNode);
+                    createMemberMappings(nodes, parentNode);
                 }
             }
         }
         // Adding the members
         for (MethodNode mn : node.methods) {
-            String namee = ConstUtil.getUTF8String(node, mn.name);
+            String namee = ConstUtil.getUTF8(node, mn.name);
             Box<String> box = new Box<String>(namee);
-            cm.addMember(this, new MethodMapping(box, Type.method(this, ConstUtil.getUTF8String(node, mn.desc))));
+            cm.addMember(this, new MethodMapping(box, Type.method(this, ConstUtil.getUTF8(node, mn.desc))));
         }
         for (FieldNode fn : node.fields) {
-            String namee = ConstUtil.getUTF8String(node, fn.name);
+            String namee = ConstUtil.getUTF8(node, fn.name);
             Box<String> box = new Box<String>(namee);
-            cm.addMember(this, new MemberMapping(box, Type.variable(this, ConstUtil.getUTF8String(node, fn.desc))));
+            cm.addMember(this, new MemberMapping(box, Type.variable(this, ConstUtil.getUTF8(node, fn.desc))));
         }
         inited.add(cm);
     }
@@ -94,7 +94,7 @@ public class Mapping {
      *            Class name
      * @return
      */
-    public ClassMapping makeMappingFromRuntime(String name) {
+    public ClassMapping createMappingFromRuntime(String name) {
         // If it didn't work before it probably won't work now.
         if (failedLoads.contains(name))
             return null;
@@ -120,7 +120,7 @@ public class Mapping {
         if (clazz != Object.class && clazz.getSuperclass() != null) {
             String parentName = clazz.getSuperclass().getName().replace(".", "/");
             ClassMapping parentMapping = mappings.containsKey(parentName) ? mappings.get(parentName)
-                    : makeMappingFromRuntime(parentName);
+                    : createMappingFromRuntime(parentName);
             if (parentMapping != null) {
                 setParent(classMapping, parentMapping);
                 addChild(parentMapping, classMapping);
@@ -131,7 +131,7 @@ public class Mapping {
         for (Class<?> interfaceClass : clazz.getInterfaces()) {
             String interfaceNAme = interfaceClass.getName().replace(".", "/");
             ClassMapping interfaceMapping = mappings.containsKey(interfaceNAme) ? mappings.get(interfaceNAme)
-                    : makeMappingFromRuntime(interfaceNAme);
+                    : createMappingFromRuntime(interfaceNAme);
             if (interfaceMapping != null) {
                 addInterface(classMapping, interfaceMapping);
                 addChild(interfaceMapping, classMapping);
@@ -161,13 +161,13 @@ public class Mapping {
      * 
      * @return
      */
-    public ClassMapping getClass(String name) {
+    public ClassMapping getOrCreateClassMapping(String name) {
         // Get existing mapping if possible
         if (hasClass(name)) {
             return mappings.get(name);
         } else {
             // Attempt to load the mapping from the classpath
-            ClassMapping cm = makeMappingFromRuntime(name);
+            ClassMapping cm = createMappingFromRuntime(name);
             if (cm != null)
                 return cm;
             // Well, can't say we didn't try.
@@ -189,7 +189,7 @@ public class Mapping {
      * @return
      */
     public Box<String> getClassName(String originalName) {
-        ClassMapping cm = getClass(originalName);
+        ClassMapping cm = getOrCreateClassMapping(originalName);
         return cm == null ? null : cm.name;
     }
 
@@ -221,7 +221,7 @@ public class Mapping {
      * @param node
      */
     public ClassMapping getMapping(ClassNode node) {
-        return getMapping(ConstUtil.getName(node));
+        return getMapping(node.getName());
     }
 
     /**

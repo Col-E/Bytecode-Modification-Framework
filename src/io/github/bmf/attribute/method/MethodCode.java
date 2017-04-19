@@ -1,10 +1,9 @@
 package io.github.bmf.attribute.method;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import io.github.bmf.opcode.Opcode;
 import io.github.bmf.util.Measurable;
-import io.github.bmf.util.MeasurableUtils;
 
 /**
  * TODO refactor this to be more useful.
@@ -13,7 +12,7 @@ import io.github.bmf.util.MeasurableUtils;
  */
 public class MethodCode implements Measurable {
     public final byte[] original;
-    public ArrayList<Opcode> opcodes;
+    public List<Opcode> opcodes;
 
     public MethodCode(byte[] original) {
         this.original = original;

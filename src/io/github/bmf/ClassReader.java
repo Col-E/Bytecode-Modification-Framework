@@ -283,20 +283,22 @@ public class ClassReader {
         boolean parseOpcodes = true;
         if (parseOpcodes) {
             // Create opcode data
-            codeData.opcodes = new ArrayList<Opcode>();
+            List<Opcode> opcodes = new ArrayList<>();
             IndexableDataStream opstr = StreamUtil.fromBytes(codeData.original);
             // Is there a way to find the # of opcodes? Can't seem to figure one
             // out
             // aside from reading and knowing after the fact.
-
             while (opstr.available() > 0) {
                 try {
                     Opcode op = readOpcode(opstr);
-                    codeData.opcodes.add(op);
+                    opcodes.add(op);
                 } catch (Exception e) {
-                    System.err.println("Failed at: " + codeData.opcodes.size());
+                    String className = ConstUtil.getClassName(owner, owner.classIndex);
+                    System.err.println("<" + className + "> Failed at (Skipped opcode parsing): " + codeData.opcodes.size());
+                    return codeData;
                 }
             }
+            codeData.opcodes = opcodes;
             opstr.close();
         }
         return codeData;
@@ -773,7 +775,7 @@ public class ClassReader {
         case Opcode.JSR_W:
             throw new RuntimeException("Unsupported: Outdated (Pre-Java 7) Opcode. Get with the times.");
         }
-        //(TODO: Figure out why this happens and why it's super rare)
+        // (TODO: Figure out why this happens and why it's super rare)
         System.out.println("UNKNOWN CODE: " + code + " ... Substituting with NOP");
         return OpcodeInst.NOP;
     }

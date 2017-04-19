@@ -32,6 +32,10 @@ public class ClassMapping extends AbstractMapping {
         return null;
     }
 
+    /**
+     * Gets the list of members in the class.   
+     * @return
+     */
     public List<MemberMapping> getMembers() {
         return members;
     }
