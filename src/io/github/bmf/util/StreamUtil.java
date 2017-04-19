@@ -1,10 +1,15 @@
-package io.github.bmf.util.io;
+package io.github.bmf.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.github.bmf.util.IndexableDataStream;
+import io.github.bmf.util.JavaNameSorter;
 
 public class StreamUtil {
     private final static int BUFF_SIZE = (int) Math.pow(128, 2);
@@ -15,7 +20,7 @@ public class StreamUtil {
      * @param data
      *            byte[] to convert to DataInputStream.
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static IndexableDataStream fromBytes(byte[] data) {
         return new IndexableDataStream(data);
@@ -40,5 +45,27 @@ public class StreamUtil {
             buffer.flush();
             return buffer.toByteArray();
         }
+    }
+
+    /**
+     * Sorts the stream of java names.
+     * 
+     * @param stream
+     *            Stream of names.
+     * @return
+     */
+    public static Stream<String> sortJavaNames(Stream<String> stream) {
+        return stream.sorted(new JavaNameSorter());
+    }
+
+    /**
+     * Creates a list of sorted java names from a given collection.
+     * 
+     * @param names
+     *            Collection of names.
+     * @return
+     */
+    public static List<String> listOfSortedJavaNames(Collection<String> names) {
+        return sortJavaNames(names.stream()).collect(Collectors.toList());
     }
 }

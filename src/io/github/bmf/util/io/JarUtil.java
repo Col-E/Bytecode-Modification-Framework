@@ -2,6 +2,7 @@ package io.github.bmf.util.io;
 
 import io.github.bmf.ClassNode;
 import io.github.bmf.ClassWriter;
+import io.github.bmf.util.StreamUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
