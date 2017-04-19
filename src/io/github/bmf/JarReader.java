@@ -30,6 +30,7 @@ import io.github.bmf.signature.Signature;
 import io.github.bmf.type.PrimitiveType;
 import io.github.bmf.type.Type;
 import io.github.bmf.util.ConstUtil;
+import io.github.bmf.util.StreamUtil;
 import io.github.bmf.util.io.JarUtil;
 
 /**
@@ -119,14 +120,54 @@ public class JarReader {
         pass3FinishClasses();
         pass4SplitNameDescConsts();
         pass5UpdateNameConsts();
-        pass6MatchInnerWithOuters();
     }
 
     private void pass1MakeClasses() {
+        Map<String, ClassNode> inners = new HashMap<>();
         for (String nodeName : classEntries.keySet()) {
             ClassNode node = classEntries.get(nodeName);
+            if (node.innerClasses == null) {
+                continue;
+            }
+            for (InnerClass ic : node.innerClasses.classes) {
+                String innerName = ConstUtil.getClassName(node, ic.innerClassIndex);
+                // IDK why this happens but:
+                //@formatter:off
+                //
+                // Inside BytecodeMeta$FlagTest:
+                // 
+                //     org/benf/cfr/reader/bytecode/BytecodeMeta$CodeInfoFlag of class org/benf/cfr/reader/bytecode/BytecodeMeta <--- ????
+                //     org/benf/cfr/reader/bytecode/BytecodeMeta$FlagTest of class org/benf/cfr/reader/bytecode/BytecodeMeta
+                //     org/benf/cfr/reader/bytecode/BytecodeMeta$1 of class org/benf/cfr/reader/bytecode/BytecodeMeta  <--- ??? 
+                //
+                // Has inner class data of inner classes of it's parent
+                // Wat.
+                //
+                //@formatter:on
+                if (!inners.containsKey(innerName)) {
+                    // Was just going to rely on inner class attribute alone,
+                    // but above really confuses me.
+                    String outerName = innerName;
+                    int index = outerName.lastIndexOf("$");
+                    if (index > 0) {
+                        outerName = outerName.substring(0, index);
+                    }
+                    ClassNode outer = classEntries.get(outerName);
+                    inners.put(innerName, outer);
+                }
+            }
+        }
+        // Has to be done in order to prevent inner classes from being
+        // registered before outer classes.
+        for (String nodeName : StreamUtil.listOfSortedJavaNames(classEntries.keySet())) {
+            ClassNode node = classEntries.get(nodeName);
             // Create and add ClassMapping values from the loaded nodes.
-            mapping.addMapping(mapping.createMappingFromNode(node));
+            if (inners.containsKey(nodeName)) {
+                mapping.addMapping(mapping.createMappingFromInnerNode(inners.get(nodeName), node));
+            } else {
+                mapping.addMapping(mapping.createMappingFromNode(node));
+            }
+
         }
     }
 
@@ -439,37 +480,6 @@ public class JarReader {
                 if (fn.signature != null) {
                     String fieldSig = ConstUtil.getUTF8(node, fn.signature.signature);
                     node.setConst(fn.signature.signature, new ConstSignature(Signature.variable(mapping, fieldSig)));
-                }
-            }
-
-        }
-    }
-
-    private void pass6MatchInnerWithOuters() {
-        List<String> inners = new ArrayList<>();
-        for (String nodeName : classEntries.keySet()) {
-            ClassNode node = classEntries.get(nodeName);
-            if (node.innerClasses == null) {
-                continue;
-            }
-            for (InnerClass ic : node.innerClasses.classes) {
-                String innerName = ConstUtil.getUTF8(node, ic.innerName);
-                inners.add(innerName);
-
-            }
-        }
-        for (String nodeName : classEntries.keySet()) {
-            ClassNode node = classEntries.get(nodeName);
-            for (int i = 0; i < node.constants.size(); i++) {
-                Constant<?> c = node.constants.get(i);
-                if (c != null && c.type == ConstantType.UTF8) {
-                    String val = ((ConstUTF8) c).getValue();
-                    if (inners.contains(val)) {
-                        // TODO: Use ConstOuterLinkedName
-                        // - Replace ANY inner class reference with them, do not use  ConstName
-                        
-                        // node.constants.set(i, new ConstOuterLinkedName());
-                    }
                 }
             }
 

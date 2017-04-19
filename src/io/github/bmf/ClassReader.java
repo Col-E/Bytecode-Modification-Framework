@@ -13,7 +13,7 @@ import io.github.bmf.opcode.OpcodeInst;
 import io.github.bmf.opcode.impl.*;
 import io.github.bmf.util.ConstUtil;
 import io.github.bmf.util.IndexableDataStream;
-import io.github.bmf.util.io.StreamUtil;
+import io.github.bmf.util.StreamUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

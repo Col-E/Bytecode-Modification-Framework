@@ -31,13 +31,29 @@ public class Mapping {
      * ClassMapping is automatically added to the mappings map.
      * 
      * @param node
-     * @param isLibrary
      * @return
      */
     public ClassMapping createMappingFromNode(ClassNode node) {
         String name = node.getName();
         ClassMapping cm = new ClassMapping(name);
         mappings.put(name, cm);
+        return cm;
+    }
+
+    /**
+     * Generates a ClassMapping from a given ClassNode. The generated
+     * ClassMapping is automatically added to the mappings map. The mapping
+     * generated will only update the inner name. Outer name changes will have
+     * to be done directly to the outer ClassMapping.
+     * 
+     * @param outer
+     * @param inner
+     * @return
+     */
+    public ClassMapping createMappingFromInnerNode(ClassNode outer, ClassNode inner) {
+        String innerName = inner.getName();
+        ClassMapping cm = new InnerClassMapping(getClassName(outer.getName()), innerName);
+        mappings.put(innerName, cm);
         return cm;
     }
 
@@ -75,7 +91,12 @@ public class Mapping {
         for (MethodNode mn : node.methods) {
             String namee = ConstUtil.getUTF8(node, mn.name);
             Box<String> box = new Box<String>(namee);
+            try {
             cm.addMember(this, new MethodMapping(box, Type.method(this, ConstUtil.getUTF8(node, mn.desc))));
+            } catch (Exception e){
+                System.err.println(ConstUtil.getUTF8(node, mn.desc));
+                System.exit(0);
+            }
         }
         for (FieldNode fn : node.fields) {
             String namee = ConstUtil.getUTF8(node, fn.name);
@@ -171,11 +192,11 @@ public class Mapping {
             if (cm != null)
                 return cm;
             // Well, can't say we didn't try.
-            if (ignoreUnknowns){
+            if (ignoreUnknowns) {
                 cm = new ClassMapping(new ImmutableBox<String>(name));
                 mappings.put(name, cm);
                 return cm;
-            }else {
+            } else {
                 throw new RuntimeException("Requested unmapped class: " + name);
             }
         }
