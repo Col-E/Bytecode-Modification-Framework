@@ -295,7 +295,7 @@ public class ClassReader {
                     opcodes.add(op);
                 } catch (Exception e) {
                     String className = ConstUtil.getClassName(owner, owner.classIndex);
-                    System.err.println("<" + className + "> Failed at (Skipped opcode parsing): " + codeData.opcodes.size());
+                    System.err.println("<" + className + "> Failed at (Skipped opcode parsing): " + opcodes.size());
                     return codeData;
                 }
             }
@@ -732,6 +732,11 @@ public class ClassReader {
             return new INVOKESPECIAL(is.readUnsignedShort());
         case Opcode.INVOKEINTERFACE:
             return new INVOKEINTERFACE(is.readUnsignedShort(), is.readUnsignedByte(), is.readUnsignedByte());
+        case Opcode.INVOKEDYNAMIC:
+            INVOKEDYNAMIC indy = new INVOKEDYNAMIC(is.readUnsignedByte(), is.readUnsignedShort());
+            // Discard two bytes that are always 0.
+            is.readUnsignedByte(); is.readUnsignedByte();
+            return indy;
         case Opcode.NEW:
             return new NEW(is.readUnsignedShort());
         case Opcode.NEWARRAY:

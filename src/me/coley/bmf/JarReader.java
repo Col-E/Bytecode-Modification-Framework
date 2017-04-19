@@ -104,7 +104,7 @@ public class JarReader {
                     classEntries.put(className, cn);
                 } catch (Exception e) {
                     System.err.println("Failed parsing node: " + className);
-                    // e.printStackTrace();
+                   // e.printStackTrace();
                 }
             }
         } catch (IOException e) {
