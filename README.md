@@ -2,7 +2,7 @@
 
 BMF is an alternative JVM bytecode modification framework that *(if desired)* will hide nothing about the class structure behind abstraction *(But in the future abstraction will certainly be an option)*.
 
-### Features
+### Notable Features
 
 * Simplified renaming of classes, fields, and methods
 * Direct access to the constant pool. 
