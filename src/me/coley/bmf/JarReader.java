@@ -377,7 +377,7 @@ public class JarReader {
                             case Opcode.INVOKESTATIC:
                             case Opcode.INVOKEVIRTUAL: {
                                 AbstractMethodOpcode amo = (AbstractMethodOpcode) op;
-                                AbstractMethodConstant amc = (AbstractMethodConstant) node.getConst(amo.methodIndex);
+                                AbstractMemberConstant amc = (AbstractMemberConstant) node.getConst(amo.methodIndex);
                                 ConstClass ccMethOwner = (ConstClass) node.getConst(amc.getClassIndex());
                                 ConstNameType cntMeth = (ConstNameType) node.getConst(amc.getNameTypeIndex());
                                 String mOwner = ConstUtil.getUTF8(node, ccMethOwner.getValue());
