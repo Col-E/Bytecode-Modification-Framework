@@ -6,6 +6,7 @@ import java.util.Map;
 import me.coley.bmf.consts.Constant;
 import me.coley.bmf.consts.mapping.ConstName;
 import me.coley.bmf.mapping.ClassMapping;
+import me.coley.bmf.mapping.InnerClassMapping;
 import me.coley.bmf.mapping.MemberMapping;
 import me.coley.bmf.util.ConstUtil;
 import me.coley.bmf.util.ImmutableBox;
@@ -13,12 +14,12 @@ import me.coley.bmf.util.io.JarUtil;
 
 @SuppressWarnings("unused")
 public class Main {
-    private static final String IN_FILE = "tests/JRemapper.jar", OUT_FILE = "tests/OUT.jar";
+    private static final String IN_FILE = "tests/Test.jar", OUT_FILE = "tests/OUT.jar";
 
     public static void main(String[] args) {
         long l = System.currentTimeMillis();
         all(IN_FILE);
-        System.err.println(System.currentTimeMillis() - l);
+        System.out.println("Time Elapsed: " + (System.currentTimeMillis() - l));
     }
 
     private static void all(String file) {
@@ -30,13 +31,15 @@ public class Main {
             int classIndex = 1;
             for (String name : read.getClassEntries().keySet()) {
                 ClassMapping cm = read.getMapping().getMapping(name);
-                if (cm.name.getValue().contains("Main"))
-                    continue;
-                String obName = "AAA/" + getCapName(classIndex);
+                String obName = getCapName(classIndex);
+                if (!(cm instanceof InnerClassMapping)){
+                    obName = "AAA/" + obName;
+                }
                 cm.name.setValue(obName);
+                System.out.println(name + " -> " + cm.name.getValue());
                 int memberIndex = 1;
                 for (MemberMapping mm : cm.getMembers()) {
-                    if (mm.name.getValue().equals(mm.name.original) && !mm.name.original.contains("<")) {
+                    if (mm.name.getValue().equals(mm.name.original) && !mm.name.original.equals("main") && !mm.name.original.contains("<")) {
                         mm.name.setValue(getLowName(memberIndex));
                         memberIndex++;
                     }
@@ -49,11 +52,11 @@ public class Main {
         }
     }
 
-    private static String getLowName(int i) {
+    public static String getLowName(int i) {
         return getString("abcdefghijklmnopqrstuvwxyz", i, 24);
     }
 
-    private static String getCapName(int i) {
+    public static String getCapName(int i) {
         return getString("ABCDEFGHIJKLMNOPQRSTUVWXYZ", i, 24);
     }
 
@@ -76,7 +79,7 @@ public class Main {
         }
         array[n2] = charz[-i];
         if (b) {
-            array[--n2] = '-';
+            array[--n2] = '_';
         }
         return new String(array, n2, 33 - n2);
     }

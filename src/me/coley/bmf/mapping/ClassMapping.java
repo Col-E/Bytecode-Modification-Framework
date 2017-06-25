@@ -6,7 +6,7 @@ import java.util.List;
 import me.coley.bmf.util.Box;
 
 public class ClassMapping extends AbstractMapping {
-    private final List<MemberMapping> members = new ArrayList<MemberMapping>();
+    private final List<MemberMapping> members = new ArrayList<>();
 
     public ClassMapping(String name) {
         super(name);

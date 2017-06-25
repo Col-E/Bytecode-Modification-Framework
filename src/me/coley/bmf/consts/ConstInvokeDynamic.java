@@ -1,16 +1,26 @@
 package me.coley.bmf.consts;
 
 public class ConstInvokeDynamic extends Constant<Integer> {
+    private int nameType;
 
     public ConstInvokeDynamic(int attribute, int nameType) {
-        super(ConstantType.INVOKEDYNAMIC, (attribute << 16) | nameType);
+        super(ConstantType.INVOKEDYNAMIC, attribute);
+        this.nameType = nameType;
     }
 
     public int getBootstrapAttribute() {
-        return (getValue().intValue() >> 16) & 0xffff;
+        return this.getValue();
     }
 
     public int getNameTypeIndex() {
-        return getValue().intValue() & 0xffff;
+        return nameType;
+    }
+
+    public void setBootstrapAttribute(int index) {
+        this.setValue(index);
+    }
+
+    public void setNameTypeIndex(int index) {
+        this.nameType = index;
     }
 }

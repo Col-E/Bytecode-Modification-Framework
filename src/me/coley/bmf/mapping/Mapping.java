@@ -1,6 +1,7 @@
 package me.coley.bmf.mapping;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,6 @@ import me.coley.bmf.util.ConstUtil;
 import me.coley.bmf.util.ImmutableBox;
 
 public class Mapping {
-    private final boolean ignoreUnknowns = true;
     private final Map<String, ClassMapping> mappings = new HashMap<>();
     private final Map<ClassMapping, ClassMapping> parents = new HashMap<>();
     private final Map<ClassMapping, List<ClassMapping>> interfaces = new HashMap<>();
@@ -65,8 +65,7 @@ public class Mapping {
      * @param node
      * @param isLibrary
      */
-    public void createMemberMappings(Map<String, ClassNode> nodes, ClassNode node) {
-        ClassMapping cm = getMapping(node.getName());
+    public void createMemberMappings(Map<String, ClassNode> nodes, ClassMapping cm, ClassNode node) {
         if (cm == null) {
             throw new RuntimeException("Could not find the mapping for: " + node.getName());
         }
@@ -74,34 +73,43 @@ public class Mapping {
         if (inited.contains(cm))
             return;
         // Makes sure superclasses have had their members mapped first.
+        // Both parents and interfaces are added.
         List<ClassMapping> supers = new ArrayList<ClassMapping>();
-        if (hasParent(cm))
+        if (hasParent(cm)) {
             supers.add(parents.get(cm));
-        if (hasInterfaces(cm))
+        }
+        if (hasInterfaces(cm)) {
             supers.addAll(interfaces.get(cm));
+        }
         for (ClassMapping parent : supers) {
-            if (inited.contains(parent)) {
+            if (!inited.contains(parent)) {
                 ClassNode parentNode = nodes.get(parent.name.original);
                 if (parentNode != null) {
-                    createMemberMappings(nodes, parentNode);
+                    ClassMapping classMapping = getMapping(parent.name.original);
+                    createMemberMappings(nodes, classMapping, parentNode);
                 }
             }
         }
         // Adding the members
-        for (MethodNode mn : node.methods) {
-            String namee = ConstUtil.getUTF8(node, mn.name);
-            Box<String> box = new Box<String>(namee);
-            try {
-            cm.addMember(this, new MethodMapping(box, Type.method(this, ConstUtil.getUTF8(node, mn.desc))));
-            } catch (Exception e){
-                System.err.println(ConstUtil.getUTF8(node, mn.desc));
-                System.exit(0);
+        String currDescDebugging = null;
+        try {
+            for (MethodNode mn : node.methods) {
+                String namee = ConstUtil.getUTF8(node, mn.name);
+                Box<String> box = new Box<String>(namee);
+                cm.addMember(this, new MethodMapping(box,
+                        Type.method(this, currDescDebugging = ConstUtil.getUTF8(node, mn.desc))));
+                // TODO: add variables to MethodMapping
             }
-        }
-        for (FieldNode fn : node.fields) {
-            String namee = ConstUtil.getUTF8(node, fn.name);
-            Box<String> box = new Box<String>(namee);
-            cm.addMember(this, new MemberMapping(box, Type.variable(this, ConstUtil.getUTF8(node, fn.desc))));
+            for (FieldNode fn : node.fields) {
+                String namee = ConstUtil.getUTF8(node, fn.name);
+                Box<String> box = new Box<String>(namee);
+                cm.addMember(this, new MemberMapping(box,
+                        Type.variable(this, currDescDebugging = ConstUtil.getUTF8(node, fn.desc))));
+            }
+        } catch (Exception e) {
+            // Testing
+            System.err.println("Failed to add member: " + cm.name.original + "." + currDescDebugging);
+            System.exit(0);
         }
         inited.add(cm);
     }
@@ -168,8 +176,24 @@ public class Mapping {
             classMapping.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
                     Type.method(this, Type.getMethodDescriptor(m))));
         }
-        // Field member mappings are ignored because as of right now you can't
-        // extend a field. That would be kinda cool though, but also evil.
+        // Create member mappings for the fields
+        for (Field m : clazz.getDeclaredFields()) {
+            classMapping.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
+                    Type.variable(this, Type.getFieldDescriptor(m))));
+        }
+        return classMapping;
+    }
+
+    /**
+     * Generates a class mapping for a class by the given name. It will not be
+     * able to be renamed.
+     * 
+     * @param name
+     * @return
+     */
+    public ClassMapping createImmutableMapping(String name) {
+        ClassMapping classMapping = new ClassMapping(new ImmutableBox<String>(name));
+        mappings.put(name, classMapping);
         return classMapping;
     }
 
@@ -192,13 +216,7 @@ public class Mapping {
             if (cm != null)
                 return cm;
             // Well, can't say we didn't try.
-            if (ignoreUnknowns) {
-                cm = new ClassMapping(new ImmutableBox<String>(name));
-                mappings.put(name, cm);
-                return cm;
-            } else {
-                throw new RuntimeException("Requested unmapped class: " + name);
-            }
+            return createImmutableMapping(name);
         }
     }
 
@@ -388,7 +406,21 @@ public class Mapping {
             }
         }
         for (MemberMapping m : owner.getMembers()) {
-            if (m.desc.original.equals(mm.desc.original) && m.name.original.equals(mm.name.original)) {
+            if (
+                    m.
+                    desc.
+                    original.
+                    equals
+                    
+                    (mm.
+                         desc.
+                         original) && 
+                    m.
+                    name.
+                    original.equals(
+                            mm.
+                            name.
+                            original)) {
                 return m;
             }
         }

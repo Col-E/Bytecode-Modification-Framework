@@ -13,7 +13,7 @@ public enum ClassLoadStatus {
     /**
      * System ClassLoader's findLoadedClass method
      */
-    private static final Method sclFind = getClassLoaderMethod("findLoadedClass", String.class);
+    private static final Method SCL_FIND = getClassLoaderMethod("findLoadedClass", String.class);
 
     /**
      * Returns the load status of a class by its name.
@@ -26,11 +26,11 @@ public enum ClassLoadStatus {
         // Will throw an exception, instantly returning the NOT_IN_JVM constant.
         try (InputStream is = ClassLoader.getSystemResourceAsStream(className + ".class")) {
             // Cannot be read, not in JVM.
-            if (is == null || sclFind == null) {
+            if (is == null) {
                 return ClassLoadStatus.NOT_IN_JVM;
             }
             // Invoke, check if exists
-            Object find = sclFind.invoke(SCL, className);
+            Object find = SCL_FIND.invoke(SCL, className);
             if (find != null) {
                 return ClassLoadStatus.LOAD_TRUE;
             }

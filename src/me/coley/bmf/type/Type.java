@@ -1,6 +1,7 @@
 package me.coley.bmf.type;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +131,7 @@ public abstract class Type {
         return new ArrayType(type);
     }
 
-    private static Type readPrim(char c) {
+    public static Type readPrim(char c) {
         switch (c) {
         case 'B':
             return BYTE;
@@ -173,6 +174,38 @@ public abstract class Type {
     }
 
     /**
+     * Get the type-descriptor from the reflection method.
+     * 
+     * @param method
+     * @return
+     */
+    public static String getMethodDescriptor(Method method) {
+        String s = "(";
+        for (final Class<?> c : method.getParameterTypes())
+            s += getDescriptorForClass(c);
+        s += ')';
+        return s + getDescriptorForClass(method.getReturnType());
+    }
+
+    /**
+     * Get the type-descriptor from the reflection field.
+     * 
+     * @param field
+     * @return
+     */
+    public static String getFieldDescriptor(Field field) {
+        return getDescriptorForClass(field.getType());
+    }
+
+    public static String getConstructorDescriptor(Constructor<?> m) {
+        String s = "(";
+        for (final Class<?> c : m.getParameterTypes())
+            s += getDescriptorForClass(c);
+        s += ')';
+        return s + "V";
+    }
+
+    /**
      * <a href=
      * "http://stackoverflow.com/questions/32148846/get-java-field-and-method-descriptors-at-runtime">
      * From Stackoverflow</a>
@@ -205,29 +238,5 @@ public abstract class Type {
         if (c.isArray())
             return c.getName().replace('.', '/');
         return ('L' + c.getName() + ';').replace('.', '/');
-    }
-
-    /**
-     * <a href=
-     * "http://stackoverflow.com/questions/32148846/get-java-field-and-method-descriptors-at-runtime">
-     * From Stackoverflow</a>
-     * 
-     * @param m
-     * @return
-     */
-    public static String getMethodDescriptor(Method m) {
-        String s = "(";
-        for (final Class<?> c : m.getParameterTypes())
-            s += getDescriptorForClass(c);
-        s += ')';
-        return s + getDescriptorForClass(m.getReturnType());
-    }
-
-    public static String getConstructorDescriptor(Constructor<?> m) {
-        String s = "(";
-        for (final Class<?> c : m.getParameterTypes())
-            s += getDescriptorForClass(c);
-        s += ')';
-        return s + "V";
     }
 }
