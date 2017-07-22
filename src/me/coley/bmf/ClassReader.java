@@ -352,9 +352,7 @@ public class ClassReader {
         }
         case Opcode.LDC_W:
         case Opcode.LDC2_W: {
-            int indexbyte1 = is.readUnsignedByte();
-            int indexbyte2 = is.readUnsignedByte();
-            int index = indexbyte1 << (8 + indexbyte2);
+            int index = is.readUnsignedShort();
             return code == Opcode.LDC2_W ? new LDC2_W(index) : new LDC_W(index);
         }
         case Opcode.ILOAD: {
@@ -740,7 +738,7 @@ public class ClassReader {
         case Opcode.NEW:
             return new NEW(is.readUnsignedShort());
         case Opcode.NEWARRAY:
-            return new NEWARRAY(is.readUnsignedShort());
+            return new NEWARRAY(is.readUnsignedByte());
         case Opcode.ANEWARRAY:
             return new ANEWARRAY(is.readUnsignedShort());
         case Opcode.MULTIANEWARRAY:
