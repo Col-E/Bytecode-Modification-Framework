@@ -64,7 +64,10 @@ public class ClassMapping extends AbstractMapping {
      * @param mm
      */
     public void addMember(Mapping mapping, MemberMapping mm) {
-        members.add(mapping.getMemberInstance(this, mm));
+        if (mm instanceof MethodMapping) {
+            mm = mapping.getMemberInstance(this, mm);
+        }
+        members.add(mm);
     }
 
     /**

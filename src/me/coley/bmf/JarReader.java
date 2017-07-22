@@ -300,7 +300,9 @@ public class JarReader {
                 String name = ConstUtil.getUTF8(node, member.name);
                 String desc = ConstUtil.getUTF8(node, member.desc);
                 MemberMapping mm = mapping.getMemberMapping(cm, name, desc);
-                mm = mapping.getMemberInstance(cm, mm);
+                if (mm instanceof MethodMapping) {
+                    mm = mapping.getMemberInstance(cm, mm);
+                }
                 ConstRedirection redirName = redirs.getOrDefault(member.name,
                         new ConstRedirection(Usage.MEMBER_NAME, member.name, nodeName, name, desc));
                 ConstRedirection redirDesc = redirs.getOrDefault(member.desc,

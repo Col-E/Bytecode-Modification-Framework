@@ -178,7 +178,7 @@ public class Mapping {
         }
         // Create member mappings for the fields
         for (Field m : clazz.getDeclaredFields()) {
-            classMapping.addMember(this, new MethodMapping(new ImmutableBox<String>(m.getName()),
+            classMapping.addMember(this, new MemberMapping(new ImmutableBox<String>(m.getName()),
                     Type.variable(this, Type.getFieldDescriptor(m))));
         }
         return classMapping;
