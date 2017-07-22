@@ -22,6 +22,8 @@ import me.coley.bmf.mapping.ClassMapping;
 import me.coley.bmf.mapping.Mapping;
 import me.coley.bmf.mapping.MemberMapping;
 import me.coley.bmf.mapping.MethodMapping;
+import me.coley.bmf.opcode.Opcode;
+import me.coley.bmf.opcode.AbstractClassPointer;
 import me.coley.bmf.signature.Signature;
 import me.coley.bmf.type.Type;
 import me.coley.bmf.util.ConstUtil;
@@ -260,14 +262,37 @@ public class JarReader {
                             : Signature.variable(mapping, strSig);
                     node.setConst(member.signature.signature, new ConstSignature(sig));
                 }
-                // Update method variables
+                // Update method
                 if (member instanceof MethodNode) {
                     MethodNode meth = ((MethodNode) member);
-                    if (meth.code != null && meth.code.variableTypes != null) {
-                        List<LocalVariableType> types = meth.code.variableTypes.localTypes;
-                        for (LocalVariableType type : types) {
-                            String sig = ConstUtil.getUTF8(node, type.signature);
-                            node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, sig)));
+                    if (meth.code != null) {
+                        // Update variable types
+                        if (meth.code.variableTypes != null) {
+                            List<LocalVariableType> types = meth.code.variableTypes.localTypes;
+                            for (LocalVariableType type : types) {
+                                String sig = ConstUtil.getUTF8(node, type.signature);
+                                node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, sig)));
+                            }
+                        }
+                        // Update classes that opcodes reference
+                        if (meth.code.opcodes != null) {
+                            for (Opcode op : meth.code.opcodes.opcodes) {
+                                // Replace class pointer references. Only done
+                                // because arrays types are the spawn of the
+                                // devil.
+                                if (op instanceof AbstractClassPointer) {
+                                    int classIndex = ((AbstractClassPointer) op).classIndex;
+                                    int utfIndex = ((ConstClass) node.getConst(classIndex)).getValue();
+                                    String utfContent = ConstUtil.getUTF8(node, utfIndex);
+                                    // Why do arrays make class names the type
+                                    // descriptor?
+                                    // God, I wish I knew...
+                                    if (utfContent.contains(";")) {
+                                        node.setConst(utfIndex,
+                                                new ConstMemberDesc(Type.variable(mapping, utfContent)));
+                                    }
+                                }
+                            }
                         }
                     }
                 }
