@@ -33,7 +33,23 @@ public class ClassMapping extends AbstractMapping {
     }
 
     /**
-     * Gets the list of members in the class.   
+     * Gets a member's mapping by the current name and descriptor.
+     * 
+     * @param name
+     * @param desc
+     * @return
+     */
+    public MemberMapping getMemberMappingWithRenaming(String name, String desc) {
+        for (MemberMapping mm : members) {
+            if (mm.name.getValue().equals(name) && mm.desc.toDesc().equals(desc))
+                return mm;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the list of members in the class.
+     * 
      * @return
      */
     public List<MemberMapping> getMembers() {
@@ -81,4 +97,5 @@ public class ClassMapping extends AbstractMapping {
         }
         return list;
     }
+
 }
