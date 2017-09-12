@@ -204,7 +204,6 @@ public class ClassWriter {
             ds.writeShort(source.sourceFile);
             break;
         case STACK_MAP_TABLE:
-            // TODO: Actually do this (Pre-req: Reading it)
             AttributeStackMapTable stack = (AttributeStackMapTable) attribute;
             ds.writeShort(stack.frames.size());
             for (Frame frame : stack.frames) {
@@ -236,7 +235,7 @@ public class ClassWriter {
             ds.writeShort(((Frame.Chop) frame).offsetDelta);
         } else if (type == 251) {
             // same_frame_extended
-            ds.writeShort(((Frame.SameExtened) frame).offsetDelta);
+            ds.writeShort(((Frame.SameExtended) frame).offsetDelta);
         } else if (type >= 252 && type <= 254) {
             // append_frame
             Frame.Append append = (Frame.Append) frame;

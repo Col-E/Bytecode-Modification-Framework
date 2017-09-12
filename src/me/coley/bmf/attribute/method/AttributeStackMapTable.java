@@ -91,10 +91,10 @@ public class AttributeStackMapTable extends Attribute {
             }
         }
 
-        public static class SameExtened extends Same {
+        public static class SameExtended extends Same {
             public int offsetDelta;
 
-            public SameExtened(int offsetDelta) {
+            public SameExtended(int offsetDelta) {
                 super(251);
                 this.offsetDelta = offsetDelta;
             }

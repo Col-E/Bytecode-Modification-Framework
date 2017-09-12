@@ -951,7 +951,7 @@ public class ClassReader {
             if (type >= 0 && type <= 63) {
                 // same_frame
                 frames.add(new Frame.Same(type));
-            } else if (type >= 64 && type <= 246) {
+            } else if (type >= 64 && type <= 127) {
                 // same_locals_1_stack_item_frame
                 frames.add(new Frame.SameLocals1StackItem(type, readVerificationType(is)));
             } else if (type == 247) {
@@ -960,12 +960,12 @@ public class ClassReader {
                 frames.add(new Frame.SameLocals1StackItemExtended(offset, readVerificationType(is)));
             } else if (type >= 248 && type <= 250) {
                 // chop_frame
-                int offset = is.readShort();
+                int offset = is.readUnsignedShort();
                 frames.add(new Frame.Chop(type, offset));
             } else if (type == 251) {
                 // same_frame_extended
                 int offset = is.readUnsignedShort();
-                frames.add(new Frame.SameExtened(offset));
+                frames.add(new Frame.SameExtended(offset));
             } else if (type >= 252 && type <= 254) {
                 // append_frame
                 int offset = is.readUnsignedShort();
@@ -989,6 +989,8 @@ public class ClassReader {
                     stack.add(readVerificationType(is));
                 }
                 frames.add(new Frame.Full(offset, locals, stack));
+            } else {
+                throw new RuntimeException("Invalid frame type: " + type);
             }
         }
         return new AttributeStackMapTable(nameIndex, frames);
