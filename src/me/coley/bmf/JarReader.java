@@ -7,12 +7,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import me.coley.bmf.attribute.clazz.InnerClass;
+import me.coley.bmf.attribute.method.AttributeStackMapTable.Frame;
+import me.coley.bmf.attribute.method.AttributeStackMapTable.VerificationType;
+import me.coley.bmf.attribute.method.AttributeStackMapTable.VerificationType.ObjectVariable;
 import me.coley.bmf.attribute.method.LocalVariableType;
 import me.coley.bmf.consts.*;
 import me.coley.bmf.consts.mapping.ConstMemberDesc;
@@ -294,6 +298,24 @@ public class JarReader {
                                 }
                             }
                         }
+                        // Update stack-frames
+                        if (meth.code.stackMap != null) {
+                            for (Frame frame : meth.code.stackMap.frames) {
+                                // Replace class constants referenced by frames
+                                // containing variable data.
+                                if (frame instanceof Frame.Append) {
+                                    Frame.Append append = (Frame.Append) frame;
+                                    replaceStackMap(node, append.locals);
+                                } else if (frame instanceof Frame.Full) {
+                                    Frame.Full full = (Frame.Full) frame;
+                                    replaceStackMap(node, full.locals);
+                                    replaceStackMap(node, full.stack);
+                                } else if (frame instanceof Frame.SameLocals1StackItem) {
+                                    Frame.SameLocals1StackItem same = (Frame.SameLocals1StackItem) frame;
+                                    replaceStackMap(node, Arrays.asList(same.stack));
+                                }
+                            }
+                        }
                     }
                 }
                 // Updating member names if they haven't been updated already.
@@ -316,6 +338,18 @@ public class JarReader {
                 member.name = nameRedirIndex;
                 node.setConst(descRedirIndex, new ConstMemberDesc(mm.desc));
                 member.desc = descRedirIndex;
+            }
+        }
+    }
+
+    private void replaceStackMap(ClassNode node, List<VerificationType> list) {
+        for (VerificationType v : list) {
+            if (v.tag == 7) {
+                VerificationType.ObjectVariable vo = (ObjectVariable) v;
+                int classIndex = vo.poolIndex;
+                int utfIndex = ((ConstClass) node.getConst(classIndex)).getValue();
+                String utfContent = ConstUtil.getUTF8(node, utfIndex);
+                node.setConst(utfIndex, new ConstName(mapping.getClassName(utfContent)));
             }
         }
     }
