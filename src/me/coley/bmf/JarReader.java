@@ -295,7 +295,19 @@ public class JarReader {
                                         node.setConst(utfIndex,
                                                 new ConstMemberDesc(Type.variable(mapping, utfContent)));
                                     }
-                                }
+                                } 
+                                // Ok so it turns out visitCP is all it needed. Minimize this and surrounding code as MUCH as possible.
+                                /** 
+                                else if (op instanceof AbstractMethodOpcode) {
+                                    AbstractMethodOpcode methodOp = (AbstractMethodOpcode) op;
+                                    AbstractMemberConstant memberConst = (AbstractMemberConstant) node
+                                            .getConst(methodOp.methodIndex);
+                                    
+                                } else if (op instanceof AbstractFieldOpcode) {
+                                    AbstractFieldOpcode fieldOp = (AbstractFieldOpcode) op;
+                                    AbstractMemberConstant memberConst = (AbstractMemberConstant) node
+                                            .getConst(fieldOp.fieldIndex);
+                                }*/
                             }
                         }
                         // Update stack-frames
@@ -349,7 +361,13 @@ public class JarReader {
                 int classIndex = vo.poolIndex;
                 int utfIndex = ((ConstClass) node.getConst(classIndex)).getValue();
                 String utfContent = ConstUtil.getUTF8(node, utfIndex);
-                node.setConst(utfIndex, new ConstName(mapping.getClassName(utfContent)));
+                // Seriously who thought giving arrays a DESCRIPTOR as their
+                // name was a good idea?
+                if (utfContent.contains("[")) {
+                    node.setConst(utfIndex, new ConstMemberDesc(Type.variable(mapping, utfContent)));
+                } else {
+                    node.setConst(utfIndex, new ConstName(mapping.getClassName(utfContent)));
+                }
             }
         }
     }
@@ -372,8 +390,13 @@ public class JarReader {
             // If index changed, add constant to end of constant-pool for
             // the new usage. Otherwise, override the existing one.
             String name = ConstUtil.getUTF8(node, utfIndex);
-            ConstName constName = mapping.hasClass(name) ? new ConstName(mapping.getClassName(name))
-                    : new ConstName(new ImmutableBox<>(name));
+            ConstUTF8 constName = null;
+            if (name.contains("[")) {
+                constName = new ConstMemberDesc(Type.variable(mapping, name));
+            } else {
+                constName = mapping.hasClass(name) ? new ConstName(mapping.getClassName(name))
+                        : new ConstName(new ImmutableBox<>(name));
+            }
             if (utfRedir != utfIndex) {
                 node.setConst(utfRedir, constName);
                 cc.setValue(utfRedir);
