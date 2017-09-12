@@ -223,7 +223,7 @@ public class ClassWriter {
         ds.write(type);
         if (type >= 0 && type <= 63) {
             // same_frame
-        } else if (type >= 64 && type <= 246) {
+        } else if (type >= 64 && type <= 127) {
             // same_locals_1_stack_item_frame
             writeVerificationType(((Frame.SameLocals1StackItem) frame).stack, ds);
         } else if (type == 247) {
@@ -255,6 +255,8 @@ public class ClassWriter {
             for (VerificationType v : full.stack) {
                 writeVerificationType(v, ds);
             }
+        } else {
+            throw new RuntimeException("Invalid frame type: " + type);
         }
     }
 

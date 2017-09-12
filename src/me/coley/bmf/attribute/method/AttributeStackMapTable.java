@@ -120,8 +120,7 @@ public class AttributeStackMapTable extends Attribute {
             @Override
             public int getLength() {
                 // u1: frame_type
-                // u2: offset_delta
-                return 3 + stack.getLength();
+                return 1 + stack.getLength();
             }
         }
 
@@ -129,6 +128,13 @@ public class AttributeStackMapTable extends Attribute {
             public SameLocals1StackItemExtended(int offsetDelta, VerificationType stack) {
                 super(247, stack);
                 this.offsetDelta = offsetDelta;
+            }
+            
+            @Override
+            public int getLength() {
+                // u1: frame_type
+                // u2: offset_delta
+                return 3 + stack.getLength();
             }
         }
 
