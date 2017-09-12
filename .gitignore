@@ -12,9 +12,11 @@
 *tests/*.jar
 .recommenders/*
 .metadata/*
+bin/*
 pull.sh
 push.sh
 .idea/*
 *.iml
 *.bat
 *.txt
+**/Main.java

@@ -11,8 +11,12 @@ import me.coley.bmf.attribute.annotation.element.*;
 import me.coley.bmf.attribute.clazz.*;
 import me.coley.bmf.attribute.field.*;
 import me.coley.bmf.attribute.method.*;
+import me.coley.bmf.attribute.method.AttributeStackMapTable.*;
 import me.coley.bmf.consts.*;
 
+/**
+ * @author Matt
+ */
 @SuppressWarnings("rawtypes")
 public class ClassWriter {
     public static byte[] write(ClassNode node) throws IOException {
@@ -202,7 +206,10 @@ public class ClassWriter {
         case STACK_MAP_TABLE:
             // TODO: Actually do this (Pre-req: Reading it)
             AttributeStackMapTable stack = (AttributeStackMapTable) attribute;
-            ds.write(stack.data);
+            ds.writeShort(stack.frames.size());
+            for (Frame frame : stack.frames) {
+                writeFrame(frame, ds);
+            }
             break;
         case SYNTHETIC:
             break;
@@ -210,6 +217,58 @@ public class ClassWriter {
             throw new RuntimeException("Unhandled attribute! " + attribute.type);
         }
 
+    }
+
+    private static void writeFrame(Frame frame, DataOutputStream ds) throws IOException {
+        int type = frame.getType();
+        ds.write(type);
+        if (type >= 0 && type <= 63) {
+            // same_frame
+        } else if (type >= 64 && type <= 246) {
+            // same_locals_1_stack_item_frame
+            writeVerificationType(((Frame.SameLocals1StackItem) frame).stack, ds);
+        } else if (type == 247) {
+            // same_locals_1_stack_item_frame_extended
+            ds.writeShort(((Frame.SameLocals1StackItemExtended) frame).offsetDelta);
+            writeVerificationType(((Frame.SameLocals1StackItemExtended) frame).stack, ds);
+        } else if (type >= 248 && type <= 250) {
+            // chop_frame
+            ds.writeShort(((Frame.Chop) frame).offsetDelta);
+        } else if (type == 251) {
+            // same_frame_extended
+            ds.writeShort(((Frame.SameExtened) frame).offsetDelta);
+        } else if (type >= 252 && type <= 254) {
+            // append_frame
+            Frame.Append append = (Frame.Append) frame;
+            ds.writeShort(append.offsetDelta);
+            for (VerificationType v : append.locals) {
+                writeVerificationType(v, ds);
+            }
+        } else if (type == 255) {
+            // full_frame
+            Frame.Full full = (Frame.Full) frame;
+            ds.writeShort(full.offsetDelta);
+            ds.writeShort(full.locals.size());
+            for (VerificationType v : full.locals) {
+                writeVerificationType(v, ds);
+            }
+            ds.writeShort(full.stack.size());
+            for (VerificationType v : full.stack) {
+                writeVerificationType(v, ds);
+            }
+        }
+    }
+
+    private static void writeVerificationType(VerificationType v, DataOutputStream ds) throws IOException {
+        int tag = v.tag;
+        ds.write(tag);
+        if (tag == 7) {
+            // ObjectVariable
+            ds.writeShort(((VerificationType.ObjectVariable) v).poolIndex);
+        } else if (tag == 8) {
+            // UninitializedVariable
+            ds.writeShort(((VerificationType.UninitializedVariable) v).offset);
+        }
     }
 
     private static void writeAnnotations(Attribute attribute, DataOutputStream ds) throws IOException {
@@ -244,7 +303,7 @@ public class ClassWriter {
     }
 
     private static void writeMethodCode(MethodCode opcodes, DataOutputStream ds) throws IOException {
-        // TODO: Actually write opcodes (Pre-req: reading them)
+        // TODO: Actually write opcodes (Pre-req: reading them correctly)
         ds.writeInt(opcodes.original.length);
         ds.write(opcodes.original);
     }
@@ -298,6 +357,7 @@ public class ClassWriter {
             writeElementValue(evp.value, ds);
         }
     }
+    
 
     private static void writeConstant(DataOutputStream ds, Constant constant) throws IOException {
         switch (constant.type) {
@@ -323,8 +383,7 @@ public class ClassWriter {
             break;
         case UTF8:
             ConstUTF8 constUTF = (ConstUTF8) constant;
-            ds.writeShort(constUTF.getValue().getBytes().length);
-            ds.write(constUTF.getValue().getBytes());
+            ds.writeUTF(constUTF.getValue());
             break;
         case CLASS:
             ConstClass constClass = (ConstClass) constant;

@@ -94,15 +94,14 @@ public class AttributeCode extends Attribute {
 
     @Override
     public int getLength() {
-        // TODO: Verify this is correct
-        // u2: max_stack
-        // u2: max_locals
-        int len = 4;
         // Common to all attributes, only needed in length calculation for
         // embedded attributes.
         // u2: name_index
         // u4: attribute_length
         int baseLen = 6;
+        // u2: max_stack
+        // u2: max_locals
+        int len = 4;
         // u4: code_length
         // ??: CODE
         len += 4;

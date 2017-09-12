@@ -10,6 +10,7 @@ import me.coley.bmf.attribute.annotation.element.*;
 import me.coley.bmf.attribute.clazz.*;
 import me.coley.bmf.attribute.field.AttributeConstantValue;
 import me.coley.bmf.attribute.method.*;
+import me.coley.bmf.attribute.method.AttributeStackMapTable.*;
 import me.coley.bmf.consts.*;
 import me.coley.bmf.exception.InvalidClassException;
 import me.coley.bmf.opcode.Opcode;
@@ -22,7 +23,6 @@ import me.coley.bmf.util.StreamUtil;
 /**
  * @author Matt
  */
-
 @SuppressWarnings("rawtypes")
 public class ClassReader {
     // TODO: Modify the structure of ClassNode a little to "optimize" reading.
@@ -120,7 +120,6 @@ public class ClassReader {
         int nameIndex = is.readUnsignedShort();
         int length = is.readInt();
         String name = owner.getConst(nameIndex).getValue().toString();
-
         AttributeType attributeType = AttributeType.fromName(name);
         if (attributeType == null) {
             throw new InvalidClassException("Unknown attribute: " + name);
@@ -260,10 +259,7 @@ public class ClassReader {
             return new AttributeSourceFile(nameIndex, source);
         }
         case STACK_MAP_TABLE: {
-            // TODO: Interpret StackMapTable
-            byte[] data = new byte[length];
-            is.read(data);
-            return new AttributeStackMapTable(nameIndex, data);
+            return readStackMapTable(nameIndex, is);
         }
         case SYNTHETIC: {
             return new AttributeSynthetic(nameIndex);
@@ -280,15 +276,14 @@ public class ClassReader {
         byte[] origOpcodeBytes = new byte[codeLength];
         is.read(origOpcodeBytes);
         MethodCode codeData = new MethodCode(origOpcodeBytes);
-
+        // TODO: Verify this on test cases
         boolean parseOpcodes = true;
         if (parseOpcodes) {
             // Create opcode data
             List<Opcode> opcodes = new ArrayList<>();
             IndexableDataStream opstr = StreamUtil.fromBytes(codeData.original);
             // Is there a way to find the # of opcodes? Can't seem to figure one
-            // out
-            // aside from reading and knowing after the fact.
+            // out aside from reading and knowing after the fact.
             while (opstr.available() > 0) {
                 try {
                     Opcode op = readOpcode(opstr);
@@ -296,6 +291,7 @@ public class ClassReader {
                 } catch (Exception e) {
                     String className = ConstUtil.getClassName(owner, owner.classIndex);
                     System.err.println("<" + className + "> Failed at (Skipped opcode parsing): " + opcodes.size());
+                    e.printStackTrace();
                     return codeData;
                 }
             }
@@ -733,7 +729,8 @@ public class ClassReader {
         case Opcode.INVOKEDYNAMIC:
             INVOKEDYNAMIC indy = new INVOKEDYNAMIC(is.readUnsignedShort());
             // Discard two bytes that are always 0.
-            is.readUnsignedByte(); is.readUnsignedByte();
+            is.readUnsignedByte();
+            is.readUnsignedByte();
             return indy;
         case Opcode.NEW:
             return new NEW(is.readUnsignedShort());
@@ -900,11 +897,7 @@ public class ClassReader {
             return new ConstString(index);
         }
         case UTF8: {
-            int length = is.readUnsignedShort();
-            byte[] data = new byte[length];
-            is.read(data);
-            String s = new String(data);
-            return new ConstUTF8(s);
+            return new ConstUTF8(is.readUTF());
         }
         case CLASS: {
             int name = is.readUnsignedShort();
@@ -913,8 +906,7 @@ public class ClassReader {
         case FIELD: {
             int clazz = is.readUnsignedShort();
             int nameType = is.readUnsignedShort();
-            ConstField cf = new ConstField(clazz, nameType);
-            return cf;
+            return new ConstField(clazz, nameType);
         }
         case METHOD: {
             int clazz = is.readUnsignedShort();
@@ -947,6 +939,76 @@ public class ClassReader {
         }
         default:
             break;
+        }
+        return null;
+    }
+
+    private static Attribute readStackMapTable(int nameIndex, IndexableDataStream is) throws IOException {
+        int entries = is.readUnsignedShort();
+        List<Frame> frames = new ArrayList<>();
+        for (int i = 0; i < entries; i++) {
+            int type = is.read();
+            if (type >= 0 && type <= 63) {
+                // same_frame
+                frames.add(new Frame.Same(type));
+            } else if (type >= 64 && type <= 246) {
+                // same_locals_1_stack_item_frame
+                frames.add(new Frame.SameLocals1StackItem(type, readVerificationType(is)));
+            } else if (type == 247) {
+                // same_locals_1_stack_item_frame_extended
+                int offset = is.readUnsignedShort();
+                frames.add(new Frame.SameLocals1StackItemExtended(offset, readVerificationType(is)));
+            } else if (type >= 248 && type <= 250) {
+                // chop_frame
+                int offset = is.readShort();
+                frames.add(new Frame.Chop(type, offset));
+            } else if (type == 251) {
+                // same_frame_extended
+                int offset = is.readUnsignedShort();
+                frames.add(new Frame.SameExtened(offset));
+            } else if (type >= 252 && type <= 254) {
+                // append_frame
+                int offset = is.readUnsignedShort();
+                List<VerificationType> locals = new ArrayList<>();
+                int size = type - 251;
+                for (int j = 0; j < size; j++) {
+                    locals.add(readVerificationType(is));
+                }
+                frames.add(new Frame.Append(type,offset, locals));
+            } else if (type == 255) {
+                // full_frame
+                int offset = is.readUnsignedShort();
+                int numLocals = is.readUnsignedShort();
+                List<VerificationType> locals = new ArrayList<>();
+                for (int j = 0; j < numLocals; j++) {
+                    locals.add(readVerificationType(is));
+                }
+                int numStack = is.readUnsignedShort();
+                List<VerificationType> stack = new ArrayList<>();
+                for (int j = 0; j < numStack; j++) {
+                    stack.add(readVerificationType(is));
+                }
+                frames.add(new Frame.Full(offset, locals, stack));
+            }
+        }
+        return new AttributeStackMapTable(nameIndex, frames);
+    }
+
+    private static VerificationType readVerificationType(IndexableDataStream is) throws IOException {
+        int tag = is.read();
+        switch (tag) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            return new VerificationType(tag);
+        case 7:
+            return new VerificationType.ObjectVariable(is.readUnsignedShort());
+        case 8:
+            return new VerificationType.UninitializedVariable(is.readUnsignedShort());
         }
         return null;
     }
