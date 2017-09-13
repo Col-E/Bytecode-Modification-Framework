@@ -2,6 +2,7 @@ package me.coley.bmf;
 
 import me.coley.bmf.attribute.*;
 import me.coley.bmf.attribute.annotation.*;
+import me.coley.bmf.util.ConstUtil;
 
 /**
  * A member. Implementation is either a field or method.
@@ -61,6 +62,38 @@ public abstract class MemberNode implements AttributeOwner {
      */
     public MemberNode(ClassNode owner) {
         this.owner = owner;
+    }
+
+    /**
+     * Finds the member's name by accessing the owner-class's constant pool.
+     * 
+     * @return The member's name.
+     */
+    public String getName() {
+        return ConstUtil.getUTF8(owner, name);
+    }
+
+    /**
+     * Finds the member's descriptor by accessing the owner-class's constant
+     * pool.
+     * 
+     * @return The member's descriptor.
+     */
+    public String getDesc() {
+        return ConstUtil.getUTF8(owner, desc);
+    }
+
+    /**
+     * Finds the member's signature by accessing the owner-class's constant
+     * pool.
+     * 
+     * @return The member's signature. Null if none exists.
+     */
+    public String getSignature() {
+        if (signature == null) {
+            return null;
+        }
+        return ConstUtil.getUTF8(owner, signature.signature);
     }
 
     @Override

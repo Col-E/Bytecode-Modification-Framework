@@ -96,21 +96,44 @@ public class ClassNode implements AttributeOwner {
     public AttributeSourceDebugExtension sourceDebug;
 
     /**
-     * Return the class's name.
+     * Finds the class's name in the constant pool. Returns as a string.
      * 
-     * @return
+     * @return Class's name.
      */
     public String getName() {
         return ConstUtil.getClassName(this, classIndex);
     }
 
     /**
-     * Return the super class's name.
+     * Finds the class's super's name in the constant pool. Returns as a string.
      * 
-     * @return
+     * @return Class's super's name.
      */
     public String getSuperName() {
         return ConstUtil.getClassName(this, superIndex);
+    }
+
+    /**
+     * Finds the class's signature in the constant pool. Returns as string.
+     * 
+     * @return The class's signature. Null if none exists.
+     */
+    public String getSignature() {
+        if (signature == null) {
+            return null;
+        }
+        return ConstUtil.getUTF8(this, signature.signature);
+    }
+
+    /**
+     * Checks if the class is an array type. Names of array classes will look
+     * like field descriptors due to their usage of '[', 'L', and ';'. For
+     * example an array of 'Apple' would be '[LApple;'.
+     * 
+     * @return Class is array type.
+     */
+    public boolean isArray() {
+        return getName().contains("[");
     }
 
     /**

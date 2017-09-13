@@ -15,7 +15,6 @@ import me.coley.bmf.type.Type;
 import me.coley.bmf.type.descriptors.MemberDescriptor;
 import me.coley.bmf.util.Box;
 import me.coley.bmf.util.ClassLoadStatus;
-import me.coley.bmf.util.ConstUtil;
 import me.coley.bmf.util.ImmutableBox;
 
 public class Mapping {
@@ -91,25 +90,20 @@ public class Mapping {
             }
         }
         // Adding the members
-        String currDescDebugging = null;
         try {
             for (MethodNode mn : node.methods) {
-                String namee = ConstUtil.getUTF8(node, mn.name);
+                String namee = mn.getName();
                 Box<String> box = new Box<String>(namee);
-                cm.addMember(this, new MethodMapping(box,
-                        Type.method(this, currDescDebugging = ConstUtil.getUTF8(node, mn.desc))));
+                cm.addMember(this, new MethodMapping(box, Type.method(this, mn.getDesc())));
                 // TODO: add variables to MethodMapping
             }
             for (FieldNode fn : node.fields) {
-                String namee = ConstUtil.getUTF8(node, fn.name);
+                String namee = fn.getName();
                 Box<String> box = new Box<String>(namee);
-                cm.addMember(this, new MemberMapping(box,
-                        Type.variable(this, currDescDebugging = ConstUtil.getUTF8(node, fn.desc))));
+                cm.addMember(this, new MemberMapping(box, Type.variable(this, fn.getDesc())));
             }
         } catch (Exception e) {
-            // Testing
-            System.err.println("Failed to add member: " + cm.name.original + "." + currDescDebugging);
-            System.exit(0);
+            throw new RuntimeException("Unable to create MemberMapping for member of class: " + node.getName());
         }
         inited.add(cm);
     }
@@ -406,21 +400,9 @@ public class Mapping {
             }
         }
         for (MemberMapping m : owner.getMembers()) {
-            if (
-                    m.
-                    desc.
-                    original.
-                    equals
-                    
-                    (mm.
-                         desc.
-                         original) && 
-                    m.
-                    name.
-                    original.equals(
-                            mm.
-                            name.
-                            original)) {
+            if (m.desc.original.equals
+
+            (mm.desc.original) && m.name.original.equals(mm.name.original)) {
                 return m;
             }
         }

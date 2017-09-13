@@ -7,16 +7,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import me.coley.bmf.attribute.clazz.InnerClass;
-import me.coley.bmf.attribute.method.AttributeStackMapTable.Frame;
-import me.coley.bmf.attribute.method.AttributeStackMapTable.VerificationType;
-import me.coley.bmf.attribute.method.AttributeStackMapTable.VerificationType.ObjectVariable;
 import me.coley.bmf.attribute.method.LocalVariableType;
 import me.coley.bmf.consts.*;
 import me.coley.bmf.consts.mapping.ConstMemberDesc;
@@ -26,8 +22,6 @@ import me.coley.bmf.mapping.ClassMapping;
 import me.coley.bmf.mapping.Mapping;
 import me.coley.bmf.mapping.MemberMapping;
 import me.coley.bmf.mapping.MethodMapping;
-import me.coley.bmf.opcode.Opcode;
-import me.coley.bmf.opcode.AbstractClassPointer;
 import me.coley.bmf.signature.Signature;
 import me.coley.bmf.type.Type;
 import me.coley.bmf.util.ConstUtil;
@@ -241,10 +235,10 @@ public class JarReader {
         for (String nodeName : classEntries.keySet()) {
             ClassNode node = classEntries.get(nodeName);
             // Update class signature
-            if (node.signature != null) {
-                String strSig = ConstUtil.getUTF8(node, node.signature.signature);
-                Signature sig = strSig.contains("(") ? Signature.method(mapping, strSig)
-                        : Signature.variable(mapping, strSig);
+            String strClassSig = node.getSignature();
+            if (strClassSig != null) {
+                Signature sig = strClassSig.contains("(") ? Signature.method(mapping, strClassSig)
+                        : Signature.variable(mapping, strClassSig);
                 node.setConst(node.signature.signature, new ConstSignature(sig));
             }
             // Update constant pool
@@ -260,8 +254,8 @@ public class JarReader {
             members.addAll(node.methods);
             for (MemberNode member : members) {
                 // Update member signature
-                if (member.signature != null) {
-                    String strSig = ConstUtil.getUTF8(node, member.signature.signature);
+                String strSig = member.getSignature();
+                if (strSig != null) {
                     Signature sig = strSig.contains("(") ? Signature.method(mapping, strSig)
                             : Signature.variable(mapping, strSig);
                     node.setConst(member.signature.signature, new ConstSignature(sig));
@@ -278,61 +272,11 @@ public class JarReader {
                                 node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, sig)));
                             }
                         }
-                        // Update classes that opcodes reference
-                        if (meth.code.opcodes != null) {
-                            for (Opcode op : meth.code.opcodes.opcodes) {
-                                // Replace class pointer references. Only done
-                                // because arrays types are the spawn of the
-                                // devil.
-                                if (op instanceof AbstractClassPointer) {
-                                    int classIndex = ((AbstractClassPointer) op).classIndex;
-                                    int utfIndex = ((ConstClass) node.getConst(classIndex)).getValue();
-                                    String utfContent = ConstUtil.getUTF8(node, utfIndex);
-                                    // Why do arrays make class names the type
-                                    // descriptor?
-                                    // God, I wish I knew...
-                                    if (utfContent.contains(";")) {
-                                        node.setConst(utfIndex,
-                                                new ConstMemberDesc(Type.variable(mapping, utfContent)));
-                                    }
-                                } 
-                                // Ok so it turns out visitCP is all it needed. Minimize this and surrounding code as MUCH as possible.
-                                /** 
-                                else if (op instanceof AbstractMethodOpcode) {
-                                    AbstractMethodOpcode methodOp = (AbstractMethodOpcode) op;
-                                    AbstractMemberConstant memberConst = (AbstractMemberConstant) node
-                                            .getConst(methodOp.methodIndex);
-                                    
-                                } else if (op instanceof AbstractFieldOpcode) {
-                                    AbstractFieldOpcode fieldOp = (AbstractFieldOpcode) op;
-                                    AbstractMemberConstant memberConst = (AbstractMemberConstant) node
-                                            .getConst(fieldOp.fieldIndex);
-                                }*/
-                            }
-                        }
-                        // Update stack-frames
-                        if (meth.code.stackMap != null) {
-                            for (Frame frame : meth.code.stackMap.frames) {
-                                // Replace class constants referenced by frames
-                                // containing variable data.
-                                if (frame instanceof Frame.Append) {
-                                    Frame.Append append = (Frame.Append) frame;
-                                    replaceStackMap(node, append.locals);
-                                } else if (frame instanceof Frame.Full) {
-                                    Frame.Full full = (Frame.Full) frame;
-                                    replaceStackMap(node, full.locals);
-                                    replaceStackMap(node, full.stack);
-                                } else if (frame instanceof Frame.SameLocals1StackItem) {
-                                    Frame.SameLocals1StackItem same = (Frame.SameLocals1StackItem) frame;
-                                    replaceStackMap(node, Arrays.asList(same.stack));
-                                }
-                            }
-                        }
                     }
                 }
                 // Updating member names if they haven't been updated already.
-                String name = ConstUtil.getUTF8(node, member.name);
-                String desc = ConstUtil.getUTF8(node, member.desc);
+                String name = member.getName();
+                String desc = member.getDesc();
                 MemberMapping mm = mapping.getMemberMapping(cm, name, desc);
                 if (mm instanceof MethodMapping) {
                     mm = mapping.getMemberInstance(cm, mm);
@@ -354,24 +298,6 @@ public class JarReader {
         }
     }
 
-    private void replaceStackMap(ClassNode node, List<VerificationType> list) {
-        for (VerificationType v : list) {
-            if (v.tag == 7) {
-                VerificationType.ObjectVariable vo = (ObjectVariable) v;
-                int classIndex = vo.poolIndex;
-                int utfIndex = ((ConstClass) node.getConst(classIndex)).getValue();
-                String utfContent = ConstUtil.getUTF8(node, utfIndex);
-                // Seriously who thought giving arrays a DESCRIPTOR as their
-                // name was a good idea?
-                if (utfContent.contains("[")) {
-                    node.setConst(utfIndex, new ConstMemberDesc(Type.variable(mapping, utfContent)));
-                } else {
-                    node.setConst(utfIndex, new ConstName(mapping.getClassName(utfContent)));
-                }
-            }
-        }
-    }
-
     private void visitCP(ClassNode node, int i, String ownerContext, Map<Integer, Boolean> visited,
             Map<Integer, ConstRedirection> redirs) {
         // Skip if constant pool entry is null.
@@ -389,9 +315,9 @@ public class JarReader {
             // Ensure the UTF is uses the class mapping.
             // If index changed, add constant to end of constant-pool for
             // the new usage. Otherwise, override the existing one.
-            String name = ConstUtil.getUTF8(node, utfIndex);
-            ConstUTF8 constName = null;
-            if (name.contains("[")) {
+            ConstUTF8 constName;
+            String name = node.getName();
+            if (node.isArray()) {
                 constName = new ConstMemberDesc(Type.variable(mapping, name));
             } else {
                 constName = mapping.hasClass(name) ? new ConstName(mapping.getClassName(name))
