@@ -316,7 +316,7 @@ public class JarReader {
             // If index changed, add constant to end of constant-pool for
             // the new usage. Otherwise, override the existing one.
             ConstUTF8 constName;
-            String name = node.getName();
+            String name = ConstUtil.getUTF8(node, utfIndex);
             if (node.isArray()) {
                 constName = new ConstMemberDesc(Type.variable(mapping, name));
             } else {
