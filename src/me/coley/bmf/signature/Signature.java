@@ -1,56 +1,18 @@
 package me.coley.bmf.signature;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import me.coley.bmf.mapping.InnerClassMapping;
 import me.coley.bmf.mapping.Mapping;
 import me.coley.bmf.util.Box;
+import me.coley.bmf.util.ImmutableBox;
 
 public abstract class Signature {
-    protected Map<String, Box<String>> genericLabelMap;
+    protected TypeArgHelper helper;
     protected SigArg type;
 
     public abstract String toSignature();
-
-    /**
-     * Reads a method's signature.
-     * 
-     * @param mapping
-     * @param sig
-     *            Method's signature.
-     * @return
-     */
-    public static Signature method(Mapping mapping, String sig) {
-        Map<String, Box<String>> genericLabelMap = null;
-        // Independent generic
-        if (sig.startsWith("<")) {
-            int end = readToGenericClose(sig, 0);
-            genericLabelMap = new HashMap<>();
-            String sub = sig.substring(1, end);
-            String split[] = sub.split(";(?!>)");
-            for (String s : split) {
-                String split2[] = s.split(":");
-
-                if (split2.length == 2) {
-                    String cn = split2[1];
-                    if (cn.length() > 1) {
-                        cn = cn.substring(1);
-                    }
-                    genericLabelMap.put(split2[0], mapping.getClassName(cn));
-                }
-            }
-            sig = sig.substring(end + 1);
-        }
-
-        int argEndIndex = sig.indexOf(')');
-        String strArgs = sig.substring(1, argEndIndex);
-        String strRet = sig.substring(argEndIndex + 1);
-        List<SigArg> parameters = readSigArgs(mapping, strArgs);
-        SigArg retType = readSigElement(mapping, strRet);
-        return new MethodSignature(genericLabelMap, parameters, retType);
-    }
 
     /**
      * Reads a local variable or field's signature.
@@ -60,148 +22,190 @@ public abstract class Signature {
      *            Variable or field's signature.
      * @return
      */
-    public static Signature variable(Mapping mapping, String sig) {
-        Map<String, Box<String>> genericLabelMap = null;
-        // Independent generic
-        if (sig.startsWith("<")) {
-            int end = readToGenericClose(sig, 0);
-            genericLabelMap = new HashMap<>();
-            String sub = sig.substring(1, end - 1);
-            String split[] = sub.split(";");
-            for (String s : split) {
-                String split2[] = s.split(":");
-                if (split2.length == 2) {
-                    genericLabelMap.put(split2[0], mapping.getClassName(split2[1].substring(1)));
+    public static Signature read(Mapping mapping, String sig) {
+        int len = sig.length();
+        int pos;
+        char c;
+        TypeArgHelper helper = new TypeArgHelper();
+        // Parse type arguments
+        // Example: <T:Ljava/lang/Object;>
+        if (sig.charAt(0) == '<') {
+            pos = 2;
+            do {
+                int end = sig.indexOf(':', pos);
+                // Parse arguments name.
+                // From the example this would be 'T'
+                String name = sig.substring(pos - 1, end);
+                pos = end + 1;
+                // Parse type arguments value
+                c = sig.charAt(pos);
+                if (c == 'L' || c == '[' || c == 'T') {
+                    SigArg s = parseType(mapping, sig, pos);
+                    helper.addType(name, s);
+                    pos += s.length();
                 }
-            }
-            sig = sig.substring(end + 1);
-        }
-        SigArg type = readSigElement(mapping, sig);
-        return new TypeSignature(type, genericLabelMap);
-    }
-
-    /**
-     * Reads a list of signature elements.
-     * 
-     * @param mapping
-     * @param argStr
-     *            Signature substring <i>(the list)</i>
-     * @return
-     */
-    private static List<SigArg> readSigArgs(Mapping mapping, String argStr) {
-        char[] carr = argStr.toCharArray();
-        List<SigArg> parameters = new ArrayList<>();
-        // Skip if no args
-        if (argStr.length() > 0) {
-            int i = 0;
-            int array = 0;
-            while (i < carr.length) {
-                char c = carr[i];
-                SigArg arg = null;
-                if (c == '[') {
-                    array++;
-                } else if (c == 'T') {
-                    arg = (new SigArgGeneric(Character.toString(carr[i + 1])));
-                    i += 2;
-                } else if (c == 'L') {
-                    String type = argStr.substring(i);
-                    // Get the end of the type
-                    int typeEndPos = type.indexOf(";");
-                    // Generics are insertted between the type and the ; at the
-                    // end.
-                    // Need to recalculate the ';' position if there are
-                    // generics in the way.
-                    if (type.contains("<") && typeEndPos > type.indexOf("<")) {
-                        int cutPos = type.indexOf("<");
-                        String cut = type.substring(cutPos, type.lastIndexOf(">") + 1);
-                        typeEndPos = cut.length() + 1;
-                    } else {
-                        type = type.substring(0, typeEndPos + 1);
-                    }
-                    arg = readSigElement(mapping, type);
-                    i += type.length() - 1;
-                } else {
-                    arg = (new SigArgPrimitive(Character.toString(c)));
+                // Remaining size implies existence of interfaces.
+                // Parse interfaces.
+                while ((c = sig.charAt(pos++)) == ':') {
+                    SigArg s = parseType(mapping, sig, pos);
+                    helper.addInterface(name, s);
+                    pos += s.length();
                 }
-                if (arg != null) {
-                    // Wrap in array if needed
-                    while (array > 0) {
-                        arg = new SigArgArray(arg);
-                        array--;
-                    }
-                    parameters.add(arg);
-                }
-                i++;
-            }
-        }
-        return parameters;
-    }
-
-    /**
-     * Reads an element from the given signature substring.
-     * 
-     * @param mapping
-     * @param type
-     *            Substring to read element from.
-     * @return
-     */
-    private static SigArg readSigElement(Mapping mapping, String type) {
-        SigArg arg = null;
-        int array = 0;
-        while (type.charAt(array) == '[') {
-            array++;
-        }
-        if (type.contains("<")) {
-            int aa = type.indexOf("<");
-            int zz = readToGenericClose(type.substring(aa), 0);
-            int bb = aa + zz;
-            String typeCopy = type.substring(1, aa) + type.substring(bb + 1);
-            typeCopy = typeCopy.substring(0, typeCopy.indexOf(";"));
-            List<SigArg> args = readSigArgs(mapping, type.substring(aa + 1, bb));
-            arg = new SigArgClass(mapping.getClassName(typeCopy), args);
+            } while (c != '>');
         } else {
-            char firstChar = type.charAt(array);
-            if (firstChar == 'T') {
-                arg = new SigArgGeneric(type.substring(1 + array, type.length() - 1));
-            } else if (type.length() == 1) {
-                arg = new SigArgPrimitive(type);
-            } else {
-                arg = new SigArgClass(mapping.getClassName(type.substring(1, type.length() - 1)), null);
+            pos = 0;
+        }
+        // Parse method signature
+        if (sig.charAt(pos) == '(') {
+            pos++;
+            // Parse parameters if any exist
+            List<SigArg> parameters = (sig.charAt(pos) != ')') ? new ArrayList<>() : null;
+            while (sig.charAt(pos) != ')') {
+                SigArg param = parseType(mapping, sig, pos);
+                parameters.add(param);
+                pos += param.length();
             }
+            // Parse return type
+            SigArg retType = parseType(mapping, sig, pos + 1);
+            pos += retType.length() + 1;
+            // Remaining size implies existence of exceptions.
+            // Parse exceptions.
+            while (pos < len) {
+                // TODO:
+                // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.4
+                // Parse exceptions, I've never seen a sample with them though.
+                SigArg s2 = parseType(mapping, sig, pos);
+                System.err.println("Exceptions: " + s2.toArg());
+                pos += s2.length();
+            }
+            // Combine, compare to input and return if matched.
+            MethodSignature ts = new MethodSignature(helper, parameters, retType);
+            if (!ts.toSignature().equals(sig)) {
+                throw new RuntimeException("Invalid parse of: " + sig + " --(gave)--> " + ts.toSignature());
+            }
+            return ts;
+        } // Parse field signature
+        else {
+            // Parse type
+            SigArg s = parseType(mapping, sig, pos);
+            pos += s.length();
+            // Remaining size implies existence of interfaces.
+            // Parse interfaces if any exist.
+            List<SigArg> interfaces = (pos < len) ? new ArrayList<>() : null;
+            while (pos < len) {
+                SigArg s2 = parseType(mapping, sig, pos);
+                interfaces.add(s2);
+                pos += s2.length();
+            }
+            // Combine, compare to input and return if matched.
+            TypeSignature ts = new TypeSignature(s, helper, interfaces);
+            if (!ts.toSignature().equals(sig)) {
+                throw new RuntimeException("Invalid parse of: " + sig + " --(gave)--> " + ts.toSignature());
+            }
+            return ts;
         }
-        while (array > 0) {
-            arg = new SigArgArray(arg);
-            array--;
-        }
-        return arg;
     }
 
-    /**
-     * Reads until the generic section ends.
-     * 
-     * @param sig
-     *            Input
-     * @param level
-     *            Initial level
-     * @return Position of closing '>'
-     */
-    private static int readToGenericClose(String sig, int level) {
-        int i = 0;
-        int last = 0;
-        char[] carr = sig.toCharArray();
-        while (i < carr.length) {
-            char c = carr[i];
-            if (c == '<') {
-                level += 1;
-            } else if (c == '>') {
-                level -= 1;
-                last = i;
+    private static SigArg parseType(final Mapping mapping, final String sig, int pos) {
+        char c;
+        int start, outerStart, end, genericsStart = -1;
+        boolean inner;
+        List<SigArg> generics = null;
+        switch (c = sig.charAt(pos++)) {
+        case 'Z':
+        case 'C':
+        case 'B':
+        case 'S':
+        case 'I':
+        case 'F':
+        case 'J':
+        case 'D':
+        case 'V':
+            return new SigArgPrimitive(String.valueOf(c));
+        case '[':
+            return new SigArgArray(parseType(mapping, sig, pos));
+        case 'T':
+            end = sig.indexOf(';', pos);
+            return new SigArgGeneric(sig.substring(pos, end));
+        case 'L':
+            start = pos - 1;
+            outerStart = start;
+            inner = false;
+            while (true) {
+                switch (c = sig.charAt(pos++)) {
+                case '.':
+                case ';':
+                    if (c == ';') {
+                        if (generics == null) {
+                            genericsStart = pos - 1;
+                        }
+                        if (inner) {
+                            String outerName = sig.substring(outerStart + 1, genericsStart);
+                            String innerName = outerName + "$" + sig.substring(start, pos - 1);
+                            Box<String> boxOuter = mapping.getClassName(outerName);
+                            if (boxOuter == null) {
+                                boxOuter = new ImmutableBox<String>(outerName);
+                            }
+                            Box<String> boxInner = mapping.getClassName(innerName);
+                            if (boxInner == null) {
+                                boxInner = new ImmutableBox<String>(outerName);
+                            }
+                            if (boxInner instanceof InnerClassMapping.InnerClassBox) {
+                                return new SigArgClassWithInner(boxOuter, (InnerClassMapping.InnerClassBox) boxInner,
+                                        generics);
+                            }
+                            throw new RuntimeException("Could not find inner mappings for: " + innerName);
+                        } else {
+                            String value = sig.substring(start, genericsStart);
+                            Box<String> box = mapping.getClassName(value);
+                            if (box == null) {
+                                box = new ImmutableBox<String>(value);
+                            }
+                            return new SigArgClass(box, generics);
+                        }
+
+                    }
+                    outerStart = start;
+                    start = pos;
+                    inner = true;
+                    break;
+                case '<':
+                    generics = new ArrayList<>();
+                    genericsStart = pos - 1;
+                    boolean loop = true;
+                    while (loop) {
+                        switch (c = sig.charAt(pos)) {
+                        case '>':
+                            loop = false;
+                            break;
+                        case '*':
+                            ++pos;
+                            generics.add(new SigArgWild(Character.toString(c), null));
+                            break;
+                        case '+':
+                        case '-': {
+                            SigArg s = parseType(mapping, sig, pos + 1);
+                            pos += s.length() + 1;
+                            generics.add(new SigArgWild(Character.toString(c), s));
+                            break;
+                        }
+                        case '=': {
+                            SigArg s = parseType(mapping, sig, pos);
+                            pos += s.length();
+                            generics.add(new SigArgWild(Character.toString(c), s));
+                            break;
+                        }
+                        default: {
+                            SigArg s = parseType(mapping, sig, pos);
+                            pos += s.length();
+                            generics.add(s);
+                            break;
+                        }
+                        }
+                    }
+                }
             }
-            if (level == 0) {
-                return i;
-            }
-            i++;
         }
-        return last;
+        throw new RuntimeException("Failed to parse: " + sig + " @ " + pos + " : " + sig.substring(pos));
     }
 }

@@ -8,13 +8,13 @@ public class SigArgClass extends SigArg {
     /**
      * The class's name
      */
-    public final Box<String> className;
+    private final Box<String> className;
     /**
      * Generic args of classes with generic types.
      */
-    public final List<SigArg> genericArgs;
+    private final List<SigArg> genericArgs;
 
-    public SigArgClass(Box<String> className, List<SigArg> genericArgs) {
+    SigArgClass(Box<String> className, List<SigArg> genericArgs) {
         this.className = className;
         this.genericArgs = genericArgs;
     }
@@ -22,13 +22,13 @@ public class SigArgClass extends SigArg {
     @Override
     String toArg() {
         if (genericArgs == null) {
-            return "L" + className.getValue() + ";";
+            return className.getValue() + ";";
         } else {
-            StringBuilder combo = new StringBuilder();
+            StringBuilder args = new StringBuilder();
             for (SigArg arg : genericArgs) {
-                combo.append(arg.toArg()) ;
+                args.append(arg.toArg());
             }
-            return "L" + className.getValue() + "<" + combo.toString() + ">;";
+            return className.getValue() + "<" + args.toString() + ">;";
         }
     }
 }

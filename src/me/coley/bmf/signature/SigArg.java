@@ -1,5 +1,9 @@
 package me.coley.bmf.signature;
 
-public abstract class SigArg {
+abstract class SigArg {
     abstract String toArg();
+    
+    int length() {
+        return toArg().length();
+    }
 }

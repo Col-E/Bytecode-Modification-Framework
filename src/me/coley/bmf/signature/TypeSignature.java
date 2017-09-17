@@ -1,32 +1,36 @@
 package me.coley.bmf.signature;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
-import me.coley.bmf.util.Box;
+import java.util.List;
 
 public class TypeSignature extends Signature {
+    private final List<SigArg> interfaces;
 
     public TypeSignature(SigArg type) {
-        this(type, null);
+        this(type, null, null);
     }
 
-    public TypeSignature(SigArg type, Map<String, Box<String>> genericLabelMap) {
-        this.genericLabelMap = genericLabelMap;
+    public TypeSignature(SigArg type, TypeArgHelper helper, List<SigArg> interfaces) {
+        this.helper = helper;
+        this.interfaces = interfaces;
         this.type = type;
     }
 
     @Override
     public String toSignature() {
-        StringBuilder labelMapStr = new StringBuilder();
-        if (genericLabelMap != null && genericLabelMap.size() > 0) {
-            labelMapStr.append("<");
-            for (Entry<String, Box<String>> entry : genericLabelMap.entrySet()) {
-                labelMapStr.append(entry.getKey() + ":L" + entry.getValue().getValue() + ";");
-            }
-            labelMapStr.append(">");
+        // Build type parameters
+        StringBuilder strVariables = new StringBuilder();
+        if (helper != null) {
+            strVariables.append(helper.toGeneric());
         }
-        return labelMapStr.toString() + type.toArg();
+        // List interfaces
+        StringBuilder strInterfaces = new StringBuilder();
+        if (interfaces != null && interfaces.size() > 0) {
+            for (SigArg arg : interfaces) {
+                strInterfaces.append(arg.toArg());
+            }
+        }
+        // Combine
+        return strVariables.toString() + type.toArg() + strInterfaces.toString();
     }
 
 }

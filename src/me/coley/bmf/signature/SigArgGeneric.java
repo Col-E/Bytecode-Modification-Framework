@@ -4,14 +4,14 @@ public class SigArgGeneric extends SigArg {
     /**
      * The name of the generic (T, K, V, etc.)
      */
-    public final String genericName;
+    private final String varName;
 
-    public SigArgGeneric(String genericName) {
-        this.genericName = genericName;
+    SigArgGeneric(String varName) {
+        this.varName = varName;
     }
 
     @Override
     String toArg() {
-        return "T" + genericName + ";";
+        return "T" + varName + ";";
     }
 }

@@ -11,7 +11,11 @@ public class InnerClassMapping extends ClassMapping {
         return new InnerClassBox(outer, inner);
     }
 
-    static class InnerClassBox extends Box<String> {
+    public String getInnerSection() {
+        return ((InnerClassBox) name).inner.getValue();
+    }
+
+    public static class InnerClassBox extends Box<String> {
         private final Box<String> outer;
         private Box<String> inner;
 
@@ -19,6 +23,10 @@ public class InnerClassMapping extends ClassMapping {
             super(inner);
             this.outer = outer;
             this.inner = new Box<String>(trim(inner));
+        }
+        
+        public String getInnerSection() {
+            return inner.getValue();
         }
 
         @Override

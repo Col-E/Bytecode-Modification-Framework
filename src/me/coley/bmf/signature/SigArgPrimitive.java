@@ -4,9 +4,9 @@ public class SigArgPrimitive extends SigArg {
     /**
      * Primitive desc (I, Z, F, etc.)
      */
-    public final String desc;
+    private final String desc;
 
-    public SigArgPrimitive(String desc) {
+    SigArgPrimitive(String desc) {
         this.desc = desc;
     }
 

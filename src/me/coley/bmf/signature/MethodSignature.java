@@ -1,16 +1,12 @@
 package me.coley.bmf.signature;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import me.coley.bmf.util.Box;
 
 public class MethodSignature extends Signature {
     private List<SigArg> parameters;
 
-    public MethodSignature(Map<String, Box<String>> genericLabelMap, List<SigArg> parameters, SigArg retType) {
-        this.genericLabelMap = genericLabelMap;
+    public MethodSignature(TypeArgHelper helper, List<SigArg> parameters, SigArg retType) {
+        this.helper = helper;
         this.parameters = parameters;
         this.type = retType;
     }
@@ -21,21 +17,19 @@ public class MethodSignature extends Signature {
 
     @Override
     public String toSignature() {
-        // Build map of generic types is defined by the method signature
-        StringBuilder labelMapStr = new StringBuilder();
-        if (genericLabelMap != null && genericLabelMap.size() > 0) {
-            labelMapStr.append("<");
-            for (Entry<String, Box<String>> entry : genericLabelMap.entrySet()) {
-                labelMapStr.append(entry.getKey() + ":L" + entry.getValue().getValue() + ";");
-            }
-            labelMapStr.append(">");
+        // Build type parameters
+        StringBuilder strVariables = new StringBuilder();
+        if (helper != null) {
+            strVariables.append(helper.toGeneric());
         }
         // List args
-        StringBuilder args = new StringBuilder();
-        for (SigArg arg : parameters) {
-            args.append(arg.toArg());
+        StringBuilder strArgs = new StringBuilder();
+        if (parameters != null && parameters.size() > 0) {
+            for (SigArg arg : parameters) {
+                strArgs.append(arg.toArg());
+            }
         }
         // Combine
-        return labelMapStr.toString() + "(" + args.toString() + ")" + type.toArg();
+        return strVariables.toString() + "(" + strArgs.toString() + ")" + type.toArg();
     }
 }

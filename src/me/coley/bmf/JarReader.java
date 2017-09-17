@@ -237,8 +237,7 @@ public class JarReader {
             // Update class signature
             String strClassSig = node.getSignature();
             if (strClassSig != null) {
-                Signature sig = strClassSig.contains("(") ? Signature.method(mapping, strClassSig)
-                        : Signature.variable(mapping, strClassSig);
+                Signature sig = Signature.read(mapping, strClassSig);
                 node.setConst(node.signature.signature, new ConstSignature(sig));
             }
             // Update constant pool
@@ -256,8 +255,7 @@ public class JarReader {
                 // Update member signature
                 String strSig = member.getSignature();
                 if (strSig != null) {
-                    Signature sig = strSig.contains("(") ? Signature.method(mapping, strSig)
-                            : Signature.variable(mapping, strSig);
+                    Signature sig =Signature.read(mapping, strSig);
                     node.setConst(member.signature.signature, new ConstSignature(sig));
                 }
                 // Update method
@@ -269,7 +267,7 @@ public class JarReader {
                             List<LocalVariableType> types = meth.code.variableTypes.localTypes;
                             for (LocalVariableType type : types) {
                                 String sig = ConstUtil.getUTF8(node, type.signature);
-                                node.setConst(type.signature, new ConstSignature(Signature.variable(mapping, sig)));
+                                node.setConst(type.signature, new ConstSignature(Signature.read(mapping, sig)));
                             }
                         }
                     }
@@ -319,9 +317,10 @@ public class JarReader {
             String name = ConstUtil.getUTF8(node, utfIndex);
             if (node.isArray()) {
                 constName = new ConstMemberDesc(Type.variable(mapping, name));
+            } else if (mapping.hasClass(name)) {
+                constName = new ConstName(mapping.getClassName(name));
             } else {
-                constName = mapping.hasClass(name) ? new ConstName(mapping.getClassName(name))
-                        : new ConstName(new ImmutableBox<>(name));
+                constName = new ConstName(new ImmutableBox<>(name));
             }
             if (utfRedir != utfIndex) {
                 node.setConst(utfRedir, constName);
