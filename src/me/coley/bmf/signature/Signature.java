@@ -136,10 +136,10 @@ public abstract class Signature {
                 case '.':
                 case ';':
                     if (c == ';') {
-                        if (generics == null) {
-                            genericsStart = pos - 1;
-                        }
                         if (inner) {
+                            if (generics == null) {
+                                genericsStart = pos - 3;
+                            }
                             String outerName = sig.substring(outerStart + 1, genericsStart);
                             String innerName = outerName + "$" + sig.substring(start, pos - 1);
                             Box<String> boxOuter = mapping.getClassName(outerName);
@@ -156,6 +156,9 @@ public abstract class Signature {
                             }
                             throw new RuntimeException("Could not find inner mappings for: " + innerName);
                         } else {
+                            if (generics == null) {
+                                genericsStart = pos - 1;
+                            }
                             String value = sig.substring(start, genericsStart);
                             Box<String> box = mapping.getClassName(value);
                             if (box == null) {

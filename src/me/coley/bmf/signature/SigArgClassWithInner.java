@@ -28,11 +28,16 @@ public class SigArgClassWithInner extends SigArg {
     @Override
     String toArg() {
         // Louter_name<args>.inner_name_section;
-        StringBuilder args = new StringBuilder();
-        for (SigArg arg : genericArgs) {
-            args.append(arg.toArg());
+        StringBuilder builder = new StringBuilder();
+        builder.append("L" + outer.getValue());
+        if (genericArgs != null) {
+            StringBuilder args = new StringBuilder();
+            for (SigArg arg : genericArgs) {
+                args.append(arg.toArg());
+            }
+            builder.append("<" + args.toString() + ">");
         }
-        return "L" + outer.getValue() + "<" + args.toString() + ">." + inner.getInnerSection() + ";";
-
+        builder.append("." + inner.getInnerSection() + ";");
+        return builder.toString();
     }
 }
