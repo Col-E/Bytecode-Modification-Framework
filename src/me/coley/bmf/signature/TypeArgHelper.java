@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TypeArgHelper {
+class TypeArgHelper {
     private Set<String> keys = new LinkedHashSet<>();
     private Map<String, SigArg> typeVars = null;
     private Map<String, List<SigArg>> interfaces = null;
