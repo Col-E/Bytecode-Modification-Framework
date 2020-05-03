@@ -23,7 +23,7 @@ To rename each item takes only a single line of code. The affects of this change
 
 ### What needs finishing
 
-This library is still a heavy WIP and the main focus is remapping classes, so some basic functionality not-pertaining to remapping still needs to be completed. For example there is no way to edit opcodes in a method.
+This library is still a heavy WIP and the main focus is remapping classes, so some basic functionality not-pertaining to remapping still needs to be completed. For example there is no way to edit instructions in a method.
 
 ### Credits
 
